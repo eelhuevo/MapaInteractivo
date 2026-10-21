@@ -1,0 +1,11 @@
+# Normaliza los finales de linea en todos los archivos de texto.
+# Evita que cada maquina genere diffs distintos del mismo archivo.
+* text=auto eol=lf
+
+# Los modelos 3D son binarios: no deben ser modificados por git.
+*.glb binary
+*.fbx binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
