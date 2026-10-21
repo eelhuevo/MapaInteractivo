@@ -32,6 +32,7 @@ También puedes registrarte desde la propia pantalla o entrar como **Invitado**.
 |---|---|
 | [`MANUAL-USUARIO.md`](MANUAL-USUARIO.md) | **Manual de usuario**: cómo entrar, usar el mapa 2D y 3D, filtros, búsqueda, horarios y favoritos |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | **Guía de contribución**: flujo de trabajo, convención de commits, Pull Requests y versiones |
+| [`CHANGELOG.md`](CHANGELOG.md) | **Historial de versiones** del proyecto |
 | `README.md` (este) | Documentación técnica: estructura, cómo ejecutar, qué se conservó del proyecto original |
 | Plantillas en `.github/` | Formulario para Pull Requests e issues |
 
