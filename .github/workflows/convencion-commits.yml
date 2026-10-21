@@ -36,7 +36,7 @@ jobs:
           PRIMERA=$(printf '%s' "$TEXTO" | head -n 1)
 
           # 1. Convencion de commits (Conventional Commits)
-          if printf '%s' "$PRIMERA" | grep -Eq '^(feat|fix|docs|style|refactor|perf|test|chore|build)(\([a-z0-9._/-]+\))?: .+'; then
+          if printf '%s' "$PRIMERA" | grep -Eq '^(feat|fix|docs|style|refactor|perf|test|chore|build|ci)(\([a-z0-9._/-]+\))?: .+'; then
             echo "OK: $PRIMERA"
             exit 0
           fi
@@ -50,6 +50,6 @@ jobs:
           echo "::error::$ETIQUETA no cumple la convencion de commits del proyecto."
           echo "::error::Se recibio: $PRIMERA"
           echo "::error::Formato esperado: <tipo>(<ambito>): <descripcion en minusculas>"
-          echo "::error::Tipos validos: feat, fix, docs, style, refactor, perf, test, chore, build"
+          echo "::error::Tipos validos: feat, fix, docs, style, refactor, perf, test, chore, build, ci"
           echo "::error::Ejemplo: feat(mapa): anade el conmutador 2D/3D"
           exit 1

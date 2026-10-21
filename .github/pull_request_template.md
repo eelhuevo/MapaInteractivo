@@ -17,7 +17,7 @@ de `CONTRIBUTING.md`:
 <tipo>(<ámbito>): <descripción en minúsculas>
 ```
 
-Tipos: `feat` `fix` `docs` `style` `refactor` `perf` `test` `chore` `build`
+Tipos: `feat` `fix` `docs` `style` `refactor` `perf` `test` `chore` `build` `ci`
 
 Hay una verificación automática que rechaza los que no la siguen.
 

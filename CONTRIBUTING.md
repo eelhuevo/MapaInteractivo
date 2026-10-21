@@ -64,6 +64,7 @@ Todos los mensajes de commit siguen esta estructura:
 | `test` | Pruebas | `test(busqueda): cubre la busqueda por docente` |
 | `chore` | Tareas de mantenimiento | `chore: actualiza las dependencias de Three.js` |
 | `build` | Empaquetado y dependencias | `build: anade la libreria de NURBS al vendor` |
+| `ci` | Integración continua y automatizaciones | `ci: anade la verificacion de la convencion de commits` |
 
 ### Ejemplos de mensajes válidos
 
