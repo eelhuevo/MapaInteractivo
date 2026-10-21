@@ -298,7 +298,15 @@ git commit -m "feat(mapa): anade mi funcionalidad"
 git push -u origin feature/mi-tarea
 ```
 
-Y luego abre el Pull Request (el título también sigue la convención):
+Y luego abre el Pull Request. **No hace falta instalar nada más**: al hacer
+`git push`, la terminal muestra un link azul *"Create a pull request for
+'feature/mi-tarea' on GitHub by visiting: ..."*. Ábrelo y:
+
+- **Título**: `feat(mapa): anade mi funcionalidad` (el mismo mensaje del commit).
+- **Descripción**: `Closes #45`.
+- Botón verde **"Create pull request"**.
+
+Si ya tienes [GitHub CLI](https://cli.github.com) instalado, también sirve:
 
 ```bash
 gh pr create --base main --title "feat(mapa): anade mi funcionalidad" --body "Closes #45"
