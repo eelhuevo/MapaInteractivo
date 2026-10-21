@@ -36,6 +36,26 @@ Formato: `feature/descripcion-corta-en-kebab-case`
 
 Nunca trabajes directamente en `main` ni en `Version2`.
 
+### Una rama por issue
+
+Cada issue del proyecto tiene **una rama propia** con el nombre de la tabla del
+punto 6 de `INSTRUCCIONES.md`. Ese es el orden de trabajo del equipo:
+
+```
+Issue asignado  →  Rama propia  →  Commit  →  Push  →  Pull Request  →  Revisión  →  Merge a main
+```
+
+Así cada cambio se puede revisar por separado y se sabe **quién** hizo **qué**.
+
+### Qué pasa con las ramas después
+
+El repositorio tiene el **borrado automático activado**: cuando el Pull Request se
+fusiona, GitHub borra la rama sola. Al final solo quedarán las dos ramas
+permanentes, `main` y `Version2`.
+
+Si necesitas conservar una rama, al fusionar el PR desmarca **"Delete head
+branch"**.
+
 ---
 
 ## 3. Convención de commits (Conventional Commits)
@@ -231,9 +251,34 @@ Detalle completo en el `README.md` del repositorio.
 
 ## 10. Configuración inicial de git (una sola vez)
 
+Cada persona configura git con **su propio nombre y su propio correo**:
+
 ```bash
-git config --global user.name  "eelhuevo"
-git config --global user.email "246075275+eelhuevo@users.noreply.github.com"
+git config --global user.name  "TU NOMBRE"
+git config --global user.email "TU-CORREO-NOREPLY"
+```
+
+| Persona | `user.name` | `user.email` |
+|---|---|---|
+| **eelhuevo** | `eelhuevo` | `246075275+eelhuevo@users.noreply.github.com` |
+| **moisesAlejandro78** | `moisesAlejandro78` | `246076688+moisesAlejandro78@users.noreply.github.com` |
+| **Jhoselinconde537-lang** | `condecita` | `243635011+Jhoselinconde537-lang@users.noreply.github.com` |
+| **Oslo144** | `Oslo` | `246077111+Oslo144@users.noreply.github.com` |
+| **ItsMegabo11** | `José Arroyo` | `246074753+ItsMegabo11@users.noreply.github.com` |
+
+> **No uses el de otra persona.** GitHub identifica a cada commit por el
+> `user.email`. Si todos configuran el de eelhuevo, todos los commits del equipo
+> aparecerán como de eelhuevo y se pierde la evidencia de la participación
+> individual de cada integrante.
+
+Para copiar tu correo noreply: GitHub → tu avatar → **Settings** → **Emails** →
+en *"Keep my email addresses private"* aparece con el formato
+`ID+USUARIO@users.noreply.github.com`.
+
+Para comprobarlo:
+
+```bash
+git config --global --list
 ```
 
 Si `git` te pide usuario y contraseña al subir: usa un **token personal** de GitHub
@@ -253,8 +298,8 @@ git commit -m "feat(mapa): anade mi funcionalidad"
 git push -u origin feature/mi-tarea
 ```
 
-Y luego abre el Pull Request:
+Y luego abre el Pull Request (el título también sigue la convención):
 
 ```bash
-gh pr create --base main --title "Mi funcionalidad" --body "Closes #45"
+gh pr create --base main --title "feat(mapa): anade mi funcionalidad" --body "Closes #45"
 ```
