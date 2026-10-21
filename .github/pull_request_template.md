@@ -8,6 +8,19 @@ Closes #
 
 <!-- El número del issue que resuelve. Ej: #45 -->
 
+## Título y commits
+
+El **título del Pull Request** y los **mensajes de commit** deben seguir la convención
+de `CONTRIBUTING.md`:
+
+```
+<tipo>(<ámbito>): <descripción en minúsculas>
+```
+
+Tipos: `feat` `fix` `docs` `style` `refactor` `perf` `test` `chore` `build`
+
+Hay una verificación automática que rechaza los que no la siguen.
+
 ## Tipo de cambio
 
 - [ ] Funcionalidad nueva (`feat`)

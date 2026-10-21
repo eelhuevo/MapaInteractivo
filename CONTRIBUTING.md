@@ -110,8 +110,21 @@ wip                      -> no explica nada
 
 ### Al abrirlo
 
-Usa la plantilla automática (`.github/pull_request_template.md`) y complétala. En la
-descripción **siempre** incluye:
+Usa la plantilla automática (`.github/pull_request_template.md`) y complétala.
+
+**El título del Pull Request también sigue la convención** de commits, porque al
+fusionar con *squash* ese título es el mensaje que queda en `main`:
+
+```
+feat(mapa): anade el conmutador de vista 2D/3D
+fix(filtros): evita aplicar un filtro sin ningun piso marcado
+docs: actualiza el manual de usuario
+```
+
+Hay una **verificación automática** (`.github/workflows/convencion-commits.yml`) que
+rechaza los títulos y los mensajes que no la siguen.
+
+En la descripción **siempre** incluye:
 
 ```
 Closes #45
