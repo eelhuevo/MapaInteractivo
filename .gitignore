@@ -1,0 +1,16 @@
+# Archivos de sistema
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Entornos y dependencias
+node_modules/
+vendor/
+
+# Archivos locales sensibles (nunca se suben)
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
