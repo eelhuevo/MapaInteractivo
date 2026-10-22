@@ -1,4 +1,22 @@
+/* =========================================================
+   vendor/three/GLTFLoader.js — cargador de archivos glTF/GLB
+   Codigo original de Three.js (mrdoob/three.js), licencia MIT.
+   Tarea #44 · Integracion del cargador glTF para los modelos
+            exportados desde Blender
+   Autor: Jhoselinconde537-lang
+   ========================================================= */
 ( function () {
+
+	/* ── INTEGRACION EN MAPA INTERACTIVO ─────────────────
+	 * El visor 3D (js/view3d/viewer3d.js) usa este cargador
+	 * para abrir los modelos exportados desde Blender:
+	 *   models/edificio.glb
+	 *   models/oficinas.glb
+	 *   models/habitacion.glb
+	 * Los tres archivos se exportan en formato binario GLB
+	 * con texturas embebidas, por eso se usa este cargador
+	 * y no el cargador de .gltf con archivos externos.
+	 * ─────────────────────────────────────────────────── */
 
 	class GLTFLoader extends THREE.Loader {
 
