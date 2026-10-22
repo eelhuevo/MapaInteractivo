@@ -705,7 +705,7 @@
 
     if (!modeloActual) {
       espacioPendiente = espacio;
-      cargarModelo(claveActual || 'edificio');
+      cargarModelo(claveActual || 'planta-baja');
       return false;
     }
 
@@ -981,7 +981,7 @@
     redimensionar();
 
     if (!modeloActual) {
-      cargarModelo(claveActual || 'edificio');
+      cargarModelo(claveActual || 'planta-baja');
     } else {
       actualizarMarcadores();
     }
