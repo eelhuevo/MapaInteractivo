@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>UniMap - Acceso al Campus</title>
+
+  <!-- CSS: hojas divididas por capitulo (v=3) -->
+  <link rel="stylesheet" href="frontend/css/base.css?v=3">
+  <link rel="stylesheet" href="frontend/css/auth.css?v=3">
+  <link rel="stylesheet" href="frontend/css/responsive.css?v=3">
+  <link rel="stylesheet" href="frontend/css/hus.css?v=3">
+</head>
+<body>
+
+  <!-- HU-15: selector de idioma de la interfaz -->
+  <button id="boton-idioma" class="boton-idioma auth-idioma" data-i18n-title="top.idioma" title="Idioma" aria-label="Idioma">
+    <span id="idioma-actual">ES</span>
+  </button>
+
+  <!-- AUTH SECTION -->
+  <div id="pantalla-autenticacion" class="auth-screen">
+
+    <!-- Lado izquierdo: Logo y descripcion -->
+    <div class="auth-left">
+      <div class="logo-icon">UM</div>
+      <h1>UniMap</h1>
+      <p class="auth-tagline" data-i18n="auth.tagline">Explora tu campus universitario de forma interactiva. Encuentra aulas, laboratorios y oficinas en un solo lugar.</p>
+      <div class="auth-features">
+        <div class="auth-feature">
+          <div class="auth-feature-icon">+</div>
+          <span data-i18n="auth.feat1">Mapa interactivo 2D con zoom y paneo</span>
+        </div>
+        <div class="auth-feature">
+          <div class="auth-feature-icon">+</div>
+          <span data-i18n="auth.feat2">Visor 3D de los modelos del campus</span>
+        </div>
+        <div class="auth-feature">
+          <div class="auth-feature-icon">+</div>
+          <span data-i18n="auth.feat3">Busca espacios por nombre, tipo o docente</span>
+        </div>
+        <div class="auth-feature">
+          <div class="auth-feature-icon">+</div>
+          <span data-i18n="auth.feat4">Guarda espacios como favoritos rapidamente</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lado derecho: Formularios -->
+    <div class="auth-right">
+      <div class="auth-container">
+
+        <!-- Login Form -->
+        <form id="formulario-login" class="auth-form active">
+          <h2 data-i18n="auth.login">Iniciar Sesion</h2>
+          <div class="form-group">
+            <label for="correo-login" data-i18n="auth.correo">Correo electronico</label>
+            <input type="email" id="correo-login" placeholder="ejemplo@universidad.edu" data-i18n-placeholder="auth.phCorreo" autocomplete="email">
+            <span class="error-msg" id="correo-login-error"></span>
+          </div>
+          <div class="form-group">
+            <label for="contrasena-login" data-i18n="auth.contrasena">Contrasena</label>
+            <div class="pass-wrapper">
+              <input type="password" id="contrasena-login" placeholder="Tu contrasena" data-i18n-placeholder="auth.phPass" autocomplete="current-password">
+              <button type="button" class="boton-mostrar-pass" data-target="contrasena-login" data-i18n="auth.mostrar">Mostrar</button>
+            </div>
+            <span class="error-msg" id="contrasena-login-error"></span>
+          </div>
+          <button type="submit" class="btn-primary" data-i18n="auth.entrar">Entrar</button>
+          <div class="auth-switch">
+            <span data-i18n="auth.noCuenta">No tienes cuenta?</span> <a href="#" id="mostrar-registro" data-i18n="auth.registrate">Registrate</a>
+          </div>
+        </form>
+
+        <!-- Register Form -->
+        <form id="formulario-registro" class="auth-form">
+          <h2 data-i18n="auth.registro">Crear Cuenta</h2>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="nombre-registro" data-i18n="auth.nombre">Nombre</label>
+              <input type="text" id="nombre-registro" placeholder="Juan" data-i18n-placeholder="auth.phNombre" autocomplete="given-name">
+              <span class="error-msg" id="nombre-registro-error"></span>
+            </div>
+            <div class="form-group">
+              <label for="apellido-registro" data-i18n="auth.apellido">Apellido</label>
+              <input type="text" id="apellido-registro" placeholder="Perez" data-i18n-placeholder="auth.phApellido" autocomplete="family-name">
+              <span class="error-msg" id="apellido-registro-error"></span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="correo-registro" data-i18n="auth.correo">Correo electronico</label>
+            <input type="email" id="correo-registro" placeholder="ejemplo@universidad.edu" data-i18n-placeholder="auth.phCorreo" autocomplete="email">
+            <span class="error-msg" id="correo-registro-error"></span>
+          </div>
+          <div class="form-group">
+            <label for="rol-registro" data-i18n="auth.rol">Rol</label>
+            <select id="rol-registro">
+              <option value="" data-i18n="auth.seleccionaRol">Selecciona tu rol</option>
+              <option value="estudiante" data-i18n="auth.rolEstudiante">Estudiante</option>
+              <option value="docente" data-i18n="auth.rolDocente">Docente</option>
+              <option value="admin" data-i18n="auth.rolAdmin">Administrativo</option>
+            </select>
+            <span class="error-msg" id="rol-registro-error"></span>
+          </div>
+          <div class="form-group">
+            <label for="contrasena-registro" data-i18n="auth.contrasena">Contrasena</label>
+            <div class="pass-wrapper">
+              <input type="password" id="contrasena-registro" placeholder="Minimo 6 caracteres" data-i18n-placeholder="auth.phPassNuevo" autocomplete="new-password">
+              <button type="button" class="boton-mostrar-pass" data-target="contrasena-registro" data-i18n="auth.mostrar">Mostrar</button>
+            </div>
+            <span class="error-msg" id="contrasena-registro-error"></span>
+            <div class="pass-strength" id="fortaleza-contrasena"></div>
+          </div>
+          <div class="form-group">
+            <label for="contrasena2-registro" data-i18n="auth.confirmaPass">Confirmar contrasena</label>
+            <input type="password" id="contrasena2-registro" placeholder="Repite tu contrasena" data-i18n-placeholder="auth.phPassConfirmar" autocomplete="new-password">
+            <span class="error-msg" id="contrasena2-registro-error"></span>
+          </div>
+          <button type="submit" class="btn-primary" data-i18n="auth.crearCuenta">Crear Cuenta</button>
+          <div class="auth-switch">
+            <span data-i18n="auth.tienesCuenta">Ya tienes cuenta?</span> <a href="#" id="mostrar-login" data-i18n="auth.iniciaSesion">Inicia sesion</a>
+          </div>
+        </form>
+
+        <div class="auth-divider">
+          <span data-i18n="auth.o">o</span>
+        </div>
+        <button id="boton-invitado" class="btn-guest" data-i18n="auth.invitado">Entrar como Invitado</button>
+
+        <p class="auth-demo"><span data-i18n="auth.demo">Cuenta de prueba:</span> <strong>admin@uni.edu</strong> / <strong>123456</strong></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- JS: modulo de autenticacion (v=3) -->
+  <script src="frontend/js/core/store.js?v=3"></script>
+  <script src="frontend/js/core/i18n.js?v=3"></script>
+  <script src="frontend/js/auth/auth.js?v=3"></script>
+  <script>
+    /* HU-15: aplicar el idioma guardado a la pantalla de acceso */
+    if (window.UniMap && UniMap.i18n) UniMap.i18n.iniciar();
+  </script>
+</body>
+</html>

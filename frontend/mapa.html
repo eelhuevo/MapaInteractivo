@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>UniMap - Campus Universitario</title>
+
+  <!-- CSS: hojas divididas por capitulo (v=3 torres 17 pisos) -->
+  <link rel="stylesheet" href="css/base.css?v=3">
+  <link rel="stylesheet" href="css/map.css?v=3">
+  <link rel="stylesheet" href="css/panels.css?v=3">
+  <link rel="stylesheet" href="css/components.css?v=3">
+  <link rel="stylesheet" href="css/view3d.css?v=3">
+  <link rel="stylesheet" href="css/hus.css?v=3">
+  <link rel="stylesheet" href="css/responsive.css?v=3">
+</head>
+<body>
+
+  <!-- MAP SECTION -->
+  <div id="pantalla-mapa" class="map-screen">
+
+    <!-- Top Bar -->
+    <header class="top-bar">
+      <div class="top-left">
+        <div class="logo-small">UM</div>
+        <span class="app-name">UniMap</span>
+      </div>
+
+      <div class="search-container">
+        <label class="skip-link" for="campo-busqueda" data-i18n="top.buscarPh">Buscar</label>
+        <input type="text" id="campo-busqueda" data-i18n-placeholder="top.buscarPh" placeholder="Buscar aula, oficina, docente...">
+        <button id="boton-busqueda" class="btn-icon" title="Buscar" aria-label="Buscar" data-i18n-title="top.buscarPh">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+        <div id="resultados-busqueda" class="search-results hidden" role="listbox"></div>
+      </div>
+
+      <div class="top-right">
+        <!-- Conmutador 2D / 3D -->
+        <div class="toggle-vista" id="toggle-vista" role="group" aria-label="Vista del mapa">
+          <button id="boton-vista-2d" class="toggle-opcion active" title="Vista plano 2D">2D</button>
+          <button id="boton-vista-3d" class="toggle-opcion" title="Vista tridimensional 3D">3D</button>
+        </div>
+
+        <button id="boton-filtros" class="btn-icon" title="Filtros" aria-label="Filtros" data-i18n-title="top.filtros">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        </button>
+        <button id="boton-horarios" class="btn-icon" title="Horarios" aria-label="Horarios" data-i18n-title="top.horarios">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </button>
+        <button id="boton-favoritos" class="btn-icon" title="Favoritos" aria-label="Favoritos" data-i18n-title="top.favoritos" style="display:none;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </button>
+
+        <!-- HU-07: servicios del edificio -->
+        <button id="boton-servicios" class="btn-icon" title="Servicios del edificio" aria-label="Servicios del edificio" data-i18n-title="top.servicios">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M9 13h.01M9 17h.01M15 9h.01M15 13h.01M15 17h.01"/></svg>
+        </button>
+
+        <!-- HU-10: ruta y ubicacion -->
+        <button id="boton-ruta" class="btn-icon" title="Trazar ruta" aria-label="Trazar ruta" data-i18n-title="top.ruta">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="19" r="3"/><circle cx="18" cy="5" r="3"/><path d="M9 19h5a4 4 0 0 0 0-8h-4a4 4 0 0 1 0-8h5"/></svg>
+        </button>
+        <button id="boton-ubicacion" class="btn-icon" title="Mi ubicacion" aria-label="Mi ubicacion" data-i18n-title="top.ubicacion">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </button>
+
+        <!-- HU-11: escanear QR -->
+        <button id="boton-escanear-qr" class="btn-icon" title="Escanear QR" aria-label="Escanear QR" data-i18n-title="top.escanear">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM21 14v.01M14 21v.01M21 21v.01M17 17v.01"/></svg>
+        </button>
+
+        <!-- HU-13: notificaciones de cambios -->
+        <button id="boton-avisos" class="btn-icon" title="Notificaciones" aria-label="Notificaciones" data-i18n-title="top.avisos">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span id="contador-avisos" class="hidden">0</span>
+        </button>
+
+        <!-- HU-20: sugerencias -->
+        <button id="boton-sugerencias" class="btn-icon" title="Para ti" aria-label="Para ti" data-i18n-title="top.sugerencias">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.4 1 2.3h6c0-.9.4-1.8 1-2.3A7 7 0 0 0 12 2z"/></svg>
+        </button>
+
+        <!-- HU-06: administracion (solo rol admin) -->
+        <a id="boton-admin" class="btn-icon btn-admin-top hidden" href="admin.html" title="Administracion" aria-label="Administracion" data-i18n-title="top.admin">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/></svg>
+        </a>
+
+        <!-- HU-15: cambio de idioma -->
+        <button class="btn-icon boton-idioma" title="Idioma" aria-label="Idioma" data-i18n-title="top.idioma">
+          <span id="idioma-actual">ES</span>
+        </button>
+
+        <div class="user-badge" id="user-badge">
+          <span class="badge-rol" id="badge-rol"></span>
+          <span id="nombre-usuario">Invitado</span>
+          <button id="boton-salir" class="btn-text" title="Cerrar sesion" data-i18n-title="top.salir" data-i18n="top.salir">Salir</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Filter Panel -->
+    <aside id="panel-filtros" class="filter-panel hidden" aria-label="Filtros">
+      <div class="panel-header">
+        <h3 data-i18n="filtros.titulo">Filtros</h3>
+        <button id="cerrar-filtros" class="btn-close" aria-label="Cerrar">&times;</button>
+      </div>
+      <div class="filter-section" id="filtros-tipo">
+        <h4 data-i18n="filtros.tipo">Tipo de espacio</h4>
+        <label class="filter-check"><input type="checkbox" value="aula" checked> <span data-i18n="tipo.aula">Aulas</span></label>
+        <label class="filter-check"><input type="checkbox" value="laboratorio" checked> <span data-i18n="tipo.laboratorio">Laboratorios</span></label>
+        <label class="filter-check"><input type="checkbox" value="oficina" checked> <span data-i18n="tipo.oficina">Oficinas</span></label>
+        <label class="filter-check"><input type="checkbox" value="biblioteca" checked> <span data-i18n="tipo.biblioteca">Biblioteca</span></label>
+        <label class="filter-check"><input type="checkbox" value="auditorio" checked> <span data-i18n="tipo.auditorio">Auditorios</span></label>
+        <label class="filter-check"><input type="checkbox" value="comedor" checked> <span data-i18n="tipo.comedor">Comedor</span></label>
+        <label class="filter-check"><input type="checkbox" value="deportivo" checked> <span data-i18n="tipo.deportivo">Deportivo</span></label>
+        <label class="filter-check"><input type="checkbox" value="salon" checked> <span data-i18n="tipo.salon">Salones</span></label>
+      </div>
+      <!-- HU-19: filtro especifico por tipo de laboratorio -->
+      <div class="filter-section" id="filtros-lab">
+        <h4 data-i18n="filtros.labTipo">Tipo de laboratorio</h4>
+        <label class="filter-check"><input type="checkbox" value="informatica" checked> <span data-i18n="lab.informatica">Informatica</span></label>
+        <label class="filter-check"><input type="checkbox" value="electronica" checked> <span data-i18n="lab.electronica">Electronica</span></label>
+        <label class="filter-check"><input type="checkbox" value="fisica" checked> <span data-i18n="lab.fisica">Fisica</span></label>
+        <label class="filter-check"><input type="checkbox" value="quimica" checked> <span data-i18n="lab.quimica">Quimica</span></label>
+        <label class="filter-check"><input type="checkbox" value="mecanica" checked> <span data-i18n="lab.mecanica">Mecanica</span></label>
+        <label class="filter-check"><input type="checkbox" value="ia" checked> <span data-i18n="lab.ia">Inteligencia Artificial</span></label>
+        <label class="filter-check"><input type="checkbox" value="robotica" checked> <span data-i18n="lab.robotica">Robotica</span></label>
+        <label class="filter-check"><input type="checkbox" value="iot" checked> <span data-i18n="lab.iot">IoT</span></label>
+        <label class="filter-check"><input type="checkbox" value="ciberseguridad" checked> <span data-i18n="lab.ciberseguridad">Ciberseguridad</span></label>
+        <label class="filter-check"><input type="checkbox" value="produccion" checked> <span data-i18n="lab.produccion">Produccion</span></label>
+      </div>
+      <div class="filter-section">
+        <h4 data-i18n="filtros.torre">Torre</h4>
+        <div id="filtros-edificio">
+          <label class="filter-check"><input type="checkbox" value="1" checked> <span data-i18n="torre.antigua">Torre Antigua</span></label>
+          <label class="filter-check"><input type="checkbox" value="2" checked> <span data-i18n="torre.innovacion">Torre Innovacion</span></label>
+        </div>
+      </div>
+      <div class="filter-section">
+        <h4 data-i18n="filtros.disponibilidad">Disponibilidad</h4>
+        <label class="filter-check"><input type="checkbox" id="filtro-disponible" checked> <span data-i18n="filtros.disponibles">Disponibles</span></label>
+        <label class="filter-check"><input type="checkbox" id="filtro-no-disponible" checked> <span data-i18n="filtros.noDisponibles">No disponibles</span></label>
+      </div>
+      <div class="filter-section">
+        <h4 data-i18n="filtros.piso">Piso</h4>
+        <div class="floor-filters" id="filtros-piso">
+          <label class="filter-check"><input type="checkbox" value="0" checked> PB</label>
+          <label class="filter-check"><input type="checkbox" value="1" checked> P1</label>
+          <label class="filter-check"><input type="checkbox" value="2" checked> P2</label>
+          <label class="filter-check"><input type="checkbox" value="3" checked> P3</label>
+          <label class="filter-check"><input type="checkbox" value="4" checked> P4</label>
+          <label class="filter-check"><input type="checkbox" value="5" checked> P5</label>
+          <label class="filter-check"><input type="checkbox" value="6" checked> P6</label>
+          <label class="filter-check"><input type="checkbox" value="7" checked> P7</label>
+          <label class="filter-check"><input type="checkbox" value="8" checked> P8</label>
+        </div>
+      </div>
+      <button id="aplicar-filtros" class="btn-primary btn-full" data-i18n="filtros.aplicar">Aplicar Filtros</button>
+      <button id="restablecer-filtros" class="btn-secondary btn-full" data-i18n="filtros.restablecer">Restablecer</button>
+    </aside>
+
+    <!-- Favorites Panel -->
+    <aside id="panel-favoritos" class="favorites-panel hidden" aria-label="Favoritos">
+      <div class="panel-header">
+        <h3 data-i18n="fav.titulo">Mis Favoritos</h3>
+        <button id="cerrar-favoritos" class="btn-close" aria-label="Cerrar">&times;</button>
+      </div>
+      <div id="lista-favoritos" class="favorites-list"></div>
+    </aside>
+
+    <!-- Schedule Panel -->
+    <aside id="panel-horarios" class="schedule-panel hidden" aria-label="Horarios">
+      <div class="panel-header">
+        <h3 data-i18n="hor.titulo">Horarios de Docentes</h3>
+        <button id="cerrar-horarios" class="btn-close" aria-label="Cerrar">&times;</button>
+      </div>
+      <div class="schedule-search">
+        <input type="text" id="campo-busqueda-horario" data-i18n-placeholder="hor.buscarPh" placeholder="Buscar docente...">
+      </div>
+      <div id="lista-horarios" class="schedule-list"></div>
+    </aside>
+
+    <!-- HU-07: Panel de servicios por edificio -->
+    <aside id="panel-servicios" class="panel-servicios hidden" aria-label="Servicios del edificio">
+      <div class="panel-header">
+        <h3 data-i18n="serv.titulo">Servicios del Edificio</h3>
+        <button id="cerrar-servicios" class="btn-close" aria-label="Cerrar">&times;</button>
+      </div>
+      <div class="serv-torres">
+        <button class="serv-torre-btn active" data-building="1" data-i18n="torre.antigua">Torre Antigua</button>
+        <button class="serv-torre-btn" data-building="2" data-i18n="torre.innovacion">Torre Innovacion</button>
+      </div>
+      <div class="schedule-search">
+        <input type="text" id="campo-busqueda-servicio" data-i18n-placeholder="serv.buscarPh" placeholder="Filtrar servicios...">
+      </div>
+      <div id="lista-servicios"></div>
+    </aside>
+
+    <!-- HU-13: Panel de notificaciones de cambios -->
+    <aside id="panel-avisos" class="panel-avisos hidden" aria-label="Notificaciones">
+      <div class="panel-header">
+        <h3 data-i18n="av.titulo">Notificaciones</h3>
+        <button id="cerrar-avisos" class="btn-close" aria-label="Cerrar">&times;</button>
+      </div>
+      <div class="panel-acciones">
+        <button id="marcar-avisos-leidos" class="btn-perfil" data-i18n="av.marcarTodo">Marcar todo como leido</button>
+      </div>
+      <div id="lista-avisos"></div>
+    </aside>
+
+    <!-- HU-20: Panel de sugerencias -->
+    <aside id="panel-sugerencias" class="panel-sugerencias hidden" aria-label="Para ti">
+      <div class="panel-header">
+        <h3 data-i18n="sug.titulo">Para Ti</h3>
+        <button id="cerrar-sugerencias" class="btn-close" aria-label="Cerrar">&times;</button>
+      </div>
+      <div class="perfil-barra">
+        <span id="perfil-badge"></span>
+        <button id="abrir-perfil" class="btn-perfil" data-i18n="sug.perfil">Mi perfil</button>
+      </div>
+      <div id="lista-sugerencias"></div>
+    </aside>
+
+    <!-- Torre Selector -->
+    <div class="selector-torre" id="selector-torre">
+      <button class="boton-torre active" data-building="1" title="Torre Antigua (PB-P7)">
+        <span class="torre-abrev">TA</span>
+        <span class="torre-nombre" data-i18n="torre.antigua">Torre Antigua</span>
+      </button>
+      <button class="boton-torre" data-building="2" title="Torre Innovacion (PB-P8)">
+        <span class="torre-abrev">TI</span>
+        <span class="torre-nombre" data-i18n="torre.innovacion">Torre Innovacion</span>
+      </button>
+    </div>
+
+    <!-- Floor Selector (botones generados por JS segun la torre) -->
+    <div class="floor-selector" id="selector-pisos">
+      <!-- PB ... P7 / P8 -->
+    </div>
+
+    <!-- Map Canvas + Visor 3D -->
+    <div class="map-wrapper" id="contenedor-mapa">
+      <canvas id="lienzo-mapa"></canvas>
+
+      <!-- ===== VISOR 3D ===== -->
+      <div id="visor-3d" class="visor-3d hidden">
+        <canvas id="lienzo-3d"></canvas>
+
+        <!-- Marcadores proyectados del espacio actual -->
+        <div id="marcadores-3d" class="marcadores-3d"></div>
+
+        <!-- Selector de modelo -->
+        <div class="selector-modelo">
+          <button id="boton-modelo" class="boton-modelo" aria-haspopup="listbox">Modelo: Edificio</button>
+          <ul id="lista-modelos" class="lista-modelos hidden" role="listbox"></ul>
+        </div>
+
+        <!-- Controles de camara -->
+        <div class="controles-3d">
+          <button id="camara-reiniciar" class="btn-zoom" title="Restablecer camara">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+          </button>
+          <button id="rotacion-auto" class="btn-zoom" title="Rotacion automatica">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg>
+          </button>
+        </div>
+
+        <!-- Capa de carga -->
+        <div id="carga-3d" class="carga-3d hidden">
+          <div class="carga-3d-card">
+            <div class="carga-3d-anillo"></div>
+            <div class="carga-3d-titulo">Cargando modelo 3D</div>
+            <div class="carga-3d-barra"><div id="barra-carga-3d" class="carga-3d-progreso"></div></div>
+            <div id="texto-carga-3d" class="carga-3d-texto">Preparando escena...</div>
+          </div>
+        </div>
+
+        <!-- Aviso de error / informacion -->
+        <div id="aviso-3d" class="aviso-3d hidden"></div>
+      </div>
+
+      <!-- Tooltip (compartido por 2D y 3D) -->
+      <div id="tooltip-mapa" class="map-tooltip hidden">
+        <div class="tooltip-header">
+          <span id="tooltip-nombre"></span>
+          <span id="tooltip-estado" class="tooltip-status"></span>
+        </div>
+        <div id="tooltip-tipo" class="tooltip-type"></div>
+        <div id="tooltip-info" class="tooltip-info"></div>
+        <div id="tooltip-horario" class="tooltip-schedule"></div>
+        <button id="tooltip-favorito" class="btn-fav btn-sm hidden"></button>
+        <!-- HU-10 y HU-11: acciones sobre el espacio -->
+        <div class="tooltip-acciones">
+          <button id="tooltip-ruta" class="btn-accion" data-i18n-title="tip.ruta">&#128506; <span data-i18n="tip.ruta">Trazar ruta</span></button>
+          <button id="tooltip-qr" class="btn-accion" data-i18n-title="tip.qr">&#128444; <span data-i18n="tip.qr">Codigo QR</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+      <div class="legend-item"><span class="legend-color disponible"></span> <span data-i18n="ley.activo">Activo</span></div>
+      <div class="legend-item"><span class="legend-color noDisponible"></span> <span data-i18n="ley.inactivo">Inactivo</span></div>
+      <div class="legend-item leyenda-2d"><span class="legend-color ubicacion"></span> <span data-i18n="ley.usted">Usted aqui</span></div>
+      <!-- HU-08: entrada principal y estacionamientos -->
+      <div class="legend-item leyenda-2d"><span class="legend-icono entrada">E</span> Entrada</div>
+      <div class="legend-item leyenda-2d"><span class="legend-icono estaciona">P</span> Estacionamiento</div>
+    </div>
+
+    <!-- Zoom Controls (solo 2D) -->
+    <div class="zoom-controls" id="controles-zoom">
+      <button id="zoom-acercar" class="btn-zoom" title="Acercar">+</button>
+      <button id="zoom-alejar" class="btn-zoom" title="Alejar">-</button>
+      <button id="zoom-reiniciar" class="btn-zoom" title="Restablecer vista">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+      </button>
+    </div>
+
+    <!-- Mini Legend / Info -->
+    <div class="map-info" id="info-mapa">
+      <span id="etiqueta-piso-actual">Planta Baja</span>
+      <span id="nivel-zoom">100%</span>
+    </div>
+
+    <!-- HU-11: Modal QR del espacio -->
+    <div id="modal-qr" class="modal hidden">
+      <div class="modal-content modal-qr">
+        <div class="modal-header">
+          <h3 data-i18n="qr.titulo">Codigo QR</h3>
+          <button id="cerrar-qr" class="btn-close" aria-label="Cerrar">&times;</button>
+        </div>
+        <div class="modal-qr-cuerpo">
+          <div id="qr-nombre-espacio"></div>
+          <p class="qr-info" data-i18n="qr.info">Escanea este codigo para abrir la ficha directamente</p>
+          <canvas id="lienzo-qr" width="224" height="224" role="img" aria-label="Codigo QR"></canvas>
+          <input type="text" id="qr-enlace" readonly>
+          <div class="qr-acciones">
+            <button id="copiar-qr" class="btn-primary" data-i18n="qr.copiar">Copiar enlace</button>
+            <button id="descargar-qr" class="btn-secondary" data-i18n="qr.descargar">Descargar PNG</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HU-11: Modal escanear QR -->
+    <div id="modal-escanear" class="modal hidden">
+      <div class="modal-content modal-escanear">
+        <div class="modal-header">
+          <h3 data-i18n="qr.escanearTitulo">Escanear codigo QR</h3>
+          <button id="cerrar-escanear" class="btn-close" aria-label="Cerrar">&times;</button>
+        </div>
+        <div class="modal-escanear-cuerpo">
+          <video id="video-escanear" playsinline muted class="hidden"></video>
+          <p id="escanear-aviso" data-i18n="qr.camara">Apunta la camara al codigo QR</p>
+          <div class="escanear-alternativa">
+            <input type="text" id="campo-qr-pegado" data-i18n-placeholder="qr.pegarPh" placeholder="Pega aqui el enlace del QR">
+            <button id="abrir-qr-pegado" class="btn-primary" data-i18n="qr.abrir">Abrir</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HU-20: Modal de perfil (carrera y semestre) -->
+    <div id="modal-perfil" class="modal hidden">
+      <div class="modal-content modal-perfil">
+        <div class="modal-header">
+          <h3 data-i18n="sug.perfil">Mi perfil</h3>
+          <button id="cerrar-perfil" class="btn-close" aria-label="Cerrar">&times;</button>
+        </div>
+        <form id="form-perfil">
+          <div class="form-group">
+            <label for="perfil-carrera" data-i18n="sug.carrera">Carrera</label>
+            <select id="perfil-carrera" required></select>
+          </div>
+          <div class="form-group">
+            <label for="perfil-semestre" data-i18n="sug.semestre">Semestre</label>
+            <select id="perfil-semestre">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+            </select>
+          </div>
+          <div class="qr-acciones">
+            <button type="button" id="cerrar-perfil-btn" class="btn-secondary" data-i18n="adm.cancelar">Cancelar</button>
+            <button type="submit" id="guardar-perfil" class="btn-primary" data-i18n="sug.guardar">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notificacion" class="notification hidden">
+      <span id="mensaje-notificacion"></span>
+      <button id="cerrar-notificacion" class="btn-close-sm">&times;</button>
+    </div>
+
+  </div>
+
+  <!-- ===== vendor: Three.js (local, sin conexion) ===== -->
+  <script src="vendor/three/three.min.js"></script>
+  <script src="vendor/three/fflate.min.js"></script>
+  <script src="vendor/three/NURBSUtils.js"></script>
+  <script src="vendor/three/NURBSCurve.js"></script>
+  <script src="vendor/three/GLTFLoader.js"></script>
+  <script src="vendor/three/FBXLoader.js"></script>
+  <script src="vendor/three/OrbitControls.js"></script>
+
+  <!-- ===== nucleo (v=3 torres 17 pisos) ===== -->
+  <script src="js/core/store.js?v=3"></script>
+  <script src="js/core/i18n.js?v=3"></script>
+  <script src="js/core/estadisticas.js?v=3"></script>
+  <script src="js/core/avisos.js?v=3"></script>
+
+  <!-- ===== datos ===== -->
+  <script src="js/data/categorias.js?v=3"></script>
+  <script src="js/data/edificios.js?v=3"></script>
+  <script src="js/data/docentes.js?v=3"></script>
+  <script src="js/data/espacios.js?v=3"></script>
+  <script src="js/core/personalizacion.js?v=3"></script>
+
+  <!-- ===== sesion ===== -->
+  <script src="js/auth/auth.js?v=3"></script>
+
+  <!-- ===== mapa 2D ===== -->
+  <script src="js/map/tooltip.js?v=3"></script>
+  <script src="js/map/map2d.js?v=3"></script>
+  <script src="js/map/filtros.js?v=3"></script>
+  <script src="js/map/busqueda.js?v=3"></script>
+  <script src="js/map/horarios.js?v=3"></script>
+  <script src="js/map/favoritos.js?v=3"></script>
+  <script src="js/map/ruta.js?v=3"></script>
+  <script src="js/map/qr.js?v=3"></script>
+  <script src="js/map/servicios.js?v=3"></script>
+  <script src="js/map/sugerencias.js?v=3"></script>
+
+  <!-- ===== visor 3D ===== -->
+  <script src="js/view3d/viewer3d.js?v=3"></script>
+
+  <!-- ===== interfaz y arranque ===== -->
+  <script src="js/core/ui.js?v=3"></script>
+  <script src="js/app.js?v=3"></script>
+</body>
+</html>
