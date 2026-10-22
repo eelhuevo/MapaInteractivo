@@ -2,6 +2,14 @@
 
 Guía de trabajo del equipo. Si la lees, ya sabes qué hacer con tu tarea.
 
+| Recurso | Enlace |
+|---|---|
+| Tablero de tareas | <https://github.com/users/eelhuevo/projects/1> |
+| Issues del proyecto | <https://github.com/eelhuevo/MapaInteractivo/issues?q=is%3Aissue> |
+| Pull Requests | <https://github.com/eelhuevo/MapaInteractivo/pulls?q=is%3Apr> |
+| Rama de entrega `beta` | <https://github.com/eelhuevo/MapaInteractivo/tree/beta> |
+| Verificación automática | [`.github/workflows/concion-commits.yml`](.github/workflows/concion-commits.yml) |
+
 ---
 
 ## 1. El flujo de trabajo completo
@@ -22,6 +30,15 @@ Issue asignado  →  Rama propia  →  Commit  →  Push  →  Pull Request  →
 > `main` está **protegida**: no se puede subir nada directamente. Todo cambio entra
 > por Pull Request. Eso es lo que hace profesional el repositorio.
 
+### Las ramas del proyecto
+
+| Rama | Para qué sirve |
+|---|---|
+| `main` | Línea base del proyecto. Está **protegida**: solo entra código revisado y verificado |
+| `beta` | Rama de **entrega**: aquí se integra todo el trabajo del equipo para presentarlo |
+| `Version2` | Segunda versión en curso (experimental) |
+| `feature/...`, `fix/...`, `docs/...` | Ramas de trabajo: una por tarea |
+
 ---
 
 ## 2. Nombres de rama
@@ -34,7 +51,7 @@ Formato: `feature/descripcion-corta-en-kebab-case`
 | `fix/` | Corrección de un error | `fix/zoom-invertido-movil` |
 | `docs/` | Documentación | `docs/manual-de-usuario` |
 
-Nunca trabajes directamente en `main` ni en `Version2`.
+Nunca trabajes directamente en `main`, en `beta` ni en `Version2`.
 
 ### Una rama por issue
 
@@ -50,8 +67,8 @@ Así cada cambio se puede revisar por separado y se sabe **quién** hizo **qué*
 ### Qué pasa con las ramas después
 
 El repositorio tiene el **borrado automático activado**: cuando el Pull Request se
-fusiona, GitHub borra la rama sola. Al final solo quedarán las dos ramas
-permanentes, `main` y `Version2`.
+fusiona, GitHub borra la rama sola. Al final quedan las ramas permanentes (`main`,
+`beta` y `Version2`) y las de trabajo que sigan abiertas.
 
 Si necesitas conservar una rama, al fusionar el PR desmarca **"Delete head
 branch"**.
@@ -156,6 +173,9 @@ Esa línea hace que el issue se cierre solo al fusionar.
 ### Revisión
 
 - Necesita **1 aprobación** de otro miembro del equipo antes de fusionarse.
+- En la pestaña del Pull Request, en **Reviewers**, se puede pedir la revisión a un
+  compañero concreto (cualquiera con acceso de escritura al repositorio puede
+  revisarlo).
 - El revisor puede pedir cambios: corrige en la **misma rama** y haz `push` otra vez.
 - Las aprobaciones antiguas se descartan cuando hay commits nuevos.
 
@@ -245,7 +265,8 @@ models/   modelos 3D del campus
 vendor/   Three.js r147 y cargadores (funciona sin internet)
 ```
 
-Detalle completo en el `README.md` del repositorio.
+Detalle completo, archivo por archivo, en [`ESTRUCTURA.md`](ESTRUCTURA.md), y las
+capturas de la aplicación en [`docs/capturas/`](docs/capturas/).
 
 ---
 
@@ -311,3 +332,37 @@ Si ya tienes [GitHub CLI](https://cli.github.com) instalado, también sirve:
 ```bash
 gh pr create --base main --title "feat(mapa): anade mi funcionalidad" --body "Closes #45"
 ```
+
+---
+
+## 12. Las tareas del proyecto
+
+Este es el mapa completo de las 16 tareas de la entrega `v1.0.0`: qué issue las
+abría, quién las hizo, en qué rama se trabajó, qué Pull Request las entregó y qué
+commit las contiene. Sirve para saber en cualquier momento **quién hizo qué**.
+
+| # | Issue | Tarea | Responsable | Rama | Pull Request | Commit |
+|---|---|---|---|---|---|---|
+| 36 | [Modelo de datos de los espacios](https://github.com/eelhuevo/MapaInteractivo/issues/36) | `js/data/espacios.js` con los espacios de los 4 pisos | eelhuevo | `feature/modelo-datos-espacios` | [#58](https://github.com/eelhuevo/MapaInteractivo/pull/58) | [`8d784a1`](https://github.com/eelhuevo/MapaInteractivo/commit/8d784a1) |
+| 37 | [Autenticación y sesión](https://github.com/eelhuevo/MapaInteractivo/issues/37) | Login, registro, invitado y sesión | eelhuevo | `feature/auth-sesion` | [#59](https://github.com/eelhuevo/MapaInteractivo/pull/59) | [`57bdbb1`](https://github.com/eelhuevo/MapaInteractivo/commit/57bdbb1) |
+| 38 | [Estado global y persistencia](https://github.com/eelhuevo/MapaInteractivo/issues/38) | `js/core/store.js` con preferencias en `localStorage` | eelhuevo | `feature/store-estado-global` | [#60](https://github.com/eelhuevo/MapaInteractivo/pull/60) | [`619d3a0`](https://github.com/eelhuevo/MapaInteractivo/commit/619d3a0) + [`9e0405f`](https://github.com/eelhuevo/MapaInteractivo/commit/9e0405f) |
+| 39 | [Edificio principal en 3D](https://github.com/eelhuevo/MapaInteractivo/issues/39) | `models/edificio.glb` | moisesAlejandro78 | `feature/modelo-edificio-principal` | [#61](https://github.com/eelhuevo/MapaInteractivo/pull/61) | [`3ee356e`](https://github.com/eelhuevo/MapaInteractivo/commit/3ee356e) |
+| 40 | [Edificio de oficinas en 3D](https://github.com/eelhuevo/MapaInteractivo/issues/40) | `models/oficinas.glb` | moisesAlejandro78 | `feature/modelo-oficinas` | [#62](https://github.com/eelhuevo/MapaInteractivo/pull/62) | [`1694b4c`](https://github.com/eelhuevo/MapaInteractivo/commit/1694b4c) |
+| 41 | [Habitación tipo en 3D](https://github.com/eelhuevo/MapaInteractivo/issues/41) | `models/habitacion.glb` | moisesAlejandro78 | `feature/modelo-habitacion` | [#63](https://github.com/eelhuevo/MapaInteractivo/pull/63) | [`65c1796`](https://github.com/eelhuevo/MapaInteractivo/commit/65c1796) |
+| 42 | [Planta baja de la torre B (FBX)](https://github.com/eelhuevo/MapaInteractivo/issues/42) | `models/PLANTA BAJA TOORE B.fbx` con metadatos | Jhoselinconde537-lang | `feature/modelo-planta-baja-fbx` | [#64](https://github.com/eelhuevo/MapaInteractivo/pull/64) | [`5a870a8`](https://github.com/eelhuevo/MapaInteractivo/commit/5a870a8) + [`3fba895`](https://github.com/eelhuevo/MapaInteractivo/commit/3fba895) |
+| 43 | [Cargador FBX y curvas NURBS](https://github.com/eelhuevo/MapaInteractivo/issues/43) | `vendor/three/FBXLoader.js`, `NURBSCurve.js`, `NURBSUtils.js` | Jhoselinconde537-lang | `feature/cargador-fbx-nurbs` | [#65](https://github.com/eelhuevo/MapaInteractivo/pull/65) | [`0736cbf`](https://github.com/eelhuevo/MapaInteractivo/commit/0736cbf) |
+| 44 | [Cargador glTF](https://github.com/eelhuevo/MapaInteractivo/issues/44) | `vendor/three/GLTFLoader.js` | Jhoselinconde537-lang | `feature/cargador-gltf` | [#66](https://github.com/eelhuevo/MapaInteractivo/pull/66) | [`53eab8d`](https://github.com/eelhuevo/MapaInteractivo/commit/53eab8d) |
+| 45 | [Barra superior](https://github.com/eelhuevo/MapaInteractivo/issues/45) | Estilos de la barra y del buscador | Oslo144 | `feature/estilos-barra-superior` | [#57](https://github.com/eelhuevo/MapaInteractivo/pull/57) | [`acdfbc0`](https://github.com/eelhuevo/MapaInteractivo/commit/acdfbc0) + [`0f23fcd`](https://github.com/eelhuevo/MapaInteractivo/commit/0f23fcd) |
+| 46 | [Paneles laterales](https://github.com/eelhuevo/MapaInteractivo/issues/46) | `css/panels.css` | Oslo144 | `feature/estilos-paneles` | [#67](https://github.com/eelhuevo/MapaInteractivo/pull/67) | [`c372fdc`](https://github.com/eelhuevo/MapaInteractivo/commit/c372fdc) |
+| 47 | [Ficha flotante del espacio](https://github.com/eelhuevo/MapaInteractivo/issues/47) | `js/map/tooltip.js` accesible | Oslo144 | `feature/ficha-espacio-tooltip` | [#68](https://github.com/eelhuevo/MapaInteractivo/pull/68) | [`3c2b02c`](https://github.com/eelhuevo/MapaInteractivo/commit/3c2b02c) |
+| 48 | [Sistema de diseño base](https://github.com/eelhuevo/MapaInteractivo/issues/48) | `css/base.css` con variables y foco visible | ItsMegabo11 | `feature/sistema-diseno-base` | [#69](https://github.com/eelhuevo/MapaInteractivo/pull/69) | [`8ebf969`](https://github.com/eelhuevo/MapaInteractivo/commit/8ebf969) |
+| 49 | [Adaptación a celular y tablet](https://github.com/eelhuevo/MapaInteractivo/issues/49) | `css/responsive.css` | ItsMegabo11 | `feature/responsive-pantallas` | [#70](https://github.com/eelhuevo/MapaInteractivo/pull/70) | [`3fa1959`](https://github.com/eelhuevo/MapaInteractivo/commit/3fa1959) |
+| 50 | [Buscador de espacios y docentes](https://github.com/eelhuevo/MapaInteractivo/issues/50) | `js/map/busqueda.js` | ItsMegabo11 | `feature/buscador-espacios-docentes` | [#71](https://github.com/eelhuevo/MapaInteractivo/pull/71) | [`6cdcbba`](https://github.com/eelhuevo/MapaInteractivo/commit/6cdcbba) |
+| 51 | [CHANGELOG del proyecto](https://github.com/eelhuevo/MapaInteractivo/issues/51) | `CHANGELOG.md` con el historial | eelhuevo | `docs/changelog` | [#53](https://github.com/eelhuevo/MapaInteractivo/pull/53) | [`c564cf0`](https://github.com/eelhuevo/MapaInteractivo/commit/c564cf0) |
+
+Además, el equipo siguió modelando en 3D después de la entrega `v1.0.0`: la torre
+antigua (baños) se integró en el PR [#72](https://github.com/eelhuevo/MapaInteractivo/pull/72)
+y los modelos de la torre antigua y de la torre de innovación están en revisión en
+los PR [#73](https://github.com/eelhuevo/MapaInteractivo/pull/73),
+[#74](https://github.com/eelhuevo/MapaInteractivo/pull/74) y
+[#75](https://github.com/eelhuevo/MapaInteractivo/pull/75).
