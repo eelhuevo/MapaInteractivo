@@ -1,5 +1,8 @@
 /* =========================================================
    responsive.css — ajustes a distintos tamaños de pantalla
+   =========================================================
+   Tarea #49 · Adaptacion de la interfaz a celular y tablet
+   Autor: ItsMegabo11
    ========================================================= */
 
 @media (max-width: 1100px) {
@@ -33,4 +36,122 @@
   .search-container { max-width: none; }
   #nombre-usuario { display: none; }
   .map-info { right: 74px; padding: 8px 12px; }
+}
+
+/* ── TABLET HORIZONTAL (hasta 1024px) ──────────────── */
+@media (max-width: 1024px) {
+  .filter-panel,
+  .schedule-panel,
+  .favorites-panel {
+    width: 280px;
+  }
+
+  .legend {
+    gap: 12px;
+    padding: 8px 12px;
+    font-size: 11px;
+  }
+
+  .map-tooltip {
+    min-width: 190px;
+    max-width: 230px;
+  }
+
+  .map-info {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+}
+
+/* ── CELULAR PEQUEÑO (hasta 480px) ─────────────────── */
+@media (max-width: 480px) {
+  .top-bar {
+    padding: 6px 10px;
+    gap: 6px;
+  }
+
+  .legend {
+    display: none;
+  }
+
+  .floor-selector {
+    gap: 4px;
+  }
+
+  .boton-piso {
+    width: 36px;
+    height: 36px;
+    font-size: 11px;
+  }
+
+  .modal-content {
+    width: 96vw;
+  }
+
+  .btn-primary {
+    padding: 10px;
+    font-size: 14px;
+  }
+}
+
+/* ── CELULAR EN HORIZONTAL (pantalla baja) ─────────── */
+@media (max-height: 480px) and (orientation: landscape) {
+  .top-bar {
+    padding: 6px 12px;
+  }
+
+  .legend {
+    padding: 6px 10px;
+    font-size: 10px;
+  }
+
+  .map-tooltip {
+    max-height: 150px;
+    overflow-y: auto;
+  }
+
+  .boton-piso {
+    width: 34px;
+    height: 34px;
+    font-size: 11px;
+  }
+}
+
+/* ── PANTALLAS ANCHAS (desde 1600px) ───────────────── */
+@media (min-width: 1600px) {
+  .filter-panel,
+  .schedule-panel,
+  .favorites-panel {
+    width: 340px;
+  }
+
+  .legend {
+    padding: 12px 18px;
+    font-size: 12px;
+  }
+
+  .map-tooltip {
+    min-width: 260px;
+    max-width: 320px;
+  }
+}
+
+/* ── IMPRESIÓN ─────────────────────────────────────── */
+@media print {
+  .top-bar,
+  .filter-panel,
+  .schedule-panel,
+  .favorites-panel,
+  .floor-selector,
+  .legend,
+  .controles-3d,
+  .notification {
+    display: none !important;
+  }
+
+  body {
+    overflow: visible;
+    height: auto;
+    background: #fff;
+  }
 }
