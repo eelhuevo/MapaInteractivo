@@ -118,6 +118,9 @@
     estado.filtros.disponibilidad = disponibilidad;
     estado.filtros.pisos = pisos;
 
+    /* Los filtros aplicados se recuerdan para la proxima visita */
+    if (estado.guardarPreferencias) estado.guardarPreferencias();
+
     refrescar();
     refrescarPisos();
     panel.classList.add('hidden');
@@ -137,9 +140,38 @@
       pisos: [0, 1, 2, 3]
     };
 
+    /* Los filtros restablecidos se recuerdan tambien */
+    if (estado.guardarPreferencias) estado.guardarPreferencias();
+
     refrescarPisos();
     refrescar();
     util.notificar('Filtros restablecidos');
+  }
+
+  /* El panel se pinta con lo que hay en el estado: asi los filtros
+     recuperados de la ultima visita se ven marcados al abrirlo */
+  function sincronizarPanel() {
+    var panel = util.el('panel-filtros');
+    if (!panel) return;
+
+    var secciones = panel.querySelectorAll('.filter-section');
+    var cbs = secciones[0].querySelectorAll('input[type=checkbox]');
+    for (var c = 0; c < cbs.length; c++) {
+      cbs[c].checked = estado.filtros.tipos.indexOf(cbs[c].value) !== -1;
+    }
+
+    var cbDisponible = util.el('filtro-disponible');
+    var cbNoDisponible = util.el('filtro-no-disponible');
+    if (cbDisponible) cbDisponible.checked = estado.filtros.disponibilidad.indexOf('activo') !== -1;
+    if (cbNoDisponible) cbNoDisponible.checked = estado.filtros.disponibilidad.indexOf('inactivo') !== -1;
+
+    var contenedorPisos = util.el('filtros-piso');
+    if (contenedorPisos) {
+      var cbsPiso = contenedorPisos.querySelectorAll('input[type=checkbox]');
+      for (var p = 0; p < cbsPiso.length; p++) {
+        cbsPiso[p].checked = estado.filtros.pisos.indexOf(parseInt(cbsPiso[p].value, 10)) !== -1;
+      }
+    }
   }
 
   function refrescar() {
@@ -166,6 +198,9 @@
 
     if (aplicarBtn) aplicarBtn.addEventListener('click', aplicar);
     if (restablecerBtn) restablecerBtn.addEventListener('click', restablecer);
+
+    /* El panel arranca mostrando los filtros que estan activos */
+    sincronizarPanel();
   }
 
   UniMap.filtros = {

@@ -444,6 +444,9 @@
 
     UniMap.tooltip.ocultar();
     refrescarVistas();
+
+    /* El piso se recuerda para la proxima visita */
+    if (estado.guardarPreferencias) estado.guardarPreferencias();
   }
 
   /* Botones activos / desactivados segun los filtros de piso */

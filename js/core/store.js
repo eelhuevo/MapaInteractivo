@@ -147,8 +147,10 @@
     if (pref.vista === '2d' || pref.vista === '3d') {
       estado.vista = pref.vista;
     }
-    if (pref.tipos && pref.tipos.length) estado.filtros.tipos = pref.tipos;
-    if (pref.disponibilidad && pref.disponibilidad.length) estado.filtros.disponibilidad = pref.disponibilidad;
+    /* Se restauran incluso vacios: si el usuario desmarcó todos los
+       tipos a proposito, esa es su preferencia y se respeta */
+    if (Array.isArray(pref.tipos)) estado.filtros.tipos = pref.tipos;
+    if (Array.isArray(pref.disponibilidad)) estado.filtros.disponibilidad = pref.disponibilidad;
 
     return true;
   }

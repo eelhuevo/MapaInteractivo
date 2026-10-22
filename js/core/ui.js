@@ -40,9 +40,12 @@
     /* Cargar favoritos guardados */
     estado.favoritos = UniMap.favoritos.obtener();
 
-    /* Estado inicial del mapa */
-    estado.pisoActual = 0;
-    estado.espacios = datos.construirEspacios(0);
+    /* Estado inicial del mapa: se respetan el piso y la vista que
+       quedaron guardados de la ultima visita (preferencias) */
+    var piso = estado.pisoActual;
+    var vista = estado.vista;
+
+    estado.espacios = datos.construirEspacios(piso);
     estado.nivelZoom = 1;
     estado.desplazamientoX = 0;
     estado.desplazamientoY = 0;
@@ -50,9 +53,9 @@
     estado.espacioResaltado = null;
 
     var etiqueta = util.el('etiqueta-piso-actual');
-    if (etiqueta) etiqueta.textContent = 'Planta Baja';
+    if (etiqueta) etiqueta.textContent = ['Planta Baja', 'Piso 1', 'Piso 2', 'Piso 3'][piso];
 
-    cambiarVista('2d');
+    cambiarVista(vista === '3d' ? '3d' : '2d');
   }
 
   /* =========================================================
@@ -84,6 +87,9 @@
         UniMap.mapa2D.dibujar();
       }
     }
+
+    /* La vista elegida se recuerda para la proxima visita */
+    if (estado.guardarPreferencias) estado.guardarPreferencias();
   }
 
   function conectarVista() {
