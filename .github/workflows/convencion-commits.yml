@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+      - beta
+      - Version2
   pull_request:
     types:
       - opened
