@@ -1,6 +1,10 @@
 /* =========================================================
    map/tooltip.js — ficha de detalle del espacio
    (compartida por el mapa 2D y el visor 3D)
+   =========================================================
+   Tarea #47 · Ficha flotante del espacio, compartida
+              entre el mapa 2D y el visor 3D
+   Autor: Oslo144
    ========================================================= */
 (function () {
   'use strict';
@@ -11,6 +15,11 @@
   var estado = UniMap.estado;
 
   var elemento = util.el('tooltip-mapa');
+
+  /* Ancho de referencia cuando el tooltip todavia no se ha
+     dibujado y no se puede medir. */
+  var ANCHO_POR_DEFECTO = 250;
+  var MARGEN_BORDE = 4;
 
   var ETIQUETAS_TIPOS = {
     aula: 'Aula',
@@ -51,6 +60,12 @@
     elEstado.className = 'tooltip-status ' + espacio.estado;
 
     util.el('tooltip-tipo').textContent = ETIQUETAS_TIPOS[espacio.tipo] || espacio.tipo;
+
+    /* Accesibilidad: la ficha se anuncia como tooltip y se
+       marca como visible para los lectores de pantalla. */
+    elemento.setAttribute('role', 'tooltip');
+    elemento.setAttribute('aria-hidden', 'false');
+    elemento.setAttribute('aria-label', espacio.nombre);
 
     /* Informacion general */
     var info = '';
@@ -93,16 +108,18 @@
     var contenedor = util.el('contenedor-mapa');
     var rect = contenedor ? contenedor.getBoundingClientRect() : { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
 
-    var tipW = 250;
+    /* Se mide el ancho real de la ficha para que no se salga
+       del mapa cuando el texto es mas largo. */
+    var tipW = elemento.offsetWidth || ANCHO_POR_DEFECTO;
     var tipH = elemento.offsetHeight || 200;
 
     var tx = clientX - rect.left + 15;
     var ty = clientY - rect.top - 10;
 
     if (tx + tipW > rect.width) tx = clientX - rect.left - tipW - 15;
-    if (tx < 4) tx = 4;
+    if (tx < MARGEN_BORDE) tx = MARGEN_BORDE;
     if (ty + tipH > rect.height) ty = rect.height - tipH - 8;
-    if (ty < 4) ty = 4;
+    if (ty < MARGEN_BORDE) ty = MARGEN_BORDE;
 
     elemento.style.left = tx + 'px';
     elemento.style.top = ty + 'px';
@@ -110,7 +127,9 @@
   }
 
   function ocultar() {
-    if (elemento) elemento.classList.add('hidden');
+    if (!elemento) return;
+    elemento.classList.add('hidden');
+    elemento.setAttribute('aria-hidden', 'true');
   }
 
   /* Evitar que el tooltip se oculte al hacer clic en el */
@@ -119,6 +138,11 @@
       e.stopPropagation();
     });
   }
+
+  /* Con la tecla Escape se cierra la ficha */
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' || e.keyCode === 27) ocultar();
+  });
 
   UniMap.tooltip = {
     mostrar: mostrar,
