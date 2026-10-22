@@ -44,6 +44,10 @@
     }
   };
 
+  /* Atajo local al estado global, para no escribir
+     UniMap.estado en cada linea */
+  var estado = UniMap.estado;
+
   /* ── CONTENEDOR DE DATOS ──────────────────────────── */
   UniMap.datos = UniMap.datos || {};
 
