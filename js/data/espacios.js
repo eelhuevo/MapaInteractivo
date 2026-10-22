@@ -1,6 +1,9 @@
 /* =========================================================
    data/espacios.js — construccion de los espacios de cada
    piso y listado global
+   =========================================================
+   Tarea #36 · Modelo de datos de los espacios del campus
+   Autor: eelhuevo
    ========================================================= */
 (function () {
   'use strict';
@@ -9,6 +12,20 @@
   UniMap.datos = UniMap.datos || {};
 
   var estado = UniMap.estado;
+
+  /* ── NORMALIZACION DE TEXTO ─────────────────────────
+     Deja el texto en minusculas y sin acentos para poder
+     comparar nombres de espacios, docentes y departedos
+     aunque esten escritos de forma distinta.          */
+  function normalizarTexto(texto) {
+    if (texto === null || texto === undefined) return '';
+    return String(texto)
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
 
   /* ── FUNCION QUE CREA LOS ESPACIOS DE CADA PISO ──── */
   function construirEspacios(numeroPiso) {
@@ -72,6 +89,12 @@
       );
     }
 
+    /* Cada espacio guarda tambien su nombre normalizado, para que
+       los buscadores no dependan de como este escrito el nombre. */
+    for (var e = 0; e < espaciosDelPiso.length; e++) {
+      espaciosDelPiso[e].nombreNormalizado = normalizarTexto(espaciosDelPiso[e].nombre);
+    }
+
     return espaciosDelPiso;
   }
 
@@ -87,8 +110,43 @@
     return acumulado;
   }
 
+  /* ── CONSULTAS SOBRE EL MODELO ─────────────────────── */
+  /* Devuelve el espacio con ese identificador, o null */
+  function espacioPorId(id) {
+    var todos = estado.todosLosEspacios || [];
+    for (var i = 0; i < todos.length; i++) {
+      if (todos[i].id === id) return todos[i];
+    }
+    return null;
+  }
+
+  /* Devuelve todos los espacios de un tipo ('aula', 'laboratorio'...) */
+  function espaciosPorTipo(tipo) {
+    var todos = estado.todosLosEspacios || [];
+    var lista = [];
+    for (var i = 0; i < todos.length; i++) {
+      if (todos[i].tipo === tipo) lista.push(todos[i]);
+    }
+    return lista;
+  }
+
+  /* Cuenta los espacios del campus por tipo */
+  function resumenPorTipo() {
+    var todos = estado.todosLosEspacios || [];
+    var resumen = {};
+    for (var i = 0; i < todos.length; i++) {
+      var tipo = todos[i].tipo;
+      resumen[tipo] = (resumen[tipo] || 0) + 1;
+    }
+    return resumen;
+  }
+
   UniMap.datos.construirEspacios = construirEspacios;
   UniMap.datos.construirTodosLosEspacios = construirTodosLosEspacios;
+  UniMap.datos.normalizarTexto = normalizarTexto;
+  UniMap.datos.espacioPorId = espacioPorId;
+  UniMap.datos.espaciosPorTipo = espaciosPorTipo;
+  UniMap.datos.resumenPorTipo = resumenPorTipo;
 
   /* Estado inicial del mapa */
   estado.espacios = construirEspacios(0);
