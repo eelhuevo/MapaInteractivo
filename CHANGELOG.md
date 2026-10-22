@@ -20,8 +20,6 @@ verificacion automatica "Verificar" esta en verde.
   mismo; los resultados se resaltan con `<mark>` y se recorren con `↑` y `↓`.
 - **Ficha flotante accesible**: se anuncia con `role="tooltip"`, se marca con
   `aria-hidden` cuando esta cerrada y se cierra con `Escape`.
-- **Preferencias persistidas**: el piso, la vista (2D/3D) y los filtros activos se
-  guardan en `localStorage` (`unimap_preferencias`) y el campus se abre como quedo.
 - **Correo normalizado** al iniciar sesion y registrarse: los espacios y las
   mayusculas ya no crean cuentas duplicadas.
 - **Consultas al modelo de espacios**: `espacioPorId`, `espaciosPorTipo`,
@@ -42,6 +40,12 @@ verificacion automatica "Verificar" esta en verde.
 
 ### Corregido
 
+- **Las preferencias ya se guardan de verdad**: el piso, la vista (2D/3D) y los
+  filtros estaban preparados en `js/core/store.js`, pero nunca se escribian en el
+  navegador y al abrir el campus se volvia siempre a la Planta Baja. Ahora se
+  guardan al cambiar de piso, al conmutar la vista y al aplicar o restablecer los
+  filtros, y se restauran al entrar: el campus se abre como quedo la ultima vez y
+  el panel de filtros muestra los valores recuperados.
 - `ReferenceError: estado is not defined` en `js/core/store.js`: faltaba el atajo
   al estado global, que rompia el arranque del modulo.
 - El FBX reexportado de la planta baja se habia perdido al exportarlo desde
