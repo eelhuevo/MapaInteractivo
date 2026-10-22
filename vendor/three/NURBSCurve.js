@@ -1,3 +1,9 @@
+/* =========================================================
+   vendor/three/NURBSCurve.js — curva NURBS de Three.js
+   Codigo original de Three.js (mrdoob/three.js), licencia MIT.
+   Tarea #43 · Integracion del cargador FBX con las curvas NURBS
+   Autor: Jhoselinconde537-lang
+   ========================================================= */
 ( function () {
 
 	/**
@@ -8,6 +14,12 @@
  * Implementation is based on (x, y [, z=0 [, w=1]]) control points with w=weight.
  *
  **/
+
+	/* ── INTEGRACION EN MAPA INTERACTIVO ─────────────────
+	 * El cargador FBX (vendor/three/FBXLoader.js) utiliza
+	 * estas curvas para las splines de los elementos del
+	 * modelo, por eso se incluyen junto al cargador.
+	 * ─────────────────────────────────────────────────── */
 
 	class NURBSCurve extends THREE.Curve {
 

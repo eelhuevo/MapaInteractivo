@@ -1,3 +1,9 @@
+/* =========================================================
+   vendor/three/FBXLoader.js — cargador de archivos FBX
+   Codigo original de Three.js (mrdoob/three.js), licencia MIT.
+   Tarea #43 · Integracion del cargador FBX con las curvas NURBS
+   Autor: Jhoselinconde537-lang
+   ========================================================= */
 ( function () {
 
 	/**
@@ -14,6 +20,14 @@
  * Binary format specification:
  *	https://code.blender.org/2013/08/fbx-binary-file-format-specification/
  */
+
+	/* ── INTEGRACION EN MAPA INTERACTIVO ─────────────────
+	 * El visor 3D (js/view3d/viewer3d.js) usa este cargador
+	 * para abrir models/PLANTA BAJA TOORE B.fbx, que Blender
+	 * exporta en formato binario 7.x.
+	 * El archivo se deja sin modificar para conservar el
+	 * soporte de curvas NURBS y el orden de los objetos.
+	 * ─────────────────────────────────────────────────── */
 
 	let fbxTree;
 	let connections;

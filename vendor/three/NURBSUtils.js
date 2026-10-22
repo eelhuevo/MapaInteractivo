@@ -1,3 +1,9 @@
+/* =========================================================
+   vendor/three/NURBSUtils.js — utilidades NURBS de Three.js
+   Codigo original de Three.js (mrdoob/three.js), licencia MIT.
+   Tarea #43 · Integracion del cargador FBX con las curvas NURBS
+   Autor: Jhoselinconde537-lang
+   ========================================================= */
 ( function () {
 
 	/**
@@ -5,6 +11,12 @@
  *
  * See NURBSCurve and NURBSSurface.
  **/
+
+	/* ── INTEGRACION EN MAPA INTERACTIVO ─────────────────
+	 * Funciones de apoyo (findSpan, calcBSplinePoint...)
+	 * que usa el cargador FBX al reconstruir las curvas
+	 * NURBS de los elementos del modelo.
+	 * ─────────────────────────────────────────────────── */
 
 	/**************************************************************
  *	NURBS Utils
