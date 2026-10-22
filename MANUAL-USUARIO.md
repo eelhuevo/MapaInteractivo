@@ -326,6 +326,7 @@ de modelos disponibles:
 | Habitacion | GLB | #41 |
 | Oficinas | GLB | #40 |
 | Planta Baja Torre B | FBX | #42 |
+| Torre Antigua (banos) | GLB | #72 |
 
 ### 11.2 Controles de cámara
 

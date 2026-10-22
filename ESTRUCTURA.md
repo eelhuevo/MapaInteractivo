@@ -60,8 +60,8 @@ MapaInteractivo/
 │   ├── edificio.glb              → edificio principal  (tarea #39)
 │   ├── habitacion.glb            → habitación tipo      (tarea #41)
 │   ├── oficinas.glb              → edificio de oficinas (tarea #40)
-│   ├── PLANTA BAJA TOORE B.fbx   → planta baja torre B  (tarea #42)
-│   └── TorreAntiguaBanos.glb     → torre antigua, baños (tarea #72)
+│   ├── TorreAntiguaBanos.glb     → torre antigua, baños (tarea #72)
+│   └── PLANTA BAJA TOORE B.fbx   → planta baja torre B  (tarea #42)
 │
 ├── vendor/
 │   └── three/                    → Three.js r147 en local (funciona sin internet)

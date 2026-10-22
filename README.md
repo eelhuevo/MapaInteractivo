@@ -166,6 +166,7 @@ unimap/
 │   ├── edificio.glb
 │   ├── habitacion.glb
 │   ├── oficinas.glb
+│   ├── TorreAntiguaBanos.glb
 │   └── PLANTA BAJA TOORE B.fbx
 │
 └── docs/
@@ -189,7 +190,7 @@ El detalle completo, archivo por archivo, está en [`ESTRUCTURA.md`](ESTRUCTURA.
 ## Qué se añadió
 
 - **Botón 2D / 3D** en la barra superior para conmutar entre el plano y el visor 3D.
-- **Visor 3D** con Three.js local: carga de los 4 modelos (GLB y FBX), normalización
+- **Visor 3D** con Three.js local: carga de los 5 modelos (GLB y FBX), normalización
   de escala, luces con sombras, suelo, cuadricula, niebla y controles orbitales con
   amortiguación, rotación automática y restablecer cámara.
 - **Selector de modelos** con progreso de descarga y avisos de error.

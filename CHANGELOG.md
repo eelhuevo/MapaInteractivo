@@ -25,8 +25,11 @@ verificacion automatica "Verificar" esta en verde.
 - **Consultas al modelo de espacios**: `espacioPorId`, `espaciosPorTipo`,
   `resumenPorTipo` y `normalizarTexto` (`UniMap.datos`).
 - **Modelos 3D modelados por el equipo**: edificio principal, edificio de oficinas,
-  habitacion tipo y planta baja de la torre B (exportada a FBX), todos con
-  metadatos de procedencia (`unimap_modelo` y `unimap_tarea`).
+  habitacion tipo, planta baja de la torre B (exportada a FBX) y torre antigua de
+  los pisos con banos, todos con metadatos de procedencia (`unimap_modelo` y
+  `unimap_tarea`).
+- **Selector de modelos 3D**: la torre antigua de banos ya se puede elegir en el
+  visor (antes el archivo estaba en el repositorio pero no aparecia en la lista).
 - **Cargadores de Three.js** integrados en `vendor/three/`: glTF, FBX, curvas NURBS
   y `fflate` (funciona sin internet).
 - **Sistema de diseno**: variables, reset, botones, animaciones, foco visible y
