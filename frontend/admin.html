@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UniMap - Administracion</title>
+
+  <link rel="stylesheet" href="css/base.css?v=3">
+  <link rel="stylesheet" href="css/hus.css?v=3">
+  <link rel="stylesheet" href="css/admin.css?v=3">
+</head>
+<body class="admin-body">
+
+  <!-- Cabecera -->
+  <header class="admin-top">
+    <div class="top-left">
+      <div class="logo-small">UM</div>
+      <span class="app-name" data-i18n="adm.titulo">Administracion del Campus</span>
+    </div>
+    <div class="admin-top-right">
+      <button class="btn-icon boton-idioma" title="Idioma" data-i18n-title="top.idioma">
+        <span id="idioma-actual">ES</span>
+      </button>
+      <a href="mapa.html" class="btn-admin-volver" data-i18n="adm.volver">Volver al mapa</a>
+    </div>
+  </header>
+
+  <!-- Sin permisos -->
+  <div id="admin-sin-permisos" class="admin-sin-permisos hidden">
+    <div class="admin-sin-permisos-card">
+      <div class="fav-vacio-icono">&#128274;</div>
+      <p id="texto-sin-permisos" data-i18n="adm.sinPermisos">Necesitas iniciar sesion como administrador</p>
+      <a href="../index.html" class="btn-admin-volver" data-i18n="auth.entrar">Entrar</a>
+    </div>
+  </div>
+
+  <!-- Contenido -->
+  <main id="admin-contenido" class="admin-contenido hidden">
+
+    <!-- Tabs -->
+    <nav class="admin-tabs" role="tablist">
+      <button class="admin-tab active" data-tab="espacios" data-i18n="adm.espacios">Espacios</button>
+      <button class="admin-tab" data-tab="usuarios" data-i18n="adm.usuarios">Usuarios</button>
+      <button class="admin-tab" data-tab="estadisticas" data-i18n="adm.estadisticas">Estadisticas</button>
+    </nav>
+
+    <!-- TAB: ESPACIOS -->
+    <section id="tab-espacios" class="admin-tab-panel">
+      <div class="admin-toolbar">
+        <input type="text" id="admin-buscar" data-i18n-placeholder="adm.buscarPh" placeholder="Buscar espacio...">
+        <select id="admin-filtro-torre">
+          <option value="" data-i18n="filtros.torre">Torre</option>
+          <option value="1" data-i18n="torre.antigua">Torre Antigua</option>
+          <option value="2" data-i18n="torre.innovacion">Torre Innovacion</option>
+        </select>
+        <select id="admin-filtro-tipo">
+          <option value="" data-i18n="adm.tipo">Tipo</option>
+          <option value="aula" data-i18n="tipo.aula">Aulas</option>
+          <option value="laboratorio" data-i18n="tipo.laboratorio">Laboratorios</option>
+          <option value="oficina" data-i18n="tipo.oficina">Oficinas</option>
+          <option value="biblioteca" data-i18n="tipo.biblioteca">Biblioteca</option>
+          <option value="auditorio" data-i18n="tipo.auditorio">Auditorios</option>
+          <option value="comedor" data-i18n="tipo.comedor">Comedor</option>
+          <option value="deportivo" data-i18n="tipo.deportivo">Deportivo</option>
+          <option value="salon" data-i18n="tipo.salon">Salones</option>
+        </select>
+        <button id="admin-restaurar" class="btn-admin-secundario" data-i18n="adm.restaurar">Restaurar datos demo</button>
+        <button id="admin-nuevo" class="btn-admin-primario" data-i18n="adm.nuevo">Nuevo espacio</button>
+      </div>
+
+      <div class="admin-tabla-wrap">
+        <table class="admin-tabla">
+          <thead>
+            <tr>
+              <th data-i18n="adm.nombre">Nombre</th>
+              <th data-i18n="adm.tipo">Tipo</th>
+              <th data-i18n="adm.torre">Torre</th>
+              <th data-i18n="adm.piso">Piso</th>
+              <th data-i18n="adm.horario">Horario de atencion</th>
+              <th data-i18n="adm.estado">Estado</th>
+              <th data-i18n="adm.accion">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="admin-cuerpo"></tbody>
+        </table>
+        <div id="admin-vacio" class="admin-vacio hidden" data-i18n="adm.vacio">Sin resultados</div>
+      </div>
+    </section>
+
+    <!-- TAB: USUARIOS (HU-17: registro por administrador) -->
+    <section id="tab-usuarios" class="admin-tab-panel hidden">
+      <div class="admin-toolbar">
+        <button id="admin-nuevo-usuario" class="btn-admin-primario" data-i18n="adm.userNuevo">Nuevo usuario</button>
+      </div>
+
+      <div class="admin-tabla-wrap">
+        <table class="admin-tabla">
+          <thead>
+            <tr>
+              <th data-i18n="adm.nombre">Nombre</th>
+              <th data-i18n="auth.correo">Correo electronico</th>
+              <th data-i18n="auth.rol">Rol</th>
+              <th data-i18n="adm.userFecha">Registro</th>
+              <th data-i18n="adm.accion">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="usuarios-cuerpo"></tbody>
+        </table>
+        <div id="usuarios-vacio" class="admin-vacio hidden" data-i18n="adm.usuariosVacio">Sin usuarios registrados</div>
+      </div>
+    </section>
+
+    <!-- TAB: ESTADISTICAS (HU-14) -->
+    <section id="tab-estadisticas" class="admin-tab-panel hidden">
+      <div class="stats-cards">
+        <div class="stats-card">
+          <div class="stats-valor" id="stats-total-espacios">0</div>
+          <div class="stats-etiqueta" data-i18n="est.total">Total de espacios</div>
+        </div>
+        <div class="stats-card">
+          <div class="stats-valor" id="stats-total-consultas">0</div>
+          <div class="stats-etiqueta" data-i18n="est.consultas">consultas</div>
+        </div>
+      </div>
+
+      <div class="stats-bloque">
+        <h3 data-i18n="adm.seccionTop">Mas consultados</h3>
+        <div id="stats-top" class="stats-lista"></div>
+      </div>
+
+      <div class="stats-bloque">
+        <h3 data-i18n="adm.seccionTipo">Distribucion por tipo</h3>
+        <div id="stats-tipos" class="stats-lista"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal: alta / edicion de espacio (HU-06) -->
+  <div id="modal-espacio" class="modal hidden">
+    <div class="modal-content modal-espacio">
+      <div class="modal-header">
+        <h3 id="modal-espacio-titulo" data-i18n="adm.editar">Editar</h3>
+        <button class="btn-close cerrar-modal-admin">&times;</button>
+      </div>
+      <form id="form-espacio">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="esp-nombre" data-i18n="adm.nombre">Nombre</label>
+            <input type="text" id="esp-nombre" required>
+            <span class="error-msg" id="esp-nombre-error"></span>
+          </div>
+          <div class="form-group">
+            <label for="esp-tipo" data-i18n="adm.tipo">Tipo</label>
+            <select id="esp-tipo">
+              <option value="aula" data-i18n="tipo.aula">Aulas</option>
+              <option value="laboratorio" data-i18n="tipo.laboratorio">Laboratorios</option>
+              <option value="oficina" data-i18n="tipo.oficina">Oficinas</option>
+              <option value="biblioteca" data-i18n="tipo.biblioteca">Biblioteca</option>
+              <option value="auditorio" data-i18n="tipo.auditorio">Auditorios</option>
+              <option value="comedor" data-i18n="tipo.comedor">Comedor</option>
+              <option value="deportivo" data-i18n="tipo.deportivo">Deportivo</option>
+              <option value="salon" data-i18n="tipo.salon">Salones</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="esp-torre" data-i18n="adm.torre">Torre</label>
+            <select id="esp-torre">
+              <option value="1" data-i18n="torre.antigua">Torre Antigua</option>
+              <option value="2" data-i18n="torre.innovacion">Torre Innovacion</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="esp-piso" data-i18n="adm.piso">Piso</label>
+            <input type="number" id="esp-piso" min="0" max="8" value="0">
+            <span class="error-msg" id="esp-piso-error"></span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="esp-horario" data-i18n="adm.horario">Horario de atencion</label>
+            <input type="text" id="esp-horario" placeholder="08:00-18:00">
+          </div>
+          <div class="form-group">
+            <label for="esp-telefono" data-i18n="adm.telefono">Contacto</label>
+            <input type="text" id="esp-telefono" placeholder="Ext. 101">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="esp-capacidad" data-i18n="adm.capacidad">Capacidad</label>
+            <input type="number" id="esp-capacidad" min="0" value="0">
+          </div>
+          <div class="form-group">
+            <label for="esp-estado" data-i18n="adm.estado">Estado</label>
+            <select id="esp-estado">
+              <option value="activo" data-i18n="ley.activo">Activo</option>
+              <option value="inactivo" data-i18n="ley.inactivo">Inactivo</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="admin-form-acciones">
+          <button type="button" class="btn-admin-secundario cerrar-modal-admin" data-i18n="adm.cancelar">Cancelar</button>
+          <button type="submit" class="btn-admin-primario" data-i18n="adm.guardar">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: alta / edicion de usuario (HU-17) -->
+  <div id="modal-usuario" class="modal hidden">
+    <div class="modal-content modal-espacio">
+      <div class="modal-header">
+        <h3 id="modal-usuario-titulo" data-i18n="adm.userNuevo">Nuevo usuario</h3>
+        <button class="btn-close cerrar-modal-usuario">&times;</button>
+      </div>
+      <form id="form-usuario">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="usu-nombre" data-i18n="adm.nombre">Nombre</label>
+            <input type="text" id="usu-nombre" autocomplete="given-name" required>
+            <span class="error-msg" id="usu-nombre-error"></span>
+          </div>
+          <div class="form-group">
+            <label for="usu-apellido" data-i18n="auth.apellido">Apellido</label>
+            <input type="text" id="usu-apellido" autocomplete="family-name" required>
+            <span class="error-msg" id="usu-apellido-error"></span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="usu-correo" data-i18n="auth.correo">Correo electronico</label>
+            <input type="email" id="usu-correo" autocomplete="email" required>
+            <span class="error-msg" id="usu-correo-error"></span>
+          </div>
+          <div class="form-group">
+            <label for="usu-rol" data-i18n="auth.rol">Rol</label>
+            <select id="usu-rol">
+              <option value="estudiante" data-i18n="auth.rolEstudiante">Estudiante</option>
+              <option value="docente" data-i18n="auth.rolDocente">Docente</option>
+              <option value="admin" data-i18n="auth.rolAdmin">Administrativo</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="usu-pass" data-i18n="auth.contrasena">Contrasena</label>
+          <input type="password" id="usu-pass" placeholder="Minimo 6 caracteres" data-i18n-placeholder="adm.userPassPh" autocomplete="new-password">
+          <span class="error-msg" id="usu-pass-error"></span>
+        </div>
+
+        <div class="admin-form-acciones">
+          <button type="button" class="btn-admin-secundario cerrar-modal-usuario" data-i18n="adm.cancelar">Cancelar</button>
+          <button type="submit" class="btn-admin-primario" data-i18n="adm.guardar">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Notificacion -->
+  <div id="notificacion" class="notification hidden">
+    <span id="mensaje-notificacion"></span>
+    <button id="cerrar-notificacion" class="btn-close-sm">&times;</button>
+  </div>
+
+  <script src="js/core/store.js?v=3"></script>
+  <script src="js/core/i18n.js?v=3"></script>
+  <script src="js/core/estadisticas.js?v=3"></script>
+  <script src="js/core/avisos.js?v=3"></script>
+  <script src="js/data/categorias.js?v=3"></script>
+  <script src="js/data/edificios.js?v=3"></script>
+  <script src="js/data/docentes.js?v=3"></script>
+  <script src="js/data/espacios.js?v=3"></script>
+  <script src="js/core/personalizacion.js?v=3"></script>
+  <script src="js/auth/auth.js?v=3"></script>
+  <script src="js/admin/admin.js?v=3"></script>
+</body>
+</html>
