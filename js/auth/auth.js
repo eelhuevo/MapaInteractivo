@@ -1,6 +1,9 @@
 /* =========================================================
    auth/auth.js — login, registro, invitado y sesion
    (funciona en index.html y en mapa.html)
+   =========================================================
+   Tarea #37 · Autenticacion de usuarios y manejo de sesion
+   Autor: eelhuevo
    ========================================================= */
 (function () {
   'use strict';
@@ -11,6 +14,17 @@
 
   var llaveUsuarios = UniMap.CLAVES.usuarios;
   var llaveSesion = UniMap.CLAVES.sesion;
+
+  /* Longitud minima de la contrasena */
+  var CONTRASENA_MINIMA = 6;
+
+  /* ── NORMALIZACION DEL CORREO ────────────────────────
+     Los correos se guardan siempre en minusculas para que
+     el acceso no dependa de como el usuario lo escribio.  */
+  function normalizarCorreo(correo) {
+    if (correo === null || correo === undefined) return '';
+    return String(correo).trim().toLowerCase();
+  }
 
   /* ── USUARIOS ─────────────────────────────────────── */
   function obtenerUsuarios() {
@@ -149,21 +163,21 @@
       e.preventDefault();
       limpiarTodosLosErrores();
       var ok = true;
-      var correo = util.el('correo-login').value.trim();
+      var correo = normalizarCorreo(util.el('correo-login').value);
       var pass = util.el('contrasena-login').value;
 
       if (!correo) { mostrarError('correo-login', 'El correo es obligatorio'); ok = false; }
       else if (!util.validarCorreo(correo)) { mostrarError('correo-login', 'Correo invalido'); ok = false; }
 
       if (!pass) { mostrarError('contrasena-login', 'La contrasena es obligatoria'); ok = false; }
-      else if (pass.length < 6) { mostrarError('contrasena-login', 'Minimo 6 caracteres'); ok = false; }
+      else if (pass.length < CONTRASENA_MINIMA) { mostrarError('contrasena-login', 'Minimo ' + CONTRASENA_MINIMA + ' caracteres'); ok = false; }
 
       if (!ok) return;
 
       var usuarios = obtenerUsuarios();
       var encontrado = null;
       for (var u = 0; u < usuarios.length; u++) {
-        if (usuarios[u].correo === correo && usuarios[u].contrasena === pass) {
+        if (normalizarCorreo(usuarios[u].correo) === correo && usuarios[u].contrasena === pass) {
           encontrado = usuarios[u];
           break;
         }
@@ -185,7 +199,7 @@
       var ok = true;
       var nombre = util.el('nombre-registro').value.trim();
       var apellido = util.el('apellido-registro').value.trim();
-      var correo = util.el('correo-registro').value.trim();
+      var correo = normalizarCorreo(util.el('correo-registro').value);
       var rol = util.el('rol-registro').value;
       var pass = util.el('contrasena-registro').value;
       var pass2 = util.el('contrasena2-registro').value;
@@ -196,7 +210,7 @@
       else if (!util.validarCorreo(correo)) { mostrarError('correo-registro', 'Correo invalido'); ok = false; }
       if (!rol) { mostrarError('rol-registro', 'Selecciona un rol'); ok = false; }
       if (!pass) { mostrarError('contrasena-registro', 'Contrasena requerida'); ok = false; }
-      else if (pass.length < 6) { mostrarError('contrasena-registro', 'Minimo 6 caracteres'); ok = false; }
+      else if (pass.length < CONTRASENA_MINIMA) { mostrarError('contrasena-registro', 'Minimo ' + CONTRASENA_MINIMA + ' caracteres'); ok = false; }
       if (!pass2) { mostrarError('contrasena2-registro', 'Confirma tu contrasena'); ok = false; }
       else if (pass !== pass2) { mostrarError('contrasena2-registro', 'Las contrasenas no coinciden'); ok = false; }
 
@@ -204,7 +218,7 @@
 
       var usuarios = obtenerUsuarios();
       for (var u = 0; u < usuarios.length; u++) {
-        if (usuarios[u].correo === correo) {
+        if (normalizarCorreo(usuarios[u].correo) === correo) {
           mostrarError('correo-registro', 'Este correo ya esta registrado');
           return;
         }
@@ -256,6 +270,7 @@
     sesionGuardada: sesionGuardada,
     cerrarSesion: cerrarSesion,
     mostrarError: mostrarError,
-    limpiarTodosLosErrores: limpiarTodosLosErrores
+    limpiarTodosLosErrores: limpiarTodosLosErrores,
+    normalizarCorreo: normalizarCorreo
   };
 })();
