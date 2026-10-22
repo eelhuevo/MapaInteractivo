@@ -1,5 +1,9 @@
 /* =========================================================
    panels.css — paneles laterales: filtros, horarios y favoritos
+   =========================================================
+   Tarea #46 · Maquetacion de los paneles de filtros,
+              horarios y favoritos
+   Autor: Oslo144
    ========================================================= */
 
 .filter-panel,
@@ -202,3 +206,80 @@
 
 .fav-vacio p { font-size: 14px; margin-bottom: 4px; }
 .fav-vacio-sub { font-size: 12px; opacity: 0.7; }
+
+/* ── INTERACCION Y ACCESIBILIDAD ────────────────────── */
+.panel-header .btn-close {
+  flex-shrink: 0;
+  transition: background var(--transition), color var(--transition);
+}
+
+.panel-header .btn-close:hover {
+  background: var(--gray-200);
+  color: var(--gray-900);
+}
+
+/* Los elementos que se pueden marcar deben verse marcados
+   tambien cuando se navega con el teclado. */
+.filter-check,
+.schedule-card,
+.fav-item {
+  border-radius: var(--radius);
+}
+
+.filter-check {
+  padding-left: 8px;
+  margin-left: -8px;
+}
+
+.filter-check:hover {
+  background: var(--gray-50);
+}
+
+.filter-check input[type="checkbox"]:focus-visible,
+.schedule-search input:focus-visible,
+.schedule-card:focus-visible,
+.fav-item:focus-visible,
+.fav-item-eliminar:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.schedule-card:focus-visible,
+.fav-item:focus-visible {
+  background: var(--primary-light);
+}
+
+.schedule-search input::placeholder {
+  color: var(--gray-400);
+}
+
+/* Las listas pueden ser largas: scroll propio y mas discreto */
+.schedule-list,
+.favorites-list {
+  scrollbar-width: thin;
+}
+
+.schedule-list::-webkit-scrollbar,
+.favorites-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.schedule-list::-webkit-scrollbar-thumb,
+.favorites-list::-webkit-scrollbar-thumb {
+  background: var(--gray-300);
+  border-radius: 3px;
+}
+
+.schedule-list::-webkit-scrollbar-thumb:hover,
+.favorites-list::-webkit-scrollbar-thumb:hover {
+  background: var(--gray-400);
+}
+
+/* ── MOVIMIENTO REDUCIDO ────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .filter-panel,
+  .schedule-panel,
+  .favorites-panel {
+    animation: none;
+  }
+}
