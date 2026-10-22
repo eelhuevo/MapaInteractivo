@@ -24,7 +24,8 @@
     { clave: 'edificio', nombre: 'Edificio', formato: 'GLB', url: 'models/edificio.glb' },
     { clave: 'habitacion', nombre: 'Habitacion', formato: 'GLB', url: 'models/habitacion.glb' },
     { clave: 'oficinas', nombre: 'Oficinas', formato: 'GLB', url: 'models/oficinas.glb' },
-    { clave: 'planta-baja', nombre: 'Planta Baja Torre B', formato: 'FBX', url: 'models/PLANTA BAJA TOORE B.fbx' }
+    { clave: 'planta-baja', nombre: 'Planta Baja Torre B', formato: 'FBX', url: 'models/PLANTA BAJA TOORE B.fbx' },
+    { clave: 'torre-antigua', nombre: 'Torre Antigua (banos)', formato: 'GLB', url: 'models/TorreAntiguaBanos.glb' }
   ];
 
   var TAMANO_OBJETIVO = 100;          // unidades normalizadas
