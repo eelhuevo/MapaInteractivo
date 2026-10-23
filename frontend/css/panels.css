@@ -1,0 +1,204 @@
+/* =========================================================
+   panels.css — paneles laterales: filtros, horarios y favoritos
+   ========================================================= */
+
+.filter-panel,
+.schedule-panel {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  width: 310px;
+  height: calc(100vh - 60px);
+  background: #fff;
+  border-right: 1px solid var(--gray-200);
+  box-shadow: 4px 0 20px rgba(0,0,0,0.08);
+  z-index: 90;
+  overflow-y: auto;
+  padding: 0;
+  animation: slideIn .25s ease;
+}
+
+.schedule-panel {
+  left: auto;
+  right: 0;
+  border-right: none;
+  border-left: 1px solid var(--gray-200);
+  box-shadow: -4px 0 20px rgba(0,0,0,0.08);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--gray-200);
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 1;
+}
+
+.panel-header h3 { font-size: 16px; font-weight: 700; color: var(--gray-800); }
+
+/* ── FILTROS ───────────────────────────────────────── */
+.filter-section {
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.filter-section h4 {
+  font-size: 11px;
+  color: var(--gray-400);
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+.filter-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--gray-700);
+  transition: color var(--transition);
+}
+
+.filter-check:hover { color: var(--gray-900); }
+
+.filter-check input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary);
+  border-radius: 4px;
+}
+
+#aplicar-filtros,
+#restablecer-filtros {
+  margin: 16px 22px;
+  width: calc(100% - 44px);
+}
+
+.floor-filters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2px 12px;
+}
+
+/* ── HORARIOS ──────────────────────────────────────── */
+.schedule-search {
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.schedule-search input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 10px;
+  font-size: 14px;
+  transition: all var(--transition);
+}
+
+.schedule-search input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px var(--primary-light);
+}
+
+.schedule-list { padding: 8px 0; }
+
+.schedule-card {
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--gray-100);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.schedule-card:hover { background: var(--gray-50); }
+
+.schedule-card .sc-name { font-weight: 700; font-size: 14px; color: var(--gray-800); }
+.schedule-card .sc-dept { font-size: 12px; color: var(--gray-500); margin-top: 3px; }
+
+.schedule-card .sc-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.sc-slot {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  font-weight: 600;
+}
+
+.sc-slot.empty {
+  background: var(--gray-100);
+  color: var(--gray-400);
+}
+
+/* ── FAVORITOS ─────────────────────────────────────── */
+.favorites-panel {
+  position: fixed;
+  top: 60px;
+  right: 0;
+  width: 310px;
+  height: calc(100vh - 60px);
+  background: #fff;
+  border-left: 1px solid var(--gray-200);
+  box-shadow: -4px 0 20px rgba(0,0,0,0.08);
+  z-index: 90;
+  overflow-y: auto;
+  padding: 0;
+  animation: slideInRight .25s ease;
+}
+
+.favorites-list { padding: 8px 0; }
+
+.fav-item {
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--gray-100);
+  cursor: pointer;
+  transition: all var(--transition);
+  position: relative;
+}
+
+.fav-item:hover { background: var(--gray-50); }
+
+.fav-item-nombre { font-weight: 600; font-size: 14px; color: var(--gray-800); }
+.fav-item-fecha { font-size: 11px; color: var(--gray-400); margin-top: 3px; }
+
+.fav-item-eliminar {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: var(--gray-400);
+  cursor: pointer;
+  transition: color var(--transition);
+}
+
+.fav-item-eliminar:hover { color: var(--danger); }
+
+.fav-vacio {
+  padding: 40px 22px;
+  text-align: center;
+  color: var(--gray-400);
+}
+
+.fav-vacio-icono {
+  font-size: 40px;
+  margin-bottom: 12px;
+  opacity: 0.4;
+}
+
+.fav-vacio p { font-size: 14px; margin-bottom: 4px; }
+.fav-vacio-sub { font-size: 12px; opacity: 0.7; }

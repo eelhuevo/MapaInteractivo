@@ -1,6 +1,6 @@
 # UniMap — Campus Universitario
 
-![Verificar](https://github.com/eelhuevo/MapaInteractivo/actions/workflows/concion-commits.yml/badge.svg?branch=beta)
+![Verificar](https://github.com/eelhuevo/MapaInteractivo/actions/workflows/convencion-commits.yml/badge.svg?branch=main)
 ![Release](https://img.shields.io/github/v/release/eelhuevo/MapaInteractivo?label=release)
 ![Rama de entrega](https://img.shields.io/badge/rama%20de%20entrega-beta-1a56db)
 ![Integrantes](https://img.shields.io/badge/integrantes-5-8250df)
@@ -8,8 +8,11 @@
 ![Issues abiertas](https://img.shields.io/github/issues/eelhuevo/MapaInteractivo?label=issues)
 ![Pull Requests abiertas](https://img.shields.io/github/issues-pr/eelhuevo/MapaInteractivo?label=pull%20requests)
 
-Mapa interactivo de campus con **vista 2D en plano** y **visor 3D** de los modelos
-de la carpeta `models/`, con autenticación, filtros, buscador, horarios y favoritos.
+Mapa interactivo de campus con **dos torres integradas** (Torre Antigua y Torre
+Innovación, **17 pisos en total**), **plano 2D** (canvas) y **visor 3D campus**
+(Three.js, ambas torres en la misma escena), con autenticación, filtros, buscador,
+horarios y favoritos. Incluye el **frontend** (sin dependencias externas, funciona
+100 % offline) y el **backend** (API REST en Laravel + Supabase/PostGIS).
 
 | | |
 |---|---|
@@ -31,7 +34,7 @@ de la carpeta `models/`, con autenticación, filtros, buscador, horarios y favor
 | Rama principal **protegida** (línea base + revisiones del equipo) | [`main`](https://github.com/eelhuevo/MapaInteractivo/tree/main) |
 | Tareas registradas | [Issues #36–#51](https://github.com/eelhuevo/MapaInteractivo/issues?q=is%3Aissue) |
 | Entregas del equipo | [Pull Requests #52–#75](https://github.com/eelhuevo/MapaInteractivo/pulls?q=is%3Apr) |
-| Verificación automática de commits | [`.github/workflows/concion-commits.yml`](.github/workflows/concion-commits.yml) → *Verificar* |
+| Verificación automática de commits | [`.github/workflows/convencion-commits.yml`](.github/workflows/convencion-commits.yml) → *Verificar* |
 | Plantillas de issues y PRs | [`.github/`](.github) |
 | Discusiones del equipo | <https://github.com/eelhuevo/MapaInteractivo/discussions> |
 
@@ -75,20 +78,19 @@ de entrega.
 
 ---
 
-## Cómo abrir el proyecto
+## Cómo ejecutar
 
-### Opción recomendada (necesaria para la vista 3D)
+### Frontend (recomendado, necesario para la vista 3D)
 
-Doble clic en **`INICIAR.bat`** → abre `http://localhost:8080` en el navegador.
+Doble clic en **`INICIAR.bat`** → abre `http://localhost:8080` en el navegador
+(requiere Python 3).
 
-> La vista 3D descarga los archivos `.glb` / `.fbx` por HTTP. Si abres `index.html`
+> La vista 3D descarga los modelos `.glb` / `.fbx` por HTTP. Si abres `index.html`
 > directamente con doble clic (`file://`), el navegador bloquea esa descarga por
 > política CORS y el visor mostrará un aviso. El mapa 2D, filtros, buscador,
 > horarios y favoritos sí funcionan igualmente.
 
-### Opción sin instalar nada
-
-Si tienes **Python 3** instalado, también puedes servir la carpeta con:
+También puedes servir la carpeta con:
 
 ```bash
 python -m http.server 8080
@@ -102,6 +104,18 @@ python -m http.server 8080
 
 También puedes registrarte desde la propia pantalla o entrar como **Invitado**.
 
+### Backend (API REST)
+
+Requiere **PHP >= 8.4.1** con las extensiones `pdo_pgsql`, `pgsql`, `fileinfo` y
+`zip`:
+
+```bash
+cd backend
+cp .env.example .env   # completa tus credenciales de Supabase
+composer install
+php artisan serve
+```
+
 ---
 
 ## Documentación
@@ -112,7 +126,7 @@ También puedes registrarte desde la propia pantalla o entrar como **Invitado**.
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | **Guía de contribución**: flujo de trabajo, convención de commits, Pull Requests y versiones |
 | [`ESTRUCTURA.md`](ESTRUCTURA.md) | **Estructura del proyecto**: qué hay en cada carpeta y para qué sirve |
 | [`CHANGELOG.md`](CHANGELOG.md) | **Historial de versiones** del proyecto |
-| `README.md` (este) | Documentación técnica: estructura, cómo ejecutar, qué se conservó del proyecto original |
+| `README.md` (este) | Documentación técnica: estructura, cómo ejecutar, funcionalidad |
 | Plantillas en `.github/` | Formulario para Pull Requests e issues |
 
 ---
@@ -122,121 +136,79 @@ También puedes registrarte desde la propia pantalla o entrar como **Invitado**.
 ```
 unimap/
 ├── index.html              → pantalla de acceso (login / registro / invitado)
-├── mapa.html               → mapa 2D + visor 3D + paneles
-├── INICIAR.bat             → servidor local (requiere Python 3)
+├── INICIAR.bat             → servidor local del frontend (requiere Python 3)
 ├── README.md
 │
-├── css/                    → estilos divididos por capítulo
-│   ├── base.css            → variables, reset, botones, animaciones, avisos
-│   ├── auth.css            → pantalla de autenticación
-│   ├── map.css             → barra superior, buscador, pisos, lienzo, leyenda, zoom
-│   ├── panels.css          → paneles de filtros, horarios y favoritos
-│   ├── components.css      → tooltip, resultados de búsqueda, favoritos
-│   ├── view3d.css          → visor 3D, marcadores, selector de modelos, carga
-│   └── responsive.css      → ajustes a distintos tamaños de pantalla
+├── frontend/               → código del mapa interactivo
+│   ├── mapa.html           → mapa 2D + visor 3D + paneles
+│   ├── admin.html          → panel de administración
+│   │
+│   ├── css/                → estilos divididos por capítulo
+│   │   ├── base.css        → variables, reset, botones, animaciones, avisos
+│   │   ├── auth.css        → pantalla de autenticación
+│   │   ├── map.css         → barra superior, buscador, pisos, lienzo, leyenda, zoom
+│   │   ├── panels.css      → paneles de filtros, horarios y favoritos
+│   │   ├── components.css  → tooltip, resultados de búsqueda, favoritos
+│   │   ├── view3d.css      → visor 3D, marcadores, selector de modelos, carga
+│   │   ├── admin.css       → panel de administración
+│   │   └── responsive.css  → ajustes a distintos tamaños de pantalla
+│   │
+│   ├── js/
+│   │   ├── app.js          → arranque de la pantalla del mapa
+│   │   ├── core/
+│   │   │   ├── store.js        → namespace global, estado, storage y utilidades
+│   │   │   ├── ui.js           → pantalla, conmutador 2D/3D, navegación a espacios
+│   │   │   ├── i18n.js         → textos del interfaz
+│   │   │   ├── avisos.js       → notificaciones
+│   │   │   ├── estadisticas.js → métricas de uso
+│   │   │   └── personalizacion.js → preferencias del usuario
+│   │   ├── data/
+│   │   │   ├── categorias.js / edificios.js / docentes.js / espacios.js
+│   │   ├── auth/auth.js    → login, registro, invitado y sesión
+│   │   ├── admin/admin.js  → gestión de espacios y usuarios
+│   │   ├── map/
+│   │   │   ├── tooltip.js / map2d.js / filtros.js
+│   │   │   ├── busqueda.js / horarios.js / favoritos.js
+│   │   │   ├── ruta.js / qr.js / servicios.js / sugerencias.js
+│   │   └── view3d/viewer3d.js  → escena Three.js, modelos, marcadores 3D
+│   │
+│   ├── vendor/three/       → Three.js r147 en local (sin CDN)
+│   └── models/             → modelos 3D del campus (.glb / .fbx)
+│       ├── torre-antigua-banos.glb / torre-antigua-conexion.glb / torre-antigua-cursos.glb
+│       ├── torre-innovacion-pisos-6-10.glb / torre-innovacion-plantilla.glb
+│       ├── edificio.glb / oficinas.glb / planta-baja-torre-b.fbx
 │
-├── js/
-│   ├── app.js              → arranque de la pantalla del mapa
-│   ├── core/
-│   │   ├── store.js        → namespace global, estado, storage y utilidades
-│   │   └── ui.js           → pantalla, conmutador 2D/3D, navegación a espacios
-│   ├── data/
-│   │   ├── categorias.js   → tipos de espacio
-│   │   ├── edificios.js    → edificios + días de la semana
-│   │   ├── docentes.js     → docentes y horarios
-│   │   └── espacios.js     → construcción de los espacios de los 4 pisos
-│   ├── auth/
-│   │   └── auth.js         → login, registro, invitado y sesión (index + mapa)
-│   ├── map/
-│   │   ├── tooltip.js      → ficha del espacio (compartida 2D/3D)
-│   │   ├── map2d.js        → lienzo 2D: dibujo, pan, zoom, hover, pisos
-│   │   ├── filtros.js      → lógica de filtros (tipos, disponibilidad, piso)
-│   │   ├── busqueda.js     → buscador de espacios y docentes
-│   │   ├── horarios.js     → panel de horarios de docentes
-│   │   └── favoritos.js    → favoritos por usuario
-│   └── view3d/
-│       └── viewer3d.js     → escena Three.js, modelos, luces, marcadores 3D
-│
-├── vendor/three/           → Three.js r147 en local (funciona sin internet)
-│   ├── three.min.js
-│   ├── GLTFLoader.js / FBXLoader.js / OrbitControls.js
-│   ├── fflate.min.js / NURBSCurve.js / NURBSUtils.js
-│
-├── models/                 → modelos 3D del campus
-│   ├── edificio.glb
-│   ├── habitacion.glb
-│   ├── oficinas.glb
-│   ├── TorreAntiguaBanos.glb
-│   └── PLANTA BAJA TOORE B.fbx
+├── backend/                → API REST (Laravel + Supabase/PostGIS)
+│   ├── app/                → controladores, modelos, middleware, resources
+│   ├── database/           → migraciones + seeders del campus
+│   ├── routes/api.php      → endpoints de la API
+│   ├── docs/               → backlog de usuario y documentación
+│   └── .env                → configuración (no se sube al repositorio)
 │
 └── docs/
     └── capturas/           → imágenes del README y del manual de usuario
 ```
 
-El detalle completo, archivo por archivo, está en [`ESTRUCTURA.md`](ESTRUCTURA.md).
-
 ---
 
-## Qué se conservó del proyecto original
+## Funcionalidad
 
-- **Autenticación**: login, registro con validaciones y contraseña, y acceso como invitado.
-- **Filtros completos**: los 8 tipos de espacio, disponibilidad (activo/inactivo) y los
-  4 pisos. Ninguno se eliminó, aunque algún tipo no tenga modelo 3D asignado.
-- **Búsqueda** por nombre, tipo, docente o departamento, con resultados navegables.
+- **Dos torres, 17 pisos**: Torre Antigua (PB–P7) y Torre Innovación (PB–P8), con
+  conmutador TA/TI y selector de pisos dinámico según la torre activa.
+- **Autenticación**: login, registro con validaciones y medidor de fortaleza, sesión
+  persistente y acceso como invitado.
+- **Mapa 2D**: plano en canvas con paneo (ratón/dedo/lápiz), zoom (rueda y pellizca),
+  selector de pisos, hover y clic con ficha completa.
+- **Visor 3D campus**: ambas torres cargadas e integradas en la misma escena; los
+  marcadores se posicionan sobre la torre correcta y a la altura del piso seleccionado
+  (offset Y automático). Selector de modelos individuales para inspección.
+- **Filtros**: 8 tipos de espacio, disponibilidad, pisos y torre (con efecto real en
+  ambas vistas).
+- **Búsqueda** en vivo por nombre, tipo, docente o departamento, con resultados
+  navegables (muestra torre y piso).
 - **Horarios** de los 8 docentes con buscador y salto al aula correspondiente.
-- **Favoritos** por usuario (ocultos para invitados) con persistencia en `localStorage`.
-- **Selector de pisos**, zoom, paneo, tooltip con ficha completa y notificaciones.
-
-## Qué se añadió
-
-- **Botón 2D / 3D** en la barra superior para conmutar entre el plano y el visor 3D.
-- **Visor 3D** con Three.js local: carga de los 5 modelos (GLB y FBX), normalización
-  de escala, luces con sombras, suelo, cuadricula, niebla y controles orbitales con
-  amortiguación, rotación automática y restablecer cámara.
-- **Selector de modelos** con progreso de descarga y avisos de error.
-- **Marcadores 3D** proyectados sobre el modelo: muestran el estado, los favoritos y
-  respetan los filtros y el piso activos; al pulsarlos se abre la misma ficha (tooltip)
-  que en 2D. La búsqueda, los horarios y los favoritos enfocan la cámara en 3D.
-- **Proyecto dividido**: 2 HTML, 7 CSS y 15 JS con un espacio de nombres común
-  `window.UniMap`.
-
-## Qué se completó
-
-- **El filtro de piso surte efecto**: los pisos desmarcados desactivan su botón del
-  selector, si el piso actual queda oculto se salta al primer piso permitido y
-  intentar entrar a un espacio de un piso oculto (búsqueda, horarios o favoritos)
-  muestra un aviso en lugar de navegar. Aplicar sin ningún piso se rechaza.
-- **La planta se dibuja completa**: pasillos, jardín, estacionamiento y sanitarios
-  forman parte del edificio y se pintan siempre (los datos y los colores ya existían);
-  no son filtrables, no abren ficha y no aparecen en los marcadores 3D.
-- **Mapa 2D táctil**: el paneo usa *pointer events* con captura y la pellizca de dos
-  dedos hace zoom, de modo que el plano se maneja igual con ratón, dedo o lápiz
-  (`touch-action: none` en el lienzo).
-- **El arrastre ya no abre fichas**: soltar el mapa sobre un aula no la selecciona;
-  solo un clic (o un toque) sin desplazamiento la abre.
-- **Sesión recordada en la pantalla de acceso**: si ya hay sesión iniciada,
-  `index.html` continúa directamente en el mapa.
-- **Teclado**: `Escape` cierra la ficha, los paneles, los resultados de búsqueda y el
-  selector de modelos; `Enter` en el buscador abre el primer resultado.
-- **Leyenda según la vista**: "Usted aquí" se oculta en 3D (donde no existe ese
-  marcador) gracias a la clase `leyenda-2d` que la hoja `view3d.css` ya esperaba.
-- **Detalles de acabado**: la cuadrícula de pisos del panel de filtros se muestra en
-  dos columnas, el tooltip se cierra al redimensionar la ventana y los botones de piso
-  ocultos tienen su propio estado visual.
-- **Buscador sin acentos**: "aula", "Aula" y "áula" devuelven lo mismo; los resultados
-  se resaltan con `<mark>` y se recorren con `↑` / `↓`.
-- **Ficha flotante accesible**: se anuncia con `role="tooltip"`, se oculta con
-  `aria-hidden` y se cierra con `Escape`.
-- **Preferencias recordadas**: el piso, la vista (2D/3D) y los filtros activos se
-  guardan en el navegador y el campus se abre como quedó la última vez.
-- **Correo normalizado**: `Ana.Perez@Campus.EDU` y `ana.perez@campus.edu` son la
-  misma cuenta.
-- **Diseño adaptable**: puntos de corte en 1600, 1024, 900, 768, 520 y 480 px, más
-  el modo horizontal de móvil, la impresión y la preferencia de menos movimiento.
-- **Modelos con metadatos**: cada `.glb` / `.fbx` lleva dentro el nombre del modelo y
-  el número de tarea al que pertenece (`unimap_modelo` y `unimap_tarea`).
-
-Todo el detalle de uso está en el [`MANUAL-USUARIO.md`](MANUAL-USUARIO.md).
+- **Favoritos** por usuario (localStorage), ocultos para invitados.
+- **Teclado**: `Escape` cierra fichas/paneles/listas; `Enter` abre el primer resultado.
 
 ---
 
@@ -260,14 +232,15 @@ El detalle está en [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ---
 
-## Notas
+## Notas técnicas
 
-- Los datos viven en `localStorage` (usuarios, sesión, favoritos y preferencias). No
-  hay servidor backend: las contraseñas se guardan en texto plano, propio de un
-  prototipo académico.
-- Three.js está en la versión **r147**, la última que incluye builds globales no
-  modulares, por eso todo el código funciona con `<script>` clásicos y sin servidor
-  de desarrollo ni proceso de compilación.
-- Las librerías de `vendor/three/` son copia local del código original de Three.js
-  (licencia MIT); solo se añadieron las cabeceras de procedencia. No se modificó el
-  código de la librería.
+- Arquitectura: HTML/CSS/JS vanilla con módulos IIFE que exponen `window.UniMap`.
+- Three.js **r147** (última con builds globales no modulares): sin build ni proceso de
+  compilación; todo se carga con `<script>` clásicos. Las librerías de
+  `frontend/vendor/three/` son copia local del código original de Three.js
+  (licencia MIT); solo se añadieron las cabeceras de procedencia.
+- Los datos de usuario y favoritos viven en `localStorage`: prototipo académico.
+  La integración con la API está prevista como siguiente paso.
+- **Backend** (`backend/`): API REST en Laravel con Sanctum, PostgreSQL/PostGIS vía
+  Supabase. Requiere **PHP >= 8.4.1**. Ejecutar con `php artisan serve` desde
+  `backend/`. La integración del frontend con esta API está pendiente de implementarse.
