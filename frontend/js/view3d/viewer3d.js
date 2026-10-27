@@ -179,11 +179,20 @@
        En tema oscuro el fondo es azul noche para que el modelo
        (claro) siga destacando */
     escena.background = new THREE.Color(colorFondoEscena());
-    escena.fog = new THREE.Fog(colorFondoEscena(), 260, 700);
+    /* La camara arranca a ~1400 unidades de la planta, asi que la
+       niebla inicial usa ya las mismas distancias que encuadrar()
+       (2x y 6x la extension base de la escena, 800). Con valores
+       cortos (260/700) el modelo entero quedaba fundido con el
+       fondo y solo se veia al acercar mucho la camara */
+    escena.fog = new THREE.Fog(colorFondoEscena(), 800 * 2, 800 * 6);
     document.addEventListener('tema:cambiado', function () {
       if (!escena) return;
       escena.background = new THREE.Color(colorFondoEscena());
-      escena.fog = new THREE.Fog(colorFondoEscena(), 260, 700);
+      /* Solo se cambia el COLOR: las distancias las fija encuadrar()
+         segun la escena. Recrear la niebla con distancias fijas la
+         dejaba demasiado cerca y el modelo desaparecia (efecto
+         neblina) hasta hacer mucho zoom */
+      if (escena.fog) escena.fog.color.set(colorFondoEscena());
       if (cuadricula) pintarColoresCuadricula(cuadricula, temaOscuro());
     });
 

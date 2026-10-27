@@ -7,6 +7,22 @@ versiones usan [SemVer](https://semver.org/lang/es/) (`MAJOR.MINOR.PATCH`).
 
 ---
 
+## [Unreleased]
+
+### Corregido
+
+- **Los modelos 3D desaparecian al cambiar de tema (claro/oscuro)**: el listener
+  `tema:cambiado` recreaba la niebla con distancias fijas de 260/700 mientras la
+  camara esta a unas 1400 unidades de la planta, asi que el modelo entero se
+  fundia con el fondo y solo volvia a verse haciendo mucho zoom (efecto
+  neblina). Ahora el cambio de tema solo actualiza el color de la niebla, que
+  sigue gobernada por `encuadrar()` (2x y 6x la extension de la escena), y la
+  niebla inicial arranca ya con esas distancias.
+- `js/view3d/viewer3d.js` pasa de `?v=11` a `?v=12` en `mapa.html` para que los
+  navegadores con cache arrastrado carguen el script corregido.
+
+---
+
 ## [v1.1.0] - 2026-10-22
 
 Entrega del equipo en la rama [`beta`](https://github.com/eelhuevo/MapaInteractivo/tree/beta):
