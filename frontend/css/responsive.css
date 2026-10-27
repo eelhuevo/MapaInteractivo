@@ -1,0 +1,84 @@
+/* =========================================================
+   responsive.css — ajustes a distintos tamaños de pantalla
+   ========================================================= */
+
+/* ── BOTONES DE LA TOP-BAR ─────────────────────────────
+   Las etiquetas de texto se muestran en pantallas anchas;
+   por debajo se ocultan y quedan solo icono + tooltip. */
+@media (max-width: 1650px) {
+  .btn-icon .btn-label { display: none; }
+  .btn-icon { padding: 0 9px; }
+}
+
+@media (max-width: 1240px) {
+  .top-sep { margin: 0 2px; }
+  .top-bar { gap: 10px; }
+  .search-container { max-width: 360px; }
+}
+
+@media (max-width: 1100px) {
+  .toggle-opcion { min-width: 38px; padding: 0 9px; }
+  /* El mapa-info sube sobre los controles de zoom para no
+     chocar con la leyenda centrada */
+  .map-info { right: 24px; bottom: 170px; }
+}
+
+/* ── BARRA COMPACTA ─────────────────────────────────────
+   Entre 769 y 960 px la barra superior no cabe con etiquetas
+   ni todas las etiquetas de marca: se reordena para que
+   ningun boton se salga de la pantalla. */
+@media (max-width: 960px) {
+  .top-bar { gap: 7px; padding: 8px 10px; }
+  .app-name { display: none; }
+  .search-container { min-width: 90px; }
+  /* La lupa se oculta: el campo sigue buscando con Enter */
+  #boton-busqueda { display: none; }
+  .search-container input { padding-right: 12px; }
+  .top-sep { display: none; }
+  .btn-icon { padding: 0 6px; gap: 5px; }
+  .toggle-opcion { min-width: 34px; padding: 0 8px; }
+  .boton-idioma { padding: 0 8px; }
+  /* El rol ya se muestra en el perfil: en compacto el badge
+     se reduce a la accion de sesion para que la barra quepa */
+  .user-badge { padding: 5px 8px; gap: 7px; }
+  #nombre-usuario { display: none; }
+  .badge-rol { display: none; }
+}
+
+/* ── MOVILES ESTRECHOS ──────────────────────────────────
+   Por debajo de 560 px se priorizan los botones esenciales
+   (vista, avisos, tema, idioma y sesion). */
+@media (max-width: 560px) {
+  #boton-filtros, #boton-horarios { display: none; }
+  .search-container { min-width: 70px; }
+}
+
+@media (max-width: 900px) {
+  .auth-left { display: none; }
+
+  .auth-right {
+    width: 100%;
+    min-width: unset;
+  }
+}
+
+@media (max-width: 768px) {
+  .top-bar { padding: 8px 12px; gap: 8px; }
+  .app-name { display: none; }
+  .filter-panel, .schedule-panel, .favorites-panel { width: 280px; }
+  .legend { gap: 10px; padding: 10px 14px; font-size: 11px; }
+  .boton-piso { width: 42px; height: 42px; font-size: 12px; }
+  .map-tooltip { min-width: 200px; max-width: 250px; }
+  .toggle-opcion { min-width: 34px; height: 28px; font-size: 12px; }
+  .marcador-3d .texto { display: none; }
+  .marcador-3d { padding: 6px; }
+  .top-sep { display: none; }
+  .user-badge { padding: 5px 9px; gap: 7px; }
+}
+
+@media (max-width: 520px) {
+  .search-container { max-width: none; }
+  #nombre-usuario { display: none; }
+  .map-info { display: none; }
+  .legend { display: none; }
+}

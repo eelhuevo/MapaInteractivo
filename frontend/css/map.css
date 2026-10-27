@@ -1,0 +1,474 @@
+/* =========================================================
+   map.css — pantalla del mapa: barra superior, buscador,
+   selector de pisos, lienzo, leyenda y controles de zoom
+   ========================================================= */
+
+.map-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg-page);
+}
+
+/* ── TOP BAR ───────────────────────────────────────── */
+.top-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 9px 18px;
+  height: var(--topbar-h);
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 3px rgba(15,23,42,.05);
+  z-index: 100;
+}
+
+[data-theme="dark"] .top-bar { box-shadow: 0 1px 3px rgba(0,0,0,.4); }
+
+.top-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.logo-small {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--primary-solid) 0%, #3B82F6 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .5px;
+  box-shadow: 0 2px 8px rgba(30,64,175,.35);
+  flex-shrink: 0;
+}
+
+.app-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-1);
+  letter-spacing: -.2px;
+}
+
+/* ── BUSCADOR ──────────────────────────────────────── */
+.search-container {
+  position: relative;
+  flex: 1;
+  max-width: 460px;
+  min-width: 200px;
+}
+
+.search-container input {
+  width: 100%;
+  height: 40px;
+  padding: 0 40px 0 15px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 13.5px;
+  background: var(--bg-surface-2);
+  color: var(--text-1);
+  transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+  outline: none;
+}
+
+.search-container input::placeholder { color: var(--text-3); }
+
+.search-container input:focus {
+  border-color: var(--primary);
+  background: var(--input-bg);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+#boton-busqueda {
+  position: absolute;
+  right: 3px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+}
+
+#boton-busqueda:hover { background: var(--bg-surface-3); }
+
+/* ── GRUPO DE ACCIONES (derecha) ───────────────────── */
+.top-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* Separador visual entre grupos de botones */
+.top-sep {
+  width: 1px;
+  height: 24px;
+  background: var(--border);
+  margin: 0 5px;
+  flex-shrink: 0;
+}
+
+/* ── BOTON ICONO + ETIQUETA ────────────────────────── */
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: auto;
+  min-width: 38px;
+  height: 38px;
+  padding: 0 11px;
+  border: 1.5px solid transparent;
+  border-radius: var(--radius);
+  background: var(--bg-surface-3);
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background var(--transition), color var(--transition), border-color var(--transition), transform var(--transition);
+}
+
+.btn-icon svg { flex-shrink: 0; }
+
+.btn-icon:hover {
+  background: var(--primary-light);
+  color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.btn-icon:active { transform: translateY(0); }
+
+/* Etiqueta de texto (visible en pantallas anchas) */
+.btn-label { line-height: 1; }
+
+.boton-idioma { font-size: 12.5px; font-weight: 700; }
+
+/* ── CONMUTADOR 2D / 3D ────────────────────────────── */
+.toggle-vista {
+  display: inline-flex;
+  padding: 3px;
+  background: var(--bg-surface-3);
+  border: 1.5px solid var(--border);
+  border-radius: 11px;
+  gap: 2px;
+}
+
+.toggle-opcion {
+  min-width: 44px;
+  height: 30px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-3);
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all var(--transition);
+  letter-spacing: .4px;
+}
+
+.toggle-opcion:hover { color: var(--primary); }
+
+.toggle-opcion.active {
+  background: linear-gradient(135deg, var(--primary-solid) 0%, #2563EB 100%);
+  color: var(--primary-on);
+  box-shadow: 0 2px 8px rgba(30,64,175,.35);
+}
+
+/* ── USUARIO ───────────────────────────────────────── */
+.user-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 13px;
+  background: var(--bg-surface-3);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+#nombre-usuario {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── SELECTOR DE TORRE ──────────────────────────────── */
+.selector-torre {
+  position: fixed;
+  left: 24px;
+  bottom: 90px;
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  z-index: 81;
+}
+
+.boton-torre {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 74px;
+  height: 46px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  background: var(--bg-surface);
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all var(--transition);
+  color: var(--text-2);
+  box-shadow: var(--shadow-md);
+  line-height: 1.1;
+}
+
+.torre-abrev {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.torre-nombre {
+  font-size: 9px;
+  font-weight: 600;
+  opacity: .8;
+}
+
+.boton-torre:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: scale(1.05);
+}
+
+.boton-torre.active {
+  background: linear-gradient(135deg, var(--primary-solid) 0%, #2563EB 100%);
+  border-color: var(--primary);
+  color: var(--primary-on);
+  box-shadow: 0 4px 14px rgba(30,64,175,.4);
+}
+
+.boton-torre.active .torre-nombre { opacity: .95; }
+
+/* ── SELECTOR DE PISO ──────────────────────────────── */
+.floor-selector {
+  position: fixed;
+  left: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  z-index: 80;
+  /* Nunca alcanza al selector de torre de abajo */
+  max-height: min(460px, calc(100vh - 320px));
+  overflow-y: auto;
+  padding: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) transparent;
+}
+
+/* En vista 3D el selector de pisos se recoloca arriba a la izquierda
+   (el selector de torre sigue abajo a la izquierda) */
+body.vista-3d .floor-selector {
+  top: calc(var(--topbar-h) + 10px);
+  bottom: auto;
+  transform: none;
+  max-height: min(300px, calc(100vh - 260px));
+}
+
+body.vista-3d .selector-torre {
+  bottom: 24px;
+}
+
+.floor-selector::-webkit-scrollbar {
+  width: 4px;
+}
+
+.floor-selector::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+.boton-piso {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  background: var(--bg-surface);
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all var(--transition);
+  color: var(--text-2);
+  box-shadow: var(--shadow);
+}
+
+.boton-piso:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(30,64,175,.2);
+}
+
+.boton-piso.active {
+  background: linear-gradient(135deg, var(--primary-solid) 0%, #2563EB 100%);
+  border-color: var(--primary);
+  color: var(--primary-on);
+  box-shadow: 0 4px 14px rgba(30,64,175,.4);
+}
+
+/* Piso oculto por los filtros */
+.boton-piso:disabled,
+.boton-piso.deshabilitado {
+  opacity: .4;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.boton-piso:disabled:hover {
+  transform: none;
+  border-color: var(--border);
+  color: var(--text-2);
+  box-shadow: none;
+}
+
+/* ── LIENZO / MAPA ─────────────────────────────────── */
+.map-wrapper {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(30,64,175,.04) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(59,130,246,.04) 0%, transparent 50%),
+    var(--bg-page);
+  cursor: grab;
+}
+
+[data-theme="dark"] .map-wrapper {
+  background:
+    radial-gradient(circle at 20% 30%, rgba(59,130,246,.07) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(59,130,246,.05) 0%, transparent 50%),
+    var(--bg-page);
+}
+
+.map-wrapper:active { cursor: grabbing; }
+
+#lienzo-mapa {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  /* El paneo y la pinza se encargan del gesto, no del navegador */
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ── LEYENDA ───────────────────────────────────────── */
+.legend {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 20px;
+  background: var(--bg-surface);
+  padding: 12px 24px;
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  z-index: 80;
+  border: 1px solid var(--border);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-2);
+  font-weight: 500;
+}
+
+.legend-color {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+}
+
+.legend-color.disponible { background: var(--success); }
+.legend-color.noDisponible { background: var(--danger); opacity: .7; }
+.legend-color.ubicacion {
+  background: var(--primary);
+  border-radius: 50%;
+  border: 2px solid var(--bg-surface);
+  box-shadow: 0 0 0 2px var(--primary);
+}
+
+/* ── ZOOM ──────────────────────────────────────────── */
+.zoom-controls {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 80;
+}
+
+.btn-zoom {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  font-size: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-2);
+  transition: all var(--transition);
+}
+
+.btn-zoom:hover {
+  background: var(--bg-surface-2);
+  transform: scale(1.05);
+  box-shadow: var(--shadow-lg);
+  color: var(--primary);
+}
+
+/* ── INFO DEL MAPA ─────────────────────────────────── */
+.map-info {
+  position: fixed;
+  bottom: 24px;
+  right: 82px;
+  background: var(--bg-surface);
+  padding: 10px 16px;
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  font-size: 12px;
+  color: var(--text-2);
+  display: flex;
+  gap: 14px;
+  z-index: 80;
+  font-weight: 500;
+  border: 1px solid var(--border);
+}

@@ -1,0 +1,155 @@
+/* =========================================================
+   components.css — tooltip del mapa, resultados de busqueda
+   y botones de favorito
+   ========================================================= */
+
+/* ── RESULTADOS DE BUSQUEDA ────────────────────────── */
+.search-results {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: var(--bg-surface);
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+  max-height: 320px;
+  overflow-y: auto;
+  z-index: 200;
+}
+
+.search-result-item {
+  padding: 12px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--gray-100);
+  transition: all var(--transition);
+}
+
+.search-result-item:last-child { border-bottom: none; }
+.search-result-item:hover { background: var(--primary-light); }
+
+.search-result-item .sr-name { font-weight: 600; font-size: 14px; color: var(--gray-800); }
+.search-result-item .sr-detail { font-size: 12px; color: var(--gray-500); margin-top: 3px; }
+
+.search-no-results {
+  padding: 20px;
+  text-align: center;
+  color: var(--gray-400);
+  font-size: 13px;
+}
+
+/* ── TOOLTIP ───────────────────────────────────────── */
+.map-tooltip {
+  position: absolute;
+  background: var(--bg-surface);
+  border-radius: 14px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
+  padding: 16px;
+  min-width: 230px;
+  max-width: 290px;
+  z-index: 150;
+  pointer-events: auto;
+  border: 1px solid var(--gray-100);
+  animation: tooltipIn .15s ease;
+}
+
+.tooltip-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+#tooltip-nombre { font-weight: 700; font-size: 15px; color: var(--gray-900); }
+
+.tooltip-status {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.tooltip-status.activo { background: var(--success-bg); color: var(--success); }
+.tooltip-status.inactivo { background: var(--danger-bg); color: var(--danger); }
+
+.tooltip-type {
+  font-size: 12px;
+  color: var(--gray-400);
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.tooltip-info {
+  font-size: 13px;
+  color: var(--gray-600);
+  margin-bottom: 10px;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+.tooltip-schedule {
+  font-size: 12px;
+  color: var(--gray-500);
+  border-top: 1px solid var(--gray-100);
+  padding-top: 10px;
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+/* ── BOTON FAVORITO DEL TOOLTIP ────────────────────── */
+.btn-fav {
+  width: 100%;
+  padding: 9px 16px;
+  background: linear-gradient(135deg, var(--gray-100) 0%, var(--gray-200) 100%);
+  color: var(--gray-700);
+  border: 1.5px solid var(--gray-300);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.btn-fav:hover {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-color: #f59e0b;
+  color: #92400e;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(245,158,11,0.25);
+}
+
+[data-theme="dark"] .btn-fav:hover {
+  background: linear-gradient(135deg, rgba(245,158,11,0.18) 0%, rgba(245,158,11,0.30) 100%);
+  border-color: #f59e0b;
+  color: #fcd34d;
+}
+
+.btn-fav-activo {
+  width: 100%;
+  padding: 9px 16px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #92400e;
+  border: 1.5px solid #f59e0b;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+[data-theme="dark"] .btn-fav-activo {
+  background: linear-gradient(135deg, rgba(245,158,11,0.18) 0%, rgba(245,158,11,0.30) 100%);
+  color: #fcd34d;
+}
+
+.btn-fav-activo:hover {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+[data-theme="dark"] .btn-fav-activo:hover {
+  background: linear-gradient(135deg, rgba(239,68,68,0.18) 0%, rgba(239,68,68,0.30) 100%);
+}
