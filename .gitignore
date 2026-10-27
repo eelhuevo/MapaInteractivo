@@ -1,0 +1,77 @@
+# ============================================================
+#  MapaInteractivo - .gitignore raíz
+#  Ignora archivos temporales, secretos y artefactos de build.
+#  NOTA: frontend/vendor/ (Three.js) y frontend/models/ (.glb)
+#        SÍ se versionan a propósito.
+# ============================================================
+
+# ---------- Entornos y secretos ----------
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.key
+*.pem
+auth.json
+
+# ---------- Dependencias ----------
+node_modules/
+vendor/
+!frontend/vendor/
+.pnp
+.pnp.js
+
+# ---------- Builds y artefactos ----------
+dist/
+build/
+public/build/
+public/hot
+public/storage
+*.log
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.phpunit.result.cache
+.phpunit.cache/
+.phpactor.json
+
+# ---------- Caché de frameworks ----------
+frontend/.cache/
+backend/storage/*.key
+backend/storage/pail
+backend/storage/logs/*
+!backend/storage/logs/.gitignore
+backend/bootstrap/cache/*
+!backend/bootstrap/cache/.gitignore
+
+# ---------- Sistema operativo ----------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ---------- Editores e IDEs ----------
+.idea/
+.vscode/
+.vs/
+.cursor/
+.codex/
+.nova/
+.zed/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+
+# ---------- Respaldos y temporales ----------
+*.bak
+*.tmp
+*.temp
+*.orig
+*.rej
+*~

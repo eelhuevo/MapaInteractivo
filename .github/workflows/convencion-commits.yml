@@ -1,0 +1,57 @@
+name: Convencion de commits
+
+on:
+  push:
+    branches:
+      - main
+      - beta
+      - Version2
+  pull_request:
+    types:
+      - opened
+      - edited
+      - reopened
+      - synchronize
+
+permissions:
+  contents: read
+
+jobs:
+  verificar:
+    name: Verificar
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comprobar que el mensaje sigue la convencion
+        env:
+          ORIGEN: ${{ github.event_name }}
+          MENSAJE_COMMIT: ${{ github.event.head_commit.message }}
+          TITULO_PR: ${{ github.event.pull_request.title }}
+        run: |
+          if [ "$ORIGEN" = "pull_request" ]; then
+            TEXTO="$TITULO_PR"
+            ETIQUETA="el titulo del Pull Request"
+          else
+            TEXTO="$MENSAJE_COMMIT"
+            ETIQUETA="el mensaje del commit"
+          fi
+
+          PRIMERA=$(printf '%s' "$TEXTO" | head -n 1)
+
+          # 1. Convencion de commits (Conventional Commits)
+          if printf '%s' "$PRIMERA" | grep -Eq '^(feat|fix|docs|style|refactor|perf|test|chore|build|ci)(\([a-z0-9._/-]+\))?: .+'; then
+            echo "OK: $PRIMERA"
+            exit 0
+          fi
+
+          # 2. Mensajes que genera GitHub al fusionar
+          if printf '%s' "$PRIMERA" | grep -Eq '^(Merge (pull request|branch)|Revert |[0-9a-f]{7,40} )'; then
+            echo "OK (mensaje generado por GitHub): $PRIMERA"
+            exit 0
+          fi
+
+          echo "::error::$ETIQUETA no cumple la convencion de commits del proyecto."
+          echo "::error::Se recibio: $PRIMERA"
+          echo "::error::Formato esperado: <tipo>(<ambito>): <descripcion en minusculas>"
+          echo "::error::Tipos validos: feat, fix, docs, style, refactor, perf, test, chore, build, ci"
+          echo "::error::Ejemplo: feat(mapa): anade el conmutador 2D/3D"
+          exit 1
