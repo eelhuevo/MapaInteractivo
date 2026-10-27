@@ -81,6 +81,15 @@
     'top.ubicacion': 'Mi ubicacion',
     'top.salir': 'Cerrar sesion',
     'top.idioma': 'Idioma',
+    'top.tema': 'Cambiar tema',
+
+    /* etiquetas cortas de los botones de la barra */
+    'top.lblServicios': 'Servicios',
+    'top.lblRuta': 'Ruta',
+    'top.lblUbicacion': 'Ubicacion',
+    'top.lblQr': 'QR',
+    'top.lblAvisos': 'Avisos',
+    'top.lblAdmin': 'Admin',
 
     /* panel de filtros */
     'filtros.titulo': 'Filtros',
@@ -96,6 +105,7 @@
     'filtros.torre': 'Torre',
     'torre.antigua': 'Torre Antigua',
     'torre.innovacion': 'Torre Innovacion',
+    'torre.ambos': 'Ambas torres',
     'filtros.disponibilidad': 'Disponibilidad',
     'filtros.disponibles': 'Disponibles',
     'filtros.noDisponibles': 'No disponibles',
@@ -261,11 +271,13 @@
     'v3.modelo': 'Modelo: {n}',
     'v3.errorCampus': 'Error al cargar el campus 3D',
     'v3.errorModelo': 'Error al cargar el modelo 3D',
+    'v3.cargandoModelo': 'Cargando modelo del piso...',
+    'v3.sinModelos': 'No hay modelo 3D para este piso.',
     'v3.sinThree': 'No se pudo cargar Three.js. Revisa la carpeta /vendor/three.',
     'v3.sinWebgl': 'Tu navegador no soporta WebGL, necesario para la vista 3D.',
     'v3.avisoCampus': 'No se pudieron cargar los modelos del campus. Usa INICIAR.bat para servir el proyecto por HTTP.',
     'v3.avisoModelo': 'No se pudo cargar "{n}". Si abriste el proyecto con doble clic (file://), usa INICIAR.bat para servirlo por HTTP.',
-    'v3.eligeModelo': 'Elige un modelo 3D para situar los espacios del campus.',
+    'v3.eligeModelo': 'Selecciona una torre y un piso para ver su modelo 3D.',
 
     /* panel de administracion (HU-06) */
     'adm.titulo': 'Administracion del Campus',
@@ -365,6 +377,14 @@
     'top.ubicacion': 'My location',
     'top.salir': 'Log out',
     'top.idioma': 'Language',
+    'top.tema': 'Toggle theme',
+
+    'top.lblServicios': 'Services',
+    'top.lblRuta': 'Route',
+    'top.lblUbicacion': 'Location',
+    'top.lblQr': 'QR',
+    'top.lblAvisos': 'Alerts',
+    'top.lblAdmin': 'Admin',
 
     'filtros.titulo': 'Filters',
     'filtros.tipo': 'Space type',
@@ -379,6 +399,7 @@
     'filtros.torre': 'Tower',
     'torre.antigua': 'Old Tower',
     'torre.innovacion': 'Innovation Tower',
+    'torre.ambos': 'Both Towers',
     'filtros.disponibilidad': 'Availability',
     'filtros.disponibles': 'Available',
     'filtros.noDisponibles': 'Unavailable',
@@ -532,11 +553,13 @@
     'v3.modelo': 'Model: {n}',
     'v3.errorCampus': 'Error loading the 3D campus',
     'v3.errorModelo': 'Error loading the 3D model',
+    'v3.cargandoModelo': 'Loading floor model...',
+    'v3.sinModelos': 'There is no 3D model for this floor.',
     'v3.sinThree': 'Could not load Three.js. Check the /vendor/three folder.',
     'v3.sinWebgl': 'Your browser does not support WebGL, required for the 3D view.',
     'v3.avisoCampus': 'The campus models could not be loaded. Use INICIAR.bat to serve the project over HTTP.',
     'v3.avisoModelo': 'Could not load "{n}". If you opened the project by double clicking (file://), use INICIAR.bat to serve it over HTTP.',
-    'v3.eligeModelo': 'Choose a 3D model to place the campus spaces.',
+    'v3.eligeModelo': 'Choose a tower and a floor to see its 3D model.',
 
     'adm.titulo': 'Campus Administration',
     'adm.volver': 'Back to map',
@@ -620,6 +643,9 @@
     aplicar();
     var botones = util.todos('.boton-idioma');
     for (var b = 0; b < botones.length; b++) {
+      /* El boton de tema reutiliza la clase .boton-idioma solo por
+         estilo: a el NO se le enlaza el cambio de idioma */
+      if (botones[b].id === 'boton-tema') continue;
       botones[b].addEventListener('click', function () {
         cambiar(actual === 'es' ? 'en' : 'es');
       });

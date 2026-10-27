@@ -1,6 +1,7 @@
 /* =========================================================
    data/espacios.js — construccion de los espacios de cada
-   piso de cada torre (Torre Antigua 0-7, Innovacion 0-8)
+   piso de cada torre (Torre Antigua 0-13, Innovacion 0-6;
+   el total de pisos vive en data/edificios.js)
    ========================================================= */
 (function () {
   'use strict';
@@ -47,7 +48,9 @@
     var rnd = semilla(edificio, numeroPiso);
     var prefijo = (edificio === 1 ? 'ta' : 'ti') + '-p' + numeroPiso + '-';
     var esPB = numeroPiso === 0;
-    var esTop = edificio === 1 ? numeroPiso === 7 : numeroPiso === 8;
+    /* El ultimo piso de cada torre (terraza) es el mayor de su lista */
+    var pisosTorre = pisosDe(edificio);
+    var esTop = pisosTorre.length > 0 && numeroPiso === pisosTorre[pisosTorre.length - 1];
     var nomenclatura = edificio === 1 ? (100 + numeroPiso * 10) : (500 + numeroPiso * 10);
     var nombresAula = edificio === 1 ? NOMBRES_AULA_TA : NOMBRES_AULA_TI;
     var nombresLab = edificio === 1 ? NOMBRES_LAB_TA : NOMBRES_LAB_TI;
@@ -214,22 +217,102 @@
     var edificios = UniMap.datos.edificios || [];
     for (var e = 0; e < edificios.length; e++) {
       var ed = edificios[e];
-      for (var piso = 0; piso < ed.pisos; piso++) {
-        var espaciosDelPiso = construirEspacios(ed.id, piso);
-        for (var i = 0; i < espaciosDelPiso.length; i++) {
-          acumulado.push(espaciosDelPiso[i]);
+      var pisos = pisosDe(ed.id);
+      for (var i = 0; i < pisos.length; i++) {
+        var espaciosDelPiso = construirEspacios(ed.id, pisos[i]);
+        for (var j = 0; j < espaciosDelPiso.length; j++) {
+          acumulado.push(espaciosDelPiso[j]);
         }
       }
     }
     return acumulado;
   }
 
-  function pisosDeEdificio(edificioId) {
+  /* ── PISOS DE CADA TORRE ──────────────────────────────
+     Cada torre declara sus pisos con numeracion real (p. ej.
+     la TA va del 4 al 17). En la vista combinada (edificio 0)
+     se une la lista de las dos torres. */
+  function pisosDe(edificioId) {
     var edificios = UniMap.datos.edificios || [];
     for (var i = 0; i < edificios.length; i++) {
-      if (edificios[i].id === edificioId) return edificios[i].pisos;
+      if (edificios[i].id === edificioId) {
+        var pisos = edificios[i].pisos;
+        /* Compatibilidad: si una torre declara un numero en vez
+           de lista, se interpretan los pisos desde el 0 */
+        if (typeof pisos === 'number') {
+          var generados = [];
+          for (var p = 0; p < pisos; p++) generados.push(p);
+          return generados;
+        }
+        return pisos;
+      }
     }
-    return 0;
+    return [];
+  }
+
+  function tienePiso(edificioId, numeroPiso) {
+    return pisosDe(edificioId).indexOf(numeroPiso) !== -1;
+  }
+
+  function pisosDeEdificio(edificioId) {
+    return pisosDe(edificioId).length;
+  }
+
+  /* ── VISTA COMBINADA (edificio 0 = ambas torres) ─────
+     Desplazamiento X de la torre 2 dentro del plano logico
+     800x600, para que las dos plantas quepan sin solaparse.
+     Es el unico sitio donde se define: 2D, 3D y etiquetas
+     deben usar siempre este valor. */
+  var OFFSET_TORRE_2 = 950;
+
+  /* Pisos visibles para una seleccion de torre:
+     · edificio 1 / 2 -> los pisos de esa torre
+     · edificio 0     -> union de las dos torres, ordenada */
+  function pisosDeVista(edificio) {
+    if (edificio !== 0) return pisosDe(edificio);
+    var todos = pisosDe(1).concat(pisosDe(2));
+    todos.sort(function (a, b) { return a - b; });
+    var unicos = [];
+    for (var i = 0; i < todos.length; i++) {
+      if (unicos.indexOf(todos[i]) === -1) unicos.push(todos[i]);
+    }
+    return unicos;
+  }
+
+  /* Espacios que debe pintar la vista actual:
+     · edificio 1 / 2 -> la planta de esa torre
+     · edificio 0     -> ambas torres, con la torre 2 desplazada en X
+     Aplica los cambios del administrador y, en el modo combinado,
+     respeta los filtros de torre activos. */
+  function espaciosDeVista(edificio, numeroPiso) {
+    if (edificio !== 0) {
+      return UniMap.personalizacion
+        ? UniMap.personalizacion.espaciosDelPiso(edificio, numeroPiso)
+        : construirEspacios(edificio, numeroPiso);
+    }
+
+    var resultado = [];
+    for (var ed = 1; ed <= 2; ed++) {
+      if (UniMap.filtros && !UniMap.filtros.edificioPermitido(ed)) continue;
+      /* Cada torre tiene sus propios pisos: la que no tiene ese
+         piso no aporta espacios (p. ej. la TI solo llega al 11) */
+      if (!tienePiso(ed, numeroPiso)) continue;
+
+      var lista = UniMap.personalizacion
+        ? UniMap.personalizacion.espaciosDelPiso(ed, numeroPiso)
+        : construirEspacios(ed, numeroPiso);
+
+      for (var i = 0; i < lista.length; i++) {
+        var espacio = lista[i];
+        if (ed === 2) {
+          /* Copia: nunca se muta el original de la torre 2 */
+          espacio = JSON.parse(JSON.stringify(espacio));
+          espacio.x += OFFSET_TORRE_2;
+        }
+        resultado.push(espacio);
+      }
+    }
+    return resultado;
   }
 
   function nombreEdificio(edificioId) {
@@ -260,9 +343,14 @@
 
   UniMap.datos.construirEspacios = construirEspacios;
   UniMap.datos.construirTodosLosEspacios = construirTodosLosEspacios;
+  UniMap.datos.pisosDe = pisosDe;
+  UniMap.datos.tienePiso = tienePiso;
   UniMap.datos.pisosDeEdificio = pisosDeEdificio;
+  UniMap.datos.pisosDeVista = pisosDeVista;
   UniMap.datos.nombreEdificio = nombreEdificio;
   UniMap.datos.nombrePiso = nombrePiso;
+  UniMap.datos.espaciosDeVista = espaciosDeVista;
+  UniMap.datos.OFFSET_TORRE_2 = OFFSET_TORRE_2;
 
   /* Estado inicial del mapa: Torre Antigua, planta baja */
   estado.espacios = construirEspacios(1, 0);

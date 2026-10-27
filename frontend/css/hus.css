@@ -45,7 +45,7 @@ select:focus-visible,
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid #fff;
+  border: 2px solid var(--bg-surface);
   box-shadow: 0 1px 3px rgba(0,0,0,.3);
 }
 
@@ -72,7 +72,7 @@ select:focus-visible,
   height: 34px;
   border: 1.5px solid var(--gray-200);
   border-radius: 9px;
-  background: #fff;
+  background: var(--bg-surface);
   color: var(--gray-600);
   font-family: inherit;
   font-size: 12px;
@@ -89,6 +89,9 @@ select:focus-visible,
   color: var(--primary, #1a56db);
 }
 
+/* Botón de tema junto al de idioma en la pantalla de acceso */
+.auth-tema { right: 76px; }
+
 .btn-admin-top {
   width: auto;
   padding: 0 10px;
@@ -104,7 +107,7 @@ select:focus-visible,
   right: 0;
   width: 320px;
   height: calc(100vh - 60px);
-  background: #fff;
+  background: var(--bg-surface);
   border-left: 1px solid var(--gray-200);
   box-shadow: -4px 0 20px rgba(0,0,0,0.08);
   z-index: 95;
@@ -128,7 +131,7 @@ select:focus-visible,
   flex: 1;
   padding: 9px 8px;
   border: 1.5px solid var(--gray-200);
-  background: #fff;
+  background: var(--bg-surface);
   border-radius: 9px;
   font-size: 12.5px;
   font-weight: 600;
@@ -139,9 +142,9 @@ select:focus-visible,
 
 .serv-torre-btn:hover { border-color: var(--primary); color: var(--primary); }
 .serv-torre-btn.active {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: #fff;
+  background: var(--primary-solid);
+  border-color: var(--primary-solid);
+  color: var(--primary-on);
 }
 
 .panel-servicios .schedule-search input,
@@ -241,7 +244,7 @@ select:focus-visible,
   padding: 7px 13px;
   background: var(--primary-light);
   color: var(--primary-dark);
-  border: 1.5px solid #c7d8fb;
+  border: 1.5px solid var(--primary-light);
   border-radius: 9px;
   font-size: 12.5px;
   font-weight: 700;
@@ -249,10 +252,11 @@ select:focus-visible,
   white-space: nowrap;
   transition: all var(--transition);
 }
-.btn-perfil:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+.btn-perfil:hover { background: var(--primary-solid); color: var(--primary-on); border-color: var(--primary-solid); }
 
-.sugerencia-item:hover, .sugerencia-item:focus { background: #fef9c3; }
+.sugerencia-item:hover, .sugerencia-item:focus { background: var(--warning-bg); }
 .sugerencia-item .fav-item-nombre { color: #92400e; }
+[data-theme="dark"] .sugerencia-item .fav-item-nombre { color: #FCD34D; }
 
 .modal-perfil .form-group { margin-bottom: 14px; }
 .modal-perfil label {
@@ -268,7 +272,7 @@ select:focus-visible,
   border: 1.5px solid var(--gray-200);
   border-radius: 9px;
   font-size: 14px;
-  background: #fff;
+  background: var(--bg-surface);
 }
 
 /* ── FICHA MEJORADA (HU-03 / HU-09) ────────────────── */
@@ -281,7 +285,7 @@ select:focus-visible,
 .btn-accion {
   flex: 1;
   padding: 8px 10px;
-  background: #fff;
+  background: var(--bg-surface);
   border: 1.5px solid var(--gray-200);
   border-radius: 9px;
   font-size: 12px;
@@ -398,7 +402,7 @@ select:focus-visible,
   position: absolute;
   bottom: 96px;
   left: 20px;
-  background: #fff;
+  background: var(--bg-surface);
   border: 1.5px solid var(--primary);
   color: var(--primary-dark);
   padding: 9px 15px;

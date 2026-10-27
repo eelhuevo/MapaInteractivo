@@ -10,7 +10,8 @@
   var estado = UniMap.estado;
 
   var TIPOS_POR_DEFECTO = ['aula', 'laboratorio', 'oficina', 'biblioteca', 'auditorio', 'comedor', 'deportivo', 'salon'];
-  var PISOS_POR_DEFECTO = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+  /* Pisos con modelo hoy (union de las dos torres, numeracion real) */
+  var PISOS_POR_DEFECTO = [0, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17];
   var EDIFICIOS_POR_DEFECTO = [1, 2];
   /* HU-19: subtipos de laboratorio visibles por defecto (todos) */
   var LABS_POR_DEFECTO = ['informatica', 'electronica', 'fisica', 'quimica', 'mecanica',
@@ -74,6 +75,11 @@
 
   function edificioPermitido(edificio) {
     if (!estado.filtros.edificios) return true;
+    if (edificio === 0) {
+      /* "Ambas torres" esta visible si al menos una de las dos lo esta */
+      return estado.filtros.edificios.indexOf(1) !== -1 ||
+        estado.filtros.edificios.indexOf(2) !== -1;
+    }
     return estado.filtros.edificios.indexOf(edificio) !== -1;
   }
 
@@ -84,12 +90,18 @@
     if (estado.filtros.pisos.length === 0) return;
 
     if (!pisoPermitido(estado.pisoActual)) {
-      var maxPisos = UniMap.datos.pisosDeEdificio ? UniMap.datos.pisosDeEdificio(estado.edificioActual) : 9;
-      var primero = maxPisos;
+      /* Elegir el piso permitido mas bajo que ademas exista en
+         la torre seleccionada (cada torre tiene sus propios pisos) */
+      var pisosVista = UniMap.datos.pisosDeVista
+        ? UniMap.datos.pisosDeVista(estado.edificioActual)
+        : null;
+      var primero = null;
       for (var i = 0; i < estado.filtros.pisos.length; i++) {
-        if (estado.filtros.pisos[i] < primero) primero = estado.filtros.pisos[i];
+        var candidato = estado.filtros.pisos[i];
+        if (pisosVista && pisosVista.indexOf(candidato) === -1) continue;
+        if (primero === null || candidato < primero) primero = candidato;
       }
-      if (UniMap.mapa2D) UniMap.mapa2D.cambiarPiso(primero);
+      if (primero !== null && UniMap.mapa2D) UniMap.mapa2D.cambiarPiso(primero);
     }
     if (UniMap.mapa2D) UniMap.mapa2D.refrescarBotonesPiso();
   }
@@ -99,6 +111,9 @@
     if (!estado.filtros.edificios || estado.filtros.edificios.length === 0) return;
     if (!edificioPermitido(estado.edificioActual)) {
       if (UniMap.mapa2D) UniMap.mapa2D.cambiarEdificio(estado.filtros.edificios[0]);
+    } else if (estado.edificioActual === 0 && UniMap.mapa2D) {
+      /* Modo "ambas torres": reconstruir la planta con las torres visibles */
+      UniMap.mapa2D.cambiarPiso(estado.pisoActual);
     }
   }
 
@@ -191,7 +206,7 @@
       tipos: TIPOS_POR_DEFECTO.slice(),
       laboratorios: LABS_POR_DEFECTO.slice(),
       disponibilidad: ['activo', 'inactivo'],
-      pisos: PISOS_POR_DEFECTO.slice(),
+      pisos: (UniMap.datos.pisosDeVista ? UniMap.datos.pisosDeVista(0).slice() : PISOS_POR_DEFECTO.slice()),
       edificios: EDIFICIOS_POR_DEFECTO.slice()
     };
 
@@ -203,10 +218,35 @@
 
   function refrescar() {
     if (UniMap.mapa2D) UniMap.mapa2D.dibujar();
-    if (UniMap.vista3D) UniMap.vista3D.actualizarMarcadores();
+    if (UniMap.vista3D) {
+      /* El contenido de la planta puede haber cambiado (p. ej. filtro
+         de torre en modo "ambas torres") */
+      if (UniMap.vista3D.repintar) UniMap.vista3D.repintar();
+      else if (UniMap.vista3D.actualizarMarcadores) UniMap.vista3D.actualizarMarcadores();
+    }
+  }
+
+  /* Rellena el filtro de pisos con los pisos que existen hoy
+     (union de las dos torres: PB, P4-P11 y P13-P17). Cuando se
+     añadan modelos de mas pisos, aparecen solos. */
+  function construirPisosFiltro() {
+    var contenedor = util.el('filtros-piso');
+    if (!contenedor) return;
+    var pisos = UniMap.datos.pisosDeVista ? UniMap.datos.pisosDeVista(0) : PISOS_POR_DEFECTO.slice();
+    pisos = pisos.slice().sort(function (a, b) { return a - b; });
+
+    var html = '';
+    for (var i = 0; i < pisos.length; i++) {
+      var etiqueta = pisos[i] === 0 ? 'PB' : 'P' + pisos[i];
+      html += '<label class="filter-check"><input type="checkbox" value="' + pisos[i] + '" checked> ' +
+        etiqueta + '</label>';
+    }
+    contenedor.innerHTML = html;
   }
 
   function iniciar() {
+    construirPisosFiltro();
+
     var abrir = util.el('boton-filtros');
     var cerrar = util.el('cerrar-filtros');
     var aplicarBtn = util.el('aplicar-filtros');

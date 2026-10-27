@@ -45,13 +45,14 @@
     /* Cargar favoritos guardados */
     estado.favoritos = UniMap.favoritos.obtener();
 
-    /* Estado inicial del mapa: Torre Antigua, planta baja
-       (aplicando los cambios hechos por el administrador) */
+    /* Estado inicial del mapa: Torre Antigua, su primer piso con
+       modelo (aplicando los cambios hechos por el administrador) */
     estado.edificioActual = 1;
-    estado.pisoActual = 0;
+    var pisosIniciales = datos.pisosDeVista ? datos.pisosDeVista(1) : [0];
+    estado.pisoActual = pisosIniciales.length ? pisosIniciales[0] : 0;
     estado.espacios = UniMap.personalizacion
-      ? UniMap.personalizacion.espaciosDelPiso(1, 0)
-      : datos.construirEspacios(1, 0);
+      ? UniMap.personalizacion.espaciosDelPiso(1, estado.pisoActual)
+      : datos.construirEspacios(1, estado.pisoActual);
     estado.nivelZoom = 1;
     estado.desplazamientoX = 0;
     estado.desplazamientoY = 0;
@@ -73,7 +74,9 @@
 
   /* Etiqueta i18n de la torre + planta actual (HU-15) */
   function etiquetaPiso() {
-    var nombreTorre = datos.nombreEdificio ? datos.nombreEdificio(estado.edificioActual) : '';
+    var nombreTorre = estado.edificioActual === 0
+      ? (UniMap.i18n ? UniMap.i18n.t('torre.ambos') : 'Ambas torres')
+      : (datos.nombreEdificio ? datos.nombreEdificio(estado.edificioActual) : '');
     var nombrePlanta = datos.nombrePiso ? datos.nombrePiso(estado.pisoActual) : '';
     return nombreTorre + ' · ' + nombrePlanta;
   }
@@ -169,10 +172,22 @@
 
     /* Cambiar de torre y piso si hace falta */
     if ((espacio.edificio !== estado.edificioActual || espacio.piso !== estado.pisoActual) && UniMap.mapa2D) {
-      if (espacio.edificio !== estado.edificioActual) {
+      if (estado.edificioActual === 0) {
+        /* Ya se muestran ambas torres, solo cambiar de piso */
+        UniMap.mapa2D.cambiarPiso(espacio.piso);
+      } else if (espacio.edificio !== estado.edificioActual) {
         UniMap.mapa2D.cambiarEdificio(espacio.edificio, espacio.piso);
       } else {
         UniMap.mapa2D.cambiarPiso(espacio.piso);
+      }
+    }
+
+    /* Usar la copia viva de la planta: es la que se esta pintando
+       (en modo "ambas torres" la torre 2 lleva su desplazamiento en X) */
+    for (var e = 0; e < (estado.espacios || []).length; e++) {
+      if (estado.espacios[e].id === espacio.id) {
+        espacio = estado.espacios[e];
+        break;
       }
     }
 
@@ -241,7 +256,6 @@
       var cerrado = false;
 
       /* Listas y paneles, en orden de mas especifico a menos */
-      cerrado = ocultarSiVisible('lista-modelos') || cerrado;
       cerrado = ocultarSiVisible('resultados-busqueda') || cerrado;
       cerrado = ocultarSiVisible('panel-filtros') || cerrado;
       cerrado = ocultarSiVisible('panel-horarios') || cerrado;
@@ -265,10 +279,38 @@
   }
 
   /* =========================================================
+     TEMA CLARO / OSCURO
+     ========================================================= */
+  var CLAVE_TEMA = 'unimap_tema';
+
+  function temaActual() {
+    return document.documentElement.getAttribute('data-theme') === 'dark' ? 'oscuro' : 'claro';
+  }
+
+  function aplicarTema(tema) {
+    document.documentElement.setAttribute('data-theme', tema === 'oscuro' ? 'dark' : 'light');
+    try { localStorage.setItem(CLAVE_TEMA, tema); } catch (e) { /* sin storage */ }
+
+    /* El plano 2D se pinta con la paleta vigente: al cambiar de
+       tema se invalida la cache y se vuelve a pedir el del piso
+       actual para que no quede con los colores anteriores */
+    document.dispatchEvent(new CustomEvent('tema:cambiado', { detail: tema }));
+  }
+
+  function conectarTema() {
+    var boton = util.el('boton-tema');
+    if (!boton) return;
+    boton.addEventListener('click', function () {
+      aplicarTema(temaActual() === 'oscuro' ? 'claro' : 'oscuro');
+    });
+  }
+
+  /* =========================================================
      ARRANQUE
      ========================================================= */
   function iniciar() {
     conectarVista();
+    conectarTema();
     conectarNotificacion();
     conectarModales();
     conectarTeclado();
@@ -283,6 +325,7 @@
     inicializarPantalla: inicializarPantalla,
     cambiarVista: cambiarVista,
     irAEspacio: irAEspacio,
-    etiquetaPiso: etiquetaPiso
+    etiquetaPiso: etiquetaPiso,
+    temaActual: temaActual
   };
 })();

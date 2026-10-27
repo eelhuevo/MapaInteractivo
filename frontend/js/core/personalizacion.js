@@ -68,12 +68,17 @@
     var edificios = datos.edificios || [];
     for (var e = 0; e < edificios.length; e++) {
       var ed = edificios[e];
-      for (var piso = 0; piso < ed.pisos; piso++) {
-        var lista = espaciosDelPiso(ed.id, piso);
+      var pisos = datos.pisosDe ? datos.pisosDe(ed.id) : [];
+      for (var p = 0; p < pisos.length; p++) {
+        var lista = espaciosDelPiso(ed.id, pisos[p]);
         for (var i = 0; i < lista.length; i++) estado.todosLosEspacios.push(lista[i]);
       }
     }
-    estado.espacios = espaciosDelPiso(estado.edificioActual, estado.pisoActual);
+    /* Rehacer la planta visible (en modo "ambas torres" con las dos
+       torres y la torre 2 ya desplazada en X) */
+    estado.espacios = datos.espaciosDeVista
+      ? datos.espaciosDeVista(estado.edificioActual, estado.pisoActual)
+      : espaciosDelPiso(estado.edificioActual, estado.pisoActual);
   }
 
   function buscarEnTodos(id) {

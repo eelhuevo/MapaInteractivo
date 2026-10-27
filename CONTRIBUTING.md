@@ -251,26 +251,7 @@ Las tareas pendientes se agrupan en el **milestone** de la versión correspondie
 
 ---
 
-## 9. Estructura del proyecto
-
-```
-css/      estilos por capítulo
-js/
-  core/   estado global y utilidades
-  data/   datos del mapa (espacios, categorías, edificios, docentes)
-  auth/   autenticación y sesión
-  map/    mapa 2D, filtros, búsqueda, horarios, favoritos, ficha
-  view3d/ visor tridimensional
-models/   modelos 3D del campus
-vendor/   Three.js r147 y cargadores (funciona sin internet)
-```
-
-Detalle completo, archivo por archivo, en [`ESTRUCTURA.md`](ESTRUCTURA.md), y las
-capturas de la aplicación en [`docs/capturas/`](docs/capturas/).
-
----
-
-## 10. Configuración inicial de git (una sola vez)
+## 9. Configuración inicial de git (una sola vez)
 
 Cada persona configura git con **su propio nombre y su propio correo**:
 
@@ -308,7 +289,7 @@ access tokens* → *Generate new token* con permisos `repo`.
 
 ---
 
-## 11. Resumen en 6 comandos
+## 10. Resumen en 6 comandos
 
 ```bash
 git clone https://github.com/eelhuevo/MapaInteractivo.git
@@ -335,7 +316,7 @@ gh pr create --base main --title "feat(mapa): anade mi funcionalidad" --body "Cl
 
 ---
 
-## 12. Las tareas del proyecto
+## 11. Las tareas del proyecto
 
 Este es el mapa completo de las 16 tareas de la entrega `v1.0.0`: qué issue las
 abría, quién las hizo, en qué rama se trabajó, qué Pull Request las entregó y qué

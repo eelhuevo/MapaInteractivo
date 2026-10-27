@@ -1,246 +1,197 @@
 # UniMap — Campus Universitario
 
-![Verificar](https://github.com/eelhuevo/MapaInteractivo/actions/workflows/convencion-commits.yml/badge.svg?branch=main)
-![Release](https://img.shields.io/github/v/release/eelhuevo/MapaInteractivo?label=release)
-![Rama de entrega](https://img.shields.io/badge/rama%20de%20entrega-beta-1a56db)
-![Integrantes](https://img.shields.io/badge/integrantes-5-8250df)
-![Commits](https://img.shields.io/github/commit-activity/eelhuevo/MapaInteractivo)
-![Issues abiertas](https://img.shields.io/github/issues/eelhuevo/MapaInteractivo?label=issues)
-![Pull Requests abiertas](https://img.shields.io/github/issues-pr/eelhuevo/MapaInteractivo?label=pull%20requests)
-
-Mapa interactivo de campus con **dos torres integradas** (Torre Antigua y Torre
-Innovación, **17 pisos en total**), **plano 2D** (canvas) y **visor 3D campus**
-(Three.js, ambas torres en la misma escena), con autenticación, filtros, buscador,
-horarios y favoritos. Incluye el **frontend** (sin dependencias externas, funciona
-100 % offline) y el **backend** (API REST en Laravel + Supabase/PostGIS).
-
-| | |
-|---|---|
-| **Abrir la aplicación** | Doble clic en `INICIAR.bat` → <http://localhost:8080> |
-| **Manual de usuario** | [`MANUAL-USUARIO.md`](MANUAL-USUARIO.md) |
-| **Guía de contribución** | [`CONTRIBUTING.md`](CONTRIBUTING.md) |
-| **Estructura del proyecto** | [`ESTRUCTURA.md`](ESTRUCTURA.md) |
-| **Historial de versiones** | [`CHANGELOG.md`](CHANGELOG.md) |
-| **Tablero de tareas** | <https://github.com/users/eelhuevo/projects/1> |
-| **Release** | [`v1.0.0`](https://github.com/eelhuevo/MapaInteractivo/releases/tag/v1.0.0) |
+Mapa interactivo de campus con **dos torres integradas** (Torre Antigua y Torre Innovación, **17 pisos en total**), **plano 2D** (canvas) y **visor 3D campus** (Three.js, ambas torres en la misma escena), con autenticación, filtros, buscador, horarios y favoritos. Incluye el **frontend** (sin dependencias externas, funciona 100 % offline) y el **backend** (API REST en Laravel + Supabase/PostGIS).
 
 ---
 
-## Estado del proyecto
+## 📋 Tabla de Contenidos
 
-| Qué | Dónde |
-|---|---|
-| Rama de **entrega v1.0** (todo el trabajo integrado) | [`beta`](https://github.com/eelhuevo/MapaInteractivo/tree/beta) |
-| Rama principal **protegida** (línea base + revisiones del equipo) | [`main`](https://github.com/eelhuevo/MapaInteractivo/tree/main) |
-| Tareas registradas | [Issues #36–#51](https://github.com/eelhuevo/MapaInteractivo/issues?q=is%3Aissue) |
-| Entregas del equipo | [Pull Requests #52–#75](https://github.com/eelhuevo/MapaInteractivo/pulls?q=is%3Apr) |
-| Verificación automática de commits | [`.github/workflows/convencion-commits.yml`](.github/workflows/convencion-commits.yml) → *Verificar* |
-| Plantillas de issues y PRs | [`.github/`](.github) |
-| Discusiones del equipo | <https://github.com/eelhuevo/MapaInteractivo/discussions> |
-
-La rama `beta` es la **entrega**: contiene los 16 trabajos del equipo más las
-correcciones, con un **100 % de commits que siguen la convención** del proyecto
-(`tipo(ámbito): descripción`). Cada entrega se hizo en su **rama propia** y se
-abrió como **Pull Request**, como se explica en [`CONTRIBUTING.md`](CONTRIBUTING.md).
+1. [Equipo de Desarrollo](https://www.google.com/search?q=%23-equipo-de-desarrollo)
+2. [Características Principales](https://www.google.com/search?q=%23-caracter%C3%ADsticas-principales)
+3. [Estructura del Proyecto](https://www.google.com/search?q=%23-estructura-del-proyecto)
+4. [Requisitos del Sistema](https://www.google.com/search?q=%23-requisitos-del-sistema)
+5. [Instalación y Configuración](https://www.google.com/search?q=%23-instalaci%C3%B3n-y-configuraci%C3%B3n)
+6. [Guía de Uso](https://www.google.com/search?q=%23-gu%C3%ADa-de-uso)
+7. [Arquitectura y Decisiones Técnicas](https://www.google.com/search?q=%23-arquitectura-y-decisiones-t%C3%A9cnicas)
+8. [Control de Calidad y Convenciones](https://www.google.com/search?q=%23-control-de-calidad-y-convenciones)
+9. [Documentación Complementaria](https://www.google.com/search?q=%23-documentaci%C3%B3n-complementaria)
 
 ---
 
-## El equipo
+## 👥 Equipo de Desarrollo
 
-Cada integrante del proyecto, con su perfil, sus issues y sus entregas. Los
-enlaces a "commits" muestran directamente el trabajo de cada persona en la rama
-de entrega.
+El proyecto fue desarrollado colaborativamente por el siguiente equipo:
 
-| Integrante | Perfil | Área del proyecto | Commits | Issues | Pull Requests |
-|---|---|---|---|---|---|
-| **eelhuevo** | [@eelhuevo](https://github.com/eelhuevo) | Modelo de datos, estado global, autenticación, documentación | [commits](https://github.com/eelhuevo/MapaInteractivo/commits/beta?author=eelhuevo) | [#36](https://github.com/eelhuevo/MapaInteractivo/issues/36) [#37](https://github.com/eelhuevo/MapaInteractivo/issues/37) [#38](https://github.com/eelhuevo/MapaInteractivo/issues/38) [#51](https://github.com/eelhuevo/MapaInteractivo/issues/51) | [#53](https://github.com/eelhuevo/MapaInteractivo/pull/53) [#57](https://github.com/eelhuevo/MapaInteractivo/pull/57) [#58](https://github.com/eelhuevo/MapaInteractivo/pull/58) [#59](https://github.com/eelhuevo/MapaInteractivo/pull/59) [#60](https://github.com/eelhuevo/MapaInteractivo/pull/60) [#61](https://github.com/eelhuevo/MapaInteractivo/pull/61) [#62](https://github.com/eelhuevo/MapaInteractivo/pull/62) [#63](https://github.com/eelhuevo/MapaInteractivo/pull/63) [#64](https://github.com/eelhuevo/MapaInteractivo/pull/64) [#65](https://github.com/eelhuevo/MapaInteractivo/pull/65) [#66](https://github.com/eelhuevo/MapaInteractivo/pull/66) [#67](https://github.com/eelhuevo/MapaInteractivo/pull/67) [#68](https://github.com/eelhuevo/MapaInteractivo/pull/68) [#69](https://github.com/eelhuevo/MapaInteractivo/pull/69) [#70](https://github.com/eelhuevo/MapaInteractivo/pull/70) [#71](https://github.com/eelhuevo/MapaInteractivo/pull/71) |
-| **moisesAlejandro78** | [@moisesAlejandro78](https://github.com/moisesAlejandro78) | Modelado 3D en Blender (edificio principal, oficinas, torre antigua) | [commits](https://github.com/eelhuevo/MapaInteractivo/commits/beta?author=moisesAlejandro78) | [#39](https://github.com/eelhuevo/MapaInteractivo/issues/39) [#40](https://github.com/eelhuevo/MapaInteractivo/issues/40) [#41](https://github.com/eelhuevo/MapaInteractivo/issues/41) | [#72](https://github.com/eelhuevo/MapaInteractivo/pull/72) [#73](https://github.com/eelhuevo/MapaInteractivo/pull/73) [#74](https://github.com/eelhuevo/MapaInteractivo/pull/74) [#75](https://github.com/eelhuevo/MapaInteractivo/pull/75) |
-| **Jhoselinconde537-lang** | [@Jhoselinconde537-lang](https://github.com/Jhoselinconde537-lang) | Cargadores de Three.js (glTF y FBX) y modelo FBX de la torre B | [commits](https://github.com/eelhuevo/MapaInteractivo/commits/beta?author=Jhoselinconde537-lang) | [#42](https://github.com/eelhuevo/MapaInteractivo/issues/42) [#43](https://github.com/eelhuevo/MapaInteractivo/issues/43) [#44](https://github.com/eelhuevo/MapaInteractivo/issues/44) | [#64](https://github.com/eelhuevo/MapaInteractivo/pull/64) [#65](https://github.com/eelhuevo/MapaInteractivo/pull/65) [#66](https://github.com/eelhuevo/MapaInteractivo/pull/66) |
-| **Oslo144** | [@Oslo144](https://github.com/Oslo144) | Interfaz: barra superior, paneles laterales y ficha flotante del espacio | [commits](https://github.com/eelhuevo/MapaInteractivo/commits/beta?author=Oslo144) | [#45](https://github.com/eelhuevo/MapaInteractivo/issues/45) [#46](https://github.com/eelhuevo/MapaInteractivo/issues/46) [#47](https://github.com/eelhuevo/MapaInteractivo/issues/47) | [#54](https://github.com/eelhuevo/MapaInteractivo/pull/54) [#55](https://github.com/eelhuevo/MapaInteractivo/pull/55) [#56](https://github.com/eelhuevo/MapaInteractivo/pull/56) [#57](https://github.com/eelhuevo/MapaInteractivo/pull/57) [#67](https://github.com/eelhuevo/MapaInteractivo/pull/67) [#68](https://github.com/eelhuevo/MapaInteractivo/pull/68) |
-| **ItsMegabo11** | [@ItsMegabo11](https://github.com/ItsMegabo11) | Sistema de diseño, buscador de espacios y adaptación a móvil y tablet | [commits](https://github.com/eelhuevo/MapaInteractivo/commits/beta?author=ItsMegabo11) | [#48](https://github.com/eelhuevo/MapaInteractivo/issues/48) [#49](https://github.com/eelhuevo/MapaInteractivo/issues/49) [#50](https://github.com/eelhuevo/MapaInteractivo/issues/50) | [#69](https://github.com/eelhuevo/MapaInteractivo/pull/69) [#70](https://github.com/eelhuevo/MapaInteractivo/pull/70) [#71](https://github.com/eelhuevo/MapaInteractivo/pull/71) |
-
-> La participación individual también se refleja en las **revisiones**: cada Pull
-> Request necesita una aprobación de otro miembro del equipo antes de integrarse
-> (`main` está protegida y exige 1 revisión aprobatoria + la verificación
-> automática *Verificar*).
+| Integrante | Rol en el Proyecto |
+| --- | --- |
+| **Marco (eelhuevo)** | Product Manager & Backend Developer |
+| **Moisés (moisesAlejandro78)** | Frontend Developer & 3D Specialist |
+| **Jhoselin (Jhoselinconde537-lang)** | Frontend Developer |
+| **José (ItsMegabo11)** | QA & Software Tester |
+| **Paul (Oslo144)**| UI/UX Designer & Frontend Developer |
 
 ---
 
-## Capturas
+## 🚀 Características Principales
 
-| Vista 2D | Buscador | Ficha del espacio | Vista 3D |
-|---|---|---|---|
-| ![Vista 2D del campus](docs/capturas/02-mapa-2d.png) | ![Buscador con resultados resaltados](docs/capturas/03-buscador.png) | ![Ficha flotante de un espacio](docs/capturas/04-ficha-espacio.png) | ![Visor 3D del modelo del edificio](docs/capturas/07-vista-3d.png) |
+* **Sistema Multitorre (17 pisos):** Integración completa de la *Torre Antigua* (Planta Baja a Piso 7) y la *Torre Innovación* (Planta Baja a Piso 8), con un conmutador interactivo de torres y un selector de niveles dinámico.
+* **Experiencia Dual (2D / 3D):**
+* **Plano 2D:** Renderizado en HTML5 Canvas con soporte para paneo fluido, zoom táctil/rueda, capas e interactividad por espacio.
+* **Visor 3D:** Escena unificada en Three.js con soporte para modelos `.glb` y `.fbx`, posicionamiento automático de marcadores por altura de piso y selector de modelos individuales.
 
-| Panel de filtros | Horarios de docentes | Pantalla de acceso |
-|---|---|---|
-| ![Panel de filtros](docs/capturas/05-filtros.png) | ![Panel de horarios](docs/capturas/06-horarios.png) | ![Pantalla de acceso](docs/capturas/01-acceso.png) |
+
+* **Buscador Inteligente y Filtros Avanzados:** Búsqueda en tiempo real por nombre de espacio, tipo, docente o departamento asignado, complementada con filtros por categoría y disponibilidad.
+* **Gestión de Horarios y Favoritos:** Consulta de horarios académicos vinculada directamente con la ubicación en el mapa y almacenamiento local de espacios favoritos por usuario.
+* **Autenticación Completa:** Sistema de acceso con roles (Administrador / Invitado / Usuario registrado), validaciones de contraseña seguras y persistencia de sesión.
+* **Modo Offline:** El frontend opera de manera autónoma sin requerir conexión a internet ni dependencias de CDNs externos.
 
 ---
 
-## Cómo ejecutar
+## 📂 Estructura del Proyecto
 
-### Frontend (recomendado, necesario para la vista 3D)
+```text
+unimap/
+├── index.html                  → Pantalla de acceso global (Login / Registro / Invitado)
+├── INICIAR.bat                 → Script de automatización para despliegue local (Python 3)
+├── README.md                   → Documentación técnica principal
+│
+├── frontend/                   → Código fuente del cliente (Vanilla JS + Módulos IIFE)
+│   ├── mapa.html               → Interfaz principal (Mapa 2D + Visor 3D + Paneles)
+│   ├── admin.html              → Panel de administración y gestión de recursos
+│   │
+│   ├── css/                    → Hojas de estilo modulares organizadas por componentes
+│   │   ├── base.css            → Variables globales, reset, botones, animaciones y avisos
+│   │   ├── auth.css            → Estilos de la pantalla de autenticación
+│   │   ├── map.css             → Barra superior, buscador, pisos, lienzo y controles
+│   │   ├── panels.css          → Paneles laterales de filtros, horarios y favoritos
+│   │   ├── components.css      → Tooltips, resultados de búsqueda y tarjetas
+│   │   ├── view3d.css          → Controles del visor 3D, marcadores y estados de carga
+│   │   ├── admin.css           → Estilos específicos del panel de control
+│   │   └── responsive.css      → Diseño adaptativo (Media Queries para móvil y tablet)
+│   │
+│   ├── js/                     → Lógica de la aplicación estructurada por dominios
+│   │   ├── app.js              → Punto de entrada y orquestador del mapa
+│   │   ├── core/               → Núcleo de estado global, UI, internacionalización y utilidades
+│   │   ├── data/               → Repositorios estáticos (categorías, edificios, docentes, espacios)
+│   │   ├── auth/               → Gestión de sesiones y credenciales
+│   │   ├── admin/              → Controladores del panel de administración
+│   │   ├── map/                → Lógica de interacción 2D, renderizado, rutas y servicios
+│   │   └── view3d/             → Inicialización de Three.js y manipulación de la escena
+│   │
+│   ├── vendor/three/           → Biblioteca Three.js r147 en copia local estricta
+│   └── models/                 → Activos 3D optimizados en formatos .glb y .fbx
+│
+├── backend/                    → API REST del sistema (Laravel + Supabase/PostGIS)
+│   ├── app/                    → Controladores, modelos Eloquent, middleware y recursos
+│   ├── database/               → Migraciones relacionales y seeders de datos iniciales
+│   ├── routes/api.php          → Definición de endpoints de la API
+│   ├── docs/                   → Backlog técnico y documentación del servidor
+│   └── .env.example            → Plantilla de configuración de entorno
+│
+└── docs/                       → Recursos documentales de apoyo y guías operativas
 
-Doble clic en **`INICIAR.bat`** → abre `http://localhost:8080` en el navegador
-(requiere Python 3).
-
-> La vista 3D descarga los modelos `.glb` / `.fbx` por HTTP. Si abres `index.html`
-> directamente con doble clic (`file://`), el navegador bloquea esa descarga por
-> política CORS y el visor mostrará un aviso. El mapa 2D, filtros, buscador,
-> horarios y favoritos sí funcionan igualmente.
-
-También puedes servir la carpeta con:
-
-```bash
-python -m http.server 8080
 ```
 
-### Cuenta de prueba
+---
 
-| Correo | Contraseña | Rol |
-|---|---|---|
+## 💻 Requisitos del Sistema
+
+### Frontend
+
+* Navegador web moderno con soporte para **WebGL** (Google Chrome, Mozilla Firefox, Microsoft Edge, Safari).
+* **Python 3.x** (únicamente requerido si se utiliza el script de arranque local para evitar bloqueos CORS en la carga de modelos 3D).
+
+### Backend (Opcional para modo persistente)
+
+* **PHP >= 8.4.1**
+* Extensiones PHP requeridas: `pdo_pgsql`, `pgsql`, `fileinfo`, `zip`.
+* **Composer** instalado globalmente.
+* Instancia activa de **PostgreSQL con extensión PostGIS** (configurada mediante Supabase).
+
+---
+
+## ⚙️ Instalación y Configuración
+
+### 1. Ejecución del Frontend (Entorno de Desarrollo)
+
+Para evitar restricciones de seguridad CORS del navegador al cargar los modelos 3D locales (`.glb` / `.fbx`), se debe servir el proyecto a través de un servidor HTTP local:
+
+* **Opción automática (Windows):**
+Haz doble clic en el archivo **`INICIAR.bat`** en la raíz del proyecto. Esto levantará un servidor Python en el puerto `8080`.
+* **Opción manual (Terminal / CLI):**
+```bash
+python -m http.server 8080
+
+```
+
+
+Una vez iniciado, abre en tu navegador: `http://localhost:8080`
+
+### 2. Credenciales de Acceso por Defecto
+
+Puedes utilizar las siguientes credenciales preconfiguradas para explorar el sistema con privilegios administrativos:
+
+| Correo Electrónico | Contraseña | Rol Asignado |
+| --- | --- | --- |
 | `admin@uni.edu` | `123456` | Administrador |
 
-También puedes registrarte desde la propia pantalla o entrar como **Invitado**.
+*También tienes la opción de registrar un nuevo usuario directamente desde la interfaz o ingresar con el rol de **Invitado** (con permisos de lectura restringidos).*
 
-### Backend (API REST)
+### 3. Configuración del Backend (API REST)
 
-Requiere **PHP >= 8.4.1** con las extensiones `pdo_pgsql`, `pgsql`, `fileinfo` y
-`zip`:
+Si deseas conectar la interfaz con el backend de Laravel y la base de datos geoespacial:
 
 ```bash
 cd backend
-cp .env.example .env   # completa tus credenciales de Supabase
+cp .env.example .env
+# Configura tus variables de conexión a Supabase/PostgreSQL en el archivo .env generado
 composer install
+php artisan key:generate
+php artisan migrate --seed
 php artisan serve
+
 ```
 
 ---
 
-## Documentación
+## 📖 Guía de Uso
 
-| Documento | Para qué sirve |
-|---|---|
-| [`MANUAL-USUARIO.md`](MANUAL-USUARIO.md) | **Manual de usuario**: cómo entrar, usar el mapa 2D y 3D, filtros, búsqueda, horarios y favoritos |
-| [`CONTRIBUTING.md`](CONTRIBUTING.md) | **Guía de contribución**: flujo de trabajo, convención de commits, Pull Requests y versiones |
-| [`ESTRUCTURA.md`](ESTRUCTURA.md) | **Estructura del proyecto**: qué hay en cada carpeta y para qué sirve |
-| [`CHANGELOG.md`](CHANGELOG.md) | **Historial de versiones** del proyecto |
-| `README.md` (este) | Documentación técnica: estructura, cómo ejecutar, funcionalidad |
-| Plantillas en `.github/` | Formulario para Pull Requests e issues |
+1. **Autenticación:** Al abrir la aplicación, selecciona tu modalidad de ingreso (Iniciar sesión, Registrarse o Entrar como invitado).
+2. **Navegación en el Mapa 2D:**
+* Arrastra el lienzo con el ratón o un gesto táctil para desplazarte.
+* Utiliza la rueda del ratón o los botones de control para hacer zoom.
+* Selecciona una torre y un nivel específico desde el selector lateral superior.
+* Haz clic sobre cualquier espacio del plano para desplegar su ficha técnica detallada.
 
----
 
-## Estructura
-
-```
-unimap/
-├── index.html              → pantalla de acceso (login / registro / invitado)
-├── INICIAR.bat             → servidor local del frontend (requiere Python 3)
-├── README.md
-│
-├── frontend/               → código del mapa interactivo
-│   ├── mapa.html           → mapa 2D + visor 3D + paneles
-│   ├── admin.html          → panel de administración
-│   │
-│   ├── css/                → estilos divididos por capítulo
-│   │   ├── base.css        → variables, reset, botones, animaciones, avisos
-│   │   ├── auth.css        → pantalla de autenticación
-│   │   ├── map.css         → barra superior, buscador, pisos, lienzo, leyenda, zoom
-│   │   ├── panels.css      → paneles de filtros, horarios y favoritos
-│   │   ├── components.css  → tooltip, resultados de búsqueda, favoritos
-│   │   ├── view3d.css      → visor 3D, marcadores, selector de modelos, carga
-│   │   ├── admin.css       → panel de administración
-│   │   └── responsive.css  → ajustes a distintos tamaños de pantalla
-│   │
-│   ├── js/
-│   │   ├── app.js          → arranque de la pantalla del mapa
-│   │   ├── core/
-│   │   │   ├── store.js        → namespace global, estado, storage y utilidades
-│   │   │   ├── ui.js           → pantalla, conmutador 2D/3D, navegación a espacios
-│   │   │   ├── i18n.js         → textos del interfaz
-│   │   │   ├── avisos.js       → notificaciones
-│   │   │   ├── estadisticas.js → métricas de uso
-│   │   │   └── personalizacion.js → preferencias del usuario
-│   │   ├── data/
-│   │   │   ├── categorias.js / edificios.js / docentes.js / espacios.js
-│   │   ├── auth/auth.js    → login, registro, invitado y sesión
-│   │   ├── admin/admin.js  → gestión de espacios y usuarios
-│   │   ├── map/
-│   │   │   ├── tooltip.js / map2d.js / filtros.js
-│   │   │   ├── busqueda.js / horarios.js / favoritos.js
-│   │   │   ├── ruta.js / qr.js / servicios.js / sugerencias.js
-│   │   └── view3d/viewer3d.js  → escena Three.js, modelos, marcadores 3D
-│   │
-│   ├── vendor/three/       → Three.js r147 en local (sin CDN)
-│   └── models/             → modelos 3D del campus (.glb / .fbx)
-│       ├── torre-antigua-banos.glb / torre-antigua-conexion.glb / torre-antigua-cursos.glb
-│       ├── torre-innovacion-pisos-6-10.glb / torre-innovacion-plantilla.glb
-│       ├── edificio.glb / oficinas.glb / planta-baja-torre-b.fbx
-│
-├── backend/                → API REST (Laravel + Supabase/PostGIS)
-│   ├── app/                → controladores, modelos, middleware, resources
-│   ├── database/           → migraciones + seeders del campus
-│   ├── routes/api.php      → endpoints de la API
-│   ├── docs/               → backlog de usuario y documentación
-│   └── .env                → configuración (no se sube al repositorio)
-│
-└── docs/
-    └── capturas/           → imágenes del README y del manual de usuario
-```
+3. **Exploración 3D:** Cambia a la vista tridimensional mediante el conmutador de vistas para inspeccionar la volumetría de las torres de manera unificada.
+4. **Búsqueda y Filtros:** Emplea la barra de búsqueda superior para encontrar aulas, laboratorios o personal docente de forma instantánea. Utiliza el panel de filtros para categorizar los espacios según su funcionalidad.
 
 ---
 
-## Funcionalidad
+## 🛠️ Arquitectura y Decisiones Técnicas
 
-- **Dos torres, 17 pisos**: Torre Antigua (PB–P7) y Torre Innovación (PB–P8), con
-  conmutador TA/TI y selector de pisos dinámico según la torre activa.
-- **Autenticación**: login, registro con validaciones y medidor de fortaleza, sesión
-  persistente y acceso como invitado.
-- **Mapa 2D**: plano en canvas con paneo (ratón/dedo/lápiz), zoom (rueda y pellizca),
-  selector de pisos, hover y clic con ficha completa.
-- **Visor 3D campus**: ambas torres cargadas e integradas en la misma escena; los
-  marcadores se posicionan sobre la torre correcta y a la altura del piso seleccionado
-  (offset Y automático). Selector de modelos individuales para inspección.
-- **Filtros**: 8 tipos de espacio, disponibilidad, pisos y torre (con efecto real en
-  ambas vistas).
-- **Búsqueda** en vivo por nombre, tipo, docente o departamento, con resultados
-  navegables (muestra torre y piso).
-- **Horarios** de los 8 docentes con buscador y salto al aula correspondiente.
-- **Favoritos** por usuario (localStorage), ocultos para invitados.
-- **Teclado**: `Escape` cierra fichas/paneles/listas; `Enter` abre el primer resultado.
+* **Patrón Modular IIFE:** El frontend está estructurado mediante Funciones Ejecutadas Inmediatamente (IIFE) que exponen un espacio de nombres global seguro (`window.UniMap`), evitando la contaminación del ámbito global sin la necesidad de empaquetadores complejos (Bundlers).
+* **Three.js sin Dependencias Externas:** Se emplea la versión **r147** de Three.js alojada localmente en `frontend/vendor/three/`, garantizando estabilidad a largo plazo, independencia de redes externas y funcionamiento 100% offline.
+* **Diseño Adaptativo (Responsive Design):** Uso intensivo de Flexbox, CSS Grid y variables nativas para garantizar una experiencia de usuario fluida tanto en equipos de escritorio como en tabletas y dispositivos móviles.
+* **Modelo Geoespacial:** Preparado para integrarse con esquemas de bases de datos geográficas mediante PostGIS, permitiendo consultas espaciales avanzadas en futuras iteraciones del backend.
 
 ---
 
-## Cómo trabajamos
+## 🔒 Control de Calidad y Convenciones
 
-```
-Issue asignado  →  Rama propia  →  Commit  →  Push  →  Pull Request  →  Revisión  →  Merge
-```
+El repositorio aplica estrictas políticas de control de calidad de código:
 
-1. Cada tarea tiene su **issue** (`#36`–`#51`) con responsable, etiquetas y
-   criterio de aceptación.
-2. Cada persona trabaja en una **rama propia** (`feature/...`).
-3. Cada cambio es un **commit** con la convención
-   `tipo(ámbito): descripción en minúsculas`.
-4. La verificación automática **`Verificar`** rechaza los commits y los títulos de PR
-   que no la siguen.
-5. Otro miembro del equipo **revisa y aprueba** el Pull Request.
-6. La rama `main` está **protegida**: solo entra código revisado.
-
-El detalle está en [`CONTRIBUTING.md`](CONTRIBUTING.md).
+* **Convención de Commits:** Se utiliza el estándar de *Conventional Commits* (`tipo(ámbito): descripción`), verificado automáticamente mediante flujos de trabajo (*GitHub Actions*).
+* **Protección de Ramas:** La rama principal (`main`) se encuentra protegida; todo código nuevo debe integrarse obligatoriamente a través de Pull Requests desde ramas de desarrollo (*feature branches*), requiriendo validación previa y revisiones de pares.
 
 ---
 
-## Notas técnicas
+## 📚 Documentación Complementaria
 
-- Arquitectura: HTML/CSS/JS vanilla con módulos IIFE que exponen `window.UniMap`.
-- Three.js **r147** (última con builds globales no modulares): sin build ni proceso de
-  compilación; todo se carga con `<script>` clásicos. Las librerías de
-  `frontend/vendor/three/` son copia local del código original de Three.js
-  (licencia MIT); solo se añadieron las cabeceras de procedencia.
-- Los datos de usuario y favoritos viven en `localStorage`: prototipo académico.
-  La integración con la API está prevista como siguiente paso.
-- **Backend** (`backend/`): API REST en Laravel con Sanctum, PostgreSQL/PostGIS vía
-  Supabase. Requiere **PHP >= 8.4.1**. Ejecutar con `php artisan serve` desde
-  `backend/`. La integración del frontend con esta API está pendiente de implementarse.
+Para profundizar en aspectos específicos del proyecto, consulta los siguientes manuales integrados en el repositorio:
+
+* [`MANUAL-USUARIO.md`](https://www.google.com/search?q=MANUAL-USUARIO.md) — Guía detallada orientada al usuario final sobre el uso de la plataforma.
+* [`CONTRIBUTING.md`](CONTRIBUTING.md) — Lineamientos obligatorios para la colaboración, flujos de trabajo y políticas de ramas.
+* [`ESTRUCTURA.md`](https://www.google.com/search?q=ESTRUCTURA.md) — Descripción pormenorizada de los componentes de software.
+* [`CHANGELOG.md`](CHANGELOG.md) — Registro histórico de cambios y versiones del sistema.

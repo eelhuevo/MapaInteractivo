@@ -1,9 +1,10 @@
 /* =========================================================
    view3d/viewer3d.js — visor tridimensional (Three.js)
 
-   · carga los modelos de la carpeta /models (GLB y FBX)
-   · vista campus: ambas torres integradas en la escena
-   · marcadores 3D por torre y piso (offset Y automatico)
+   · carga automaticamente el modelo GLB de la planta tipo del
+     piso seleccionado (ver data/edificios.js: MODELOS_PISOS)
+   · vista "ambas torres": junta los dos modelos en escena
+   · marcadores 3D por torre y piso
    · seleccion, ficha y enfoque de camara
    ========================================================= */
 (function () {
@@ -19,66 +20,30 @@
   /* Si la pagina no tiene visor (index.html) no hacemos nada */
   if (!contenedor || !lienzo) return;
 
-  /* ── CATALOGO DE TORRES (escena campus integrada) ─── */
-  var TORRES = [
-    {
-      edificio: 1, clave: 'antigua', nombre: 'Torre Antigua', pisos: 8,
-      partes: [
-        { url: 'models/torre-antigua-conexion.glb', formato: 'GLB', nombre: 'Conexion' },
-        { url: 'models/torre-antigua-banos.glb', formato: 'GLB', nombre: 'Banos' },
-        { url: 'models/torre-antigua-cursos.glb', formato: 'GLB', nombre: 'Cursos' }
-      ],
-      offsetEscena: { x: -55, z: 0 }
-    },
-    {
-      edificio: 2, clave: 'innovacion', nombre: 'Torre Innovacion', pisos: 9,
-      partes: [
-        { url: 'models/torre-innovacion-plantilla.glb', formato: 'GLB', nombre: 'Plantilla' }
-      ],
-      offsetEscena: { x: 55, z: 0 }
-    }
-  ];
-
-  /* ── CATALOGO INDIVIDUAL (inspeccion de piezas) ───── */
-  var MODELOS = [
-    { clave: 'campus', nombre: 'Campus (ambas torres)', formato: 'ESCENA', url: null },
-    { clave: 'oficinas', nombre: 'Oficinas', formato: 'GLB', url: 'models/oficinas.glb' },
-    { clave: 'planta-baja', nombre: 'Planta Baja Torre B', formato: 'FBX', url: 'models/planta-baja-torre-b.fbx' },
-    { clave: 'torre-antigua-banos', nombre: 'Torre Antigua - Banos', formato: 'GLB', url: 'models/torre-antigua-banos.glb' },
-    { clave: 'torre-antigua-conexion', nombre: 'Torre Antigua - Conexion', formato: 'GLB', url: 'models/torre-antigua-conexion.glb' },
-    { clave: 'torre-antigua-cursos', nombre: 'Torre Antigua - Cursos', formato: 'GLB', url: 'models/torre-antigua-cursos.glb' },
-    { clave: 'torre-innovacion-pisos', nombre: 'Torre Innovacion - Pisos 6 y 10', formato: 'GLB', url: 'models/torre-innovacion-pisos-6-10.glb' },
-    { clave: 'torre-innovacion-plantilla', nombre: 'Torre Innovacion - Plantilla', formato: 'GLB', url: 'models/torre-innovacion-plantilla.glb' }
-  ];
-
-  var TAMANO_OBJETIVO = 100;          // unidades normalizadas
-  var PLANO = { x0: 40, x1: 760, y0: 40, y1: 540 }; // limites del plano 2D
+  /* ── CONFIGURACION DE LA PLANTA 3D ────────────────── */
+  /* Ancho (unidades de escena) al que se normaliza cada planta
+     tipo, para que las dos torres convivan en la misma escena */
+  var ANCHO_MODELO_3D = 460;
+  /* Altura a la que flotan los marcadores sobre el modelo */
+  var alturaMarcaje = 20;
 
   /* ── ESTADO INTERNO ───────────────────────────────── */
   var inicializado = false;
   var activo = false;
-  var cargando = false;
   var escena = null, camara = null, renderizador = null, controles = null;
   var luzDireccional = null, suelo = null, cuadricula = null;
-  var modeloActual = null, claveActual = null, claveEnEspera = null;
-  var huella = null;                    // { ancho, fondo, altura } del modelo individual
-  var cacheModelos = {};
+  var grupoPlanta = null;               // grupo que contiene todas las cajas de la planta actual
   var marcadores = [];
   var espacioPendiente = null;
   var animacionCamara = null;
   var raycaster = null;
-
-  /* Campus: torres cargadas con su huella y posicion en escena */
-  var campusGrupo = null;
-  var torresCargadas = [];   // [{ edificio, grupo, huella, centro, pisos }]
-  var campusListo = false;
-  var campusCargando = false;
+  var edificioActual = 1;               // 1 = TA, 2 = TI, 0 = ambas
+  var pisoActual = 0;
 
   /* =========================================================
      INICIALIZACION DE LA ESCENA
      ========================================================= */
   function iniciar() {
-    conectarSelector();
     conectarControles();
     conectarInteraccionLienzo();
     window.addEventListener('resize', redimensionar);
@@ -112,10 +77,8 @@
   function crearCuadricula() {
     var N = 40;
     var pasos = 12;
-    var MAYOR = [0.24, 0.29, 0.38];
-    var MENOR = [0.36, 0.42, 0.52];
     var posiciones = [];
-    var colores = [];
+    var mayores = [];   // 1 si el vertice pertenece a una linea mayor
 
     function alfa(x, z) {
       var d = Math.sqrt(x * x + z * z) * 2;
@@ -125,34 +88,79 @@
       return 1 - t * t * (3 - 2 * t);
     }
 
-    function linea(x0, z0, x1, z1, rgb) {
+    function linea(x0, z0, x1, z1, esMayor) {
       for (var s = 0; s < pasos; s++) {
         var a = s / pasos;
         var b = (s + 1) / pasos;
         var ax = x0 + (x1 - x0) * a, az = z0 + (z1 - z0) * a;
         var bx = x0 + (x1 - x0) * b, bz = z0 + (z1 - z0) * b;
         posiciones.push(ax, 0, az, bx, 0, bz);
-        colores.push(rgb[0], rgb[1], rgb[2], alfa(ax, az));
-        colores.push(rgb[0], rgb[1], rgb[2], alfa(bx, bz));
+        mayores.push(esMayor ? 1 : 0, esMayor ? 1 : 0);
       }
     }
 
     for (var i = 0; i <= N; i++) {
       var p = -0.5 + i / N;
-      var rgb = (i % 5 === 0) ? MAYOR : MENOR;
-      linea(p, -0.5, p, 0.5, rgb);
-      linea(-0.5, p, 0.5, p, rgb);
+      var esMayor = (i % 5 === 0);
+      linea(p, -0.5, p, 0.5, esMayor);
+      linea(-0.5, p, 0.5, p, esMayor);
     }
 
     var geometria = new THREE.BufferGeometry();
     geometria.setAttribute('position', new THREE.Float32BufferAttribute(posiciones, 3));
-    geometria.setAttribute('color', new THREE.Float32BufferAttribute(colores, 4));
+    geometria.setAttribute('color', new THREE.Float32BufferAttribute(
+      new Float32Array(posiciones.length / 3 * 4), 4));
+    geometria.userData.mayores = mayores;
 
-    return new THREE.LineSegments(geometria, new THREE.LineBasicMaterial({
+    var cuad = new THREE.LineSegments(geometria, new THREE.LineBasicMaterial({
       vertexColors: true,
       transparent: true,
       depthWrite: false
     }));
+    pintarColoresCuadricula(cuad, temaOscuro());
+    return cuad;
+  }
+
+  /* Colorea la rejilla segun el tema: en oscuro, grises azulados
+     claros sobre el fondo noche; en claro, lineas claras por encima
+     del azul pizarra para que la reticula siga leyendose */
+  function pintarColoresCuadricula(cuadricula, oscuro) {
+    var MAYOR = oscuro ? [0.24, 0.29, 0.38] : [0.38, 0.44, 0.55];
+    var MENOR = oscuro ? [0.36, 0.42, 0.52] : [0.52, 0.60, 0.71];
+    var posicion = cuadricula.geometry.attributes.position;
+    var colores = cuadricula.geometry.attributes.color;
+    var mayores = cuadricula.geometry.userData.mayores || [];
+    for (var k = 0; k < posicion.count; k++) {
+      var rgb = mayores[k] ? MAYOR : MENOR;
+      var x = posicion.getX(k);
+      var z = posicion.getZ(k);
+      var d = Math.sqrt(x * x + z * z) * 2;
+      var a;
+      if (d <= 0.62) {
+        a = 1;
+      } else if (d >= 1) {
+        a = 0;
+      } else {
+        var t = (d - 0.62) / 0.38;
+        a = 1 - t * t * (3 - 2 * t);
+      }
+      colores.setXYZW(k, rgb[0], rgb[1], rgb[2], a);
+    }
+    colores.needsUpdate = true;
+  }
+
+  /* Tema activo de la interfaz (true = oscuro) */
+  function temaOscuro() {
+    return !!(document.documentElement &&
+      document.documentElement.getAttribute('data-theme') === 'dark');
+  }
+
+  /* Color de fondo de la escena segun el tema activo.
+     En claro el fondo es un azul pizarra MEDIO: el modelo (blanco,
+       ~193 de brillo con la iluminacion actual) se fundia con el
+       gris claro de la interfaz; con el pizarra destaca bien */
+  function colorFondoEscena() {
+    return temaOscuro() ? 0x0b1220 : 0x94a3b8;
   }
 
   function crearEscena() {
@@ -166,8 +174,18 @@
     raycaster = new THREE.Raycaster();
 
     escena = new THREE.Scene();
-    escena.background = new THREE.Color(0xeef2f7);
-    escena.fog = new THREE.Fog(0xeef2f7, 260, 700);
+    /* Fondo algo mas oscuro que el modelo (paredes blancas): si no,
+       el contorno se funde con el fondo y todo parece "blanco solo".
+       En tema oscuro el fondo es azul noche para que el modelo
+       (claro) siga destacando */
+    escena.background = new THREE.Color(colorFondoEscena());
+    escena.fog = new THREE.Fog(colorFondoEscena(), 260, 700);
+    document.addEventListener('tema:cambiado', function () {
+      if (!escena) return;
+      escena.background = new THREE.Color(colorFondoEscena());
+      escena.fog = new THREE.Fog(colorFondoEscena(), 260, 700);
+      if (cuadricula) pintarColoresCuadricula(cuadricula, temaOscuro());
+    });
 
     camara = new THREE.PerspectiveCamera(45, 1, 0.1, 4000);
     camara.position.set(70, 60, 110);
@@ -179,14 +197,18 @@
       return false;
     }
     renderizador.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    if (THREE.sRGBEncoding !== undefined) renderizador.outputEncoding = THREE.sRGBEncoding;
     renderizador.shadowMap.enabled = true;
     renderizador.shadowMap.type = THREE.PCFSoftShadowMap;
     renderizador.toneMapping = THREE.NoToneMapping;
 
-    escena.add(new THREE.HemisphereLight(0xffffff, 0x6f7f99, 0.35));
-    escena.add(new THREE.AmbientLight(0xffffff, 0.12));
+    /* Suma de luces deliberadamente <= ~1: si supera 1, las caras
+       iluminadas de los materiales blancos se recortan y el modelo
+       se ve uniformemente blanco, sin sombreado legible */
+    escena.add(new THREE.HemisphereLight(0xffffff, 0x6f7f99, 0.32));
+    escena.add(new THREE.AmbientLight(0xffffff, 0.08));
 
-    luzDireccional = new THREE.DirectionalLight(0xffffff, 0.65);
+    luzDireccional = new THREE.DirectionalLight(0xffffff, 0.5);
     luzDireccional.position.set(90, 140, 60);
     luzDireccional.castShadow = true;
     luzDireccional.shadow.mapSize.width = 2048;
@@ -197,7 +219,7 @@
     luzDireccional.shadow.normalBias = 0.04;
     escena.add(luzDireccional);
 
-    var relleno = new THREE.DirectionalLight(0xbfdbfe, 0.15);
+    var relleno = new THREE.DirectionalLight(0xbfdbfe, 0.1);
     relleno.position.set(-80, 50, -70);
     escena.add(relleno);
 
@@ -261,452 +283,117 @@
   /* =========================================================
      CARGA Y NORMALIZACION DE MODELOS
      ========================================================= */
-  function urlSegura(url) {
-    return url.split('/').map(encodeURIComponent).join('/');
-  }
-
-  function recorrerVisibles(raiz, fn) {
-    if (!raiz) return;
-    raiz.updateWorldMatrix(true, true);
-    (function paso(nodo) {
-      if (nodo.visible === false) return;
-      if (nodo.isMesh) fn(nodo);
-      for (var i = 0; i < nodo.children.length; i++) paso(nodo.children[i]);
-    })(raiz);
-  }
-
-  function cajaVisible(raiz) {
-    var caja = new THREE.Box3();
-    var parcial = new THREE.Box3();
-    recorrerVisibles(raiz, function (nodo) {
-      var geo = nodo.geometry;
-      if (!geo) return;
-      if (!geo.boundingBox) geo.computeBoundingBox();
-      if (!geo.boundingBox) return;
-      parcial.copy(geo.boundingBox).applyMatrix4(nodo.matrixWorld);
-      caja.union(parcial);
-    });
-    return caja;
-  }
-
-  function luminancia(color) {
-    if (!color) return 1;
-    return 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b;
-  }
-
-  function retirarBaseInnecesaria(raiz) {
-    var caja = cajaVisible(raiz);
-    if (caja.isEmpty()) return 0;
-
-    var t = caja.getSize(new THREE.Vector3());
-    var anchoMax = Math.max(t.x, t.z);
-    var aOcultar = [];
-
-    recorrerVisibles(raiz, function (nodo) {
-      var mats = Array.isArray(nodo.material) ? nodo.material : [nodo.material];
-      var oscuro = mats.every(function (m) { return m && m.color && luminancia(m.color) <= 0.06; });
-      if (!oscuro) return;
-      if (!nodo.geometry) return;
-      if (!nodo.geometry.boundingBox) nodo.geometry.computeBoundingBox();
-      if (!nodo.geometry.boundingBox) return;
-
-      var cajaMalla = new THREE.Box3()
-        .copy(nodo.geometry.boundingBox)
-        .applyMatrix4(nodo.matrixWorld);
-      var s = cajaMalla.getSize(new THREE.Vector3());
-
-      var plana = s.y <= anchoMax * 0.03;
-      var cubreHuella = s.x >= t.x * 0.85 && s.z >= t.z * 0.85;
-      var enLaBase = cajaMalla.min.y <= caja.min.y + anchoMax * 0.05;
-
-      if (plana && cubreHuella && enLaBase) aOcultar.push(nodo);
-    });
-
-    for (var i = 0; i < aOcultar.length; i++) aOcultar[i].visible = false;
-    return aOcultar.length;
-  }
-
-  function aplicarMateriales(objeto) {
-    var materialesVistos = [];
-    var aRetirar = [];
-
-    objeto.traverse(function (nodo) {
-      if (nodo !== objeto && (nodo.isLight || nodo.isCamera)) {
-        aRetirar.push(nodo);
-        return;
-      }
-
-      if (nodo.isMesh) {
-        nodo.castShadow = true;
-        nodo.receiveShadow = true;
-        var materiales = Array.isArray(nodo.material) ? nodo.material : [nodo.material];
-        for (var m = 0; m < materiales.length; m++) {
-          var mat = materiales[m];
-          if (!mat) continue;
-          if (materialesVistos.indexOf(mat) !== -1) continue;
-          materialesVistos.push(mat);
-
-          if (mat.map && THREE.LinearEncoding !== undefined) mat.map.encoding = THREE.LinearEncoding;
-          if (mat.metalness !== undefined && mat.metalness > 0.6) mat.metalness = Math.min(mat.metalness, 0.35);
-
-          if (mat.isMeshPhongMaterial || mat.isMeshLambertMaterial) {
-            if (mat.shininess > 20) mat.shininess = 20;
-            if (mat.specular) mat.specular.multiplyScalar(0.3);
-          }
-          if (mat.color && mat.color.getHex() === 0) mat.color.setHex(0xbfc4cc);
-        }
-      }
-    });
-
-    for (var r = 0; r < aRetirar.length; r++) {
-      if (aRetirar[r].parent) aRetirar[r].parent.remove(aRetirar[r]);
+  /* ── PLANTA 3D: MODELOS GLB POR TORRE Y PISO ──────── */
+  function limpiarPlanta() {
+    if (grupoPlanta && grupoPlanta.parent) {
+      escena.remove(grupoPlanta);
     }
+    grupoPlanta = null;
   }
 
-  /* Normaliza un objeto individual a TAMANO_OBJETIVO */
-  function normalizar(objeto) {
-    retirarBaseInnecesaria(objeto);
-
-    var caja = cajaVisible(objeto);
-    var tamaño = caja.getSize(new THREE.Vector3());
-    var maximo = Math.max(tamaño.x, tamaño.y, tamaño.z) || 1;
-    var escala = TAMANO_OBJETIVO / maximo;
-    objeto.scale.setScalar(escala);
-
-    caja = cajaVisible(objeto);
-    var centro = caja.getCenter(new THREE.Vector3());
-    objeto.position.x -= centro.x;
-    objeto.position.z -= centro.z;
-    objeto.position.y -= caja.min.y;
-
-    aplicarMateriales(objeto);
-
-    caja = cajaVisible(objeto);
-    var t = caja.getSize(new THREE.Vector3());
-    return { objeto: objeto, ancho: t.x, fondo: t.z, altura: t.y, caja: caja };
+  /* Centro logico de cada torre en la escena: los modelos se
+     colocan donde el plano 2D situa sus espacios. El desplazamiento
+     X de la torre 2 solo existe en el modo "ambas torres" (0),
+     igual que en el mapa 2D */
+  function centroTorre(torre, edificioId) {
+    var offset = (torre === 2 && edificioId === 0) ? (UniMap.datos.OFFSET_TORRE_2 || 0) : 0;
+    return { x: 40 + 530 / 2 + offset, z: 40 + 470 / 2 };
   }
 
-  /* Normaliza con escala COMPARTIDA (para varias piezas de una torre) */
-  function normalizarCompartido(objeto, escalaCompartida) {
-    retirarBaseInnecesaria(objeto);
-    objeto.scale.setScalar(escalaCompartida);
+  /* Carga el modelo GLB de la planta tipo del piso seleccionado
+     (segun data/edificios.js) y lo coloca en la escena. En modo
+     "ambas torres" carga y junta los dos modelos. */
+  function renderizarPlanta(edificioId, piso) {
+    limpiarPlanta();
 
-    var caja = cajaVisible(objeto);
-    if (!caja.isEmpty()) {
-      objeto.position.y -= caja.min.y;
-    }
-
-    aplicarMateriales(objeto);
-    return objeto;
-  }
-
-  function descargarModelo(definicion) {
-    return new Promise(function (resolver, rechazar) {
-      try {
-        if (definicion.formato === 'FBX') {
-          var loaderFBX = new THREE.FBXLoader();
-          loaderFBX.load(urlSegura(definicion.url),
-            function (resultado) { resolver(resultado.scene !== undefined ? resultado.scene : resultado); },
-            null,
-            function (err) { rechazar(err); });
-        } else {
-          var loaderGLTF = new THREE.GLTFLoader();
-          loaderGLTF.load(urlSegura(definicion.url),
-            function (resultado) { resolver(resultado.scene !== undefined ? resultado.scene : resultado); },
-            null,
-            function (err) { rechazar(err); });
-        }
-      } catch (e) { rechazar(e); }
-    });
-  }
-
-  /* ── CARGA DEL CAMPUS (ambas torres integradas) ───── */
-  function cargarCampus() {
-    if (campusListo) {
-      instalarCampus();
-      return;
-    }
-    if (campusCargando) return;
     if (!crearEscena()) return;
 
-    campusCargando = true;
-    claveActual = 'campus';
-    actualizarBotonModelo({ clave: 'campus', nombre: 'Campus (ambas torres)' });
-    ocultarAviso();
-    mostrarCarga(0, 'Cargando campus...');
-
-    /* Quitar modelo individual si estaba */
-    if (modeloActual && modeloActual.parent) {
-      escena.remove(modeloActual);
-      modeloActual = null;
+    if (!UniMap.modelos || !UniMap.datos.modeloDePiso) {
+      mostrarAviso(UniMap.i18n.t('v3.sinModelos'));
+      return;
     }
 
-    var totalPiezas = 0;
-    for (var t = 0; t < TORRES.length; t++) totalPiezas += TORRES[t].partes.length;
-    var descargadas = 0;
-    var resultados = {};   // url -> objeto crudo
+    grupoPlanta = new THREE.Group();
+    grupoPlanta.name = 'Planta ' + piso + ' - Edificio ' + edificioId;
+    escena.add(grupoPlanta);
 
-    var promesas = [];
-    for (var i = 0; i < TORRES.length; i++) {
-      (function (torre) {
-        for (var p = 0; p < torre.partes.length; p++) {
-          (function (parte) {
-            var url = parte.url;
-            if (cacheModelos[url]) {
-              resultados[url] = cacheModelos[url].objetoCrudo;
-              descargadas++;
-              mostrarCarga(Math.round(descargadas / totalPiezas * 60), 'Cargando campus: ' + descargadas + '/' + totalPiezas);
-              return;
-            }
-            var promesa = descargarModelo(parte).then(function (objeto) {
-              resultados[url] = objeto;
-              cacheModelos[url] = { objetoCrudo: objeto };
-              descargadas++;
-              mostrarCarga(Math.round(descargadas / totalPiezas * 60), 'Cargando campus: ' + descargadas + '/' + totalPiezas);
-            });
-            promesas.push(promesa);
-          })(torre.partes[p]);
-        }
-      })(TORRES[i]);
+    /* Torres que aportan modelo en este piso */
+    var torres = edificioId === 0 ? [1, 2] : [edificioId];
+    var cargas = [];
+    for (var t = 0; t < torres.length; t++) {
+      var torre = torres[t];
+      /* Solo si la torre tiene ese piso (cada una con su lista) */
+      if (!UniMap.datos.tienePiso(torre, piso)) continue;
+      var definicion = UniMap.datos.modeloDePiso(torre, piso);
+      if (!definicion) continue;
+      cargas.push({ torre: torre, definicion: definicion });
     }
 
-    Promise.all(promesas).then(function () {
-      /* 1. Calcular escala compartida por torre */
-      campusGrupo = new THREE.Group();
-      torresCargadas = [];
-
-      var maxAnchoTotal = 0;
-      var maxFondoTotal = 0;
-      var maxAltoTotal = 0;
-
-      for (var ti = 0; ti < TORRES.length; ti++) {
-        var defTorre = TORRES[ti];
-        var grupoTorre = new THREE.Group();
-        grupoTorre.name = defTorre.nombre;
-
-        /* Escala compartida: la mayor dimension de cualquier pieza */
-        var maxPieza = 0;
-        var cajas = [];
-        for (var pi = 0; pi < defTorre.partes.length; pi++) {
-          var crudo = resultados[defTorre.partes[pi].url];
-          if (!crudo) continue;
-          /* Clonar para no destruir la cache */
-          var clon = crudo.clone(true);
-          retirarBaseInnecesaria(clon);
-          var cajaP = cajaVisible(clon);
-          if (cajaP.isEmpty()) continue;
-          var sz = cajaP.getSize(new THREE.Vector3());
-          maxPieza = Math.max(maxPieza, sz.x, sz.y, sz.z);
-          cajas.push({ objeto: clon, caja: cajaP, tam: sz });
-        }
-
-        var escalaTorre = maxPieza > 0 ? TAMANO_OBJETIVO / maxPieza : 1;
-
-        /* Aplicar escala compartida, centrar y apoyar cada pieza */
-        for (var ci = 0; ci < cajas.length; ci++) {
-          var item = cajas[ci];
-          normalizarCompartido(item.objeto, escalaTorre);
-          var cajaN = cajaVisible(item.objeto);
-          if (!cajaN.isEmpty()) {
-            var centroN = cajaN.getCenter(new THREE.Vector3());
-            item.objeto.position.x -= centroN.x;
-            item.objeto.position.z -= centroN.z;
-            item.objeto.position.y -= cajaN.min.y;
-          }
-          grupoTorre.add(item.objeto);
-        }
-
-        /* Posicionar la torre en la escena */
-        grupoTorre.position.x = defTorre.offsetEscena.x;
-        grupoTorre.position.z = defTorre.offsetEscena.z;
-        campusGrupo.add(grupoTorre);
-
-        /* Huella de la torre en coordenadas de escena */
-        campusGrupo.updateMatrixWorld(true);
-        var cajaTorre = cajaVisible(grupoTorre);
-        var tTorre = cajaTorre.isEmpty() ? { x: 40, y: 80, z: 40 } : cajaTorre.getSize(new THREE.Vector3());
-        var centroTorre = cajaTorre.isEmpty()
-          ? { x: defTorre.offsetEscena.x, y: 40, z: defTorre.offsetEscena.z }
-          : cajaTorre.getCenter(new THREE.Vector3());
-
-        torresCargadas.push({
-          edificio: defTorre.edificio,
-          clave: defTorre.clave,
-          nombre: defTorre.nombre,
-          pisos: defTorre.pisos,
-          grupo: grupoTorre,
-          huella: { ancho: tTorre.x, fondo: tTorre.z, altura: tTorre.y },
-          centro: { x: centroTorre.x, y: 0, z: centroTorre.z }
-        });
-
-        maxAnchoTotal = Math.max(maxAnchoTotal, Math.abs(defTorre.offsetEscena.x) * 2 + tTorre.x);
-        maxFondoTotal = Math.max(maxFondoTotal, tTorre.z);
-        maxAltoTotal = Math.max(maxAltoTotal, tTorre.y);
-
-        /* Guardar en cache las piezas ya normalizadas individualmente
-           (para el selector de modelos individuales) */
-        for (var pi2 = 0; pi2 < defTorre.partes.length; pi2++) {
-          var urlP = defTorre.partes[pi2].url;
-          if (resultados[urlP] && !cacheModelos[urlP].info) {
-            /* El objeto crudo ya fue clonado para el campus;
-               se re-descarga o se usa el clon para inspeccion.
-               Aqui solo se marca como disponible. */
-          }
-        }
-      }
-
-      escena.add(campusGrupo);
-      campusListo = true;
-      campusCargando = false;
-      cargando = false;
+    if (!cargas.length) {
       ocultarCarga();
-
-      /* Ajustar suelo, luces y camara al conjunto */
-      var extension = Math.max(maxAnchoTotal, maxFondoTotal, maxAltoTotal * 0.6);
-      ajustarSuelo({ ancho: maxAnchoTotal, fondo: maxFondoTotal, altura: maxAltoTotal });
-      encuadrarCampus(maxAnchoTotal, maxFondoTotal, maxAltoTotal);
-
-      huella = { ancho: maxAnchoTotal, fondo: maxFondoTotal, altura: maxAltoTotal };
-      modeloActual = campusGrupo;
-
+      encuadrar();
       actualizarMarcadores();
-    }).catch(function (err) {
-      campusCargando = false;
-      cargando = false;
-      ocultarCarga();
-      mostrarAviso(UniMap.i18n.t('v3.avisoCampus'));
-      util.notificar(UniMap.i18n.t('v3.errorCampus'));
-      if (window.console) console.error(err);
-    });
-  }
-
-  function instalarCampus() {
-    if (modeloActual && modeloActual !== campusGrupo && modeloActual.parent) {
-      escena.remove(modeloActual);
-    }
-    if (campusGrupo && !campusGrupo.parent) escena.add(campusGrupo);
-    modeloActual = campusGrupo;
-
-    var maxAncho = 0, maxFondo = 0, maxAlto = 0;
-    for (var i = 0; i < torresCargadas.length; i++) {
-      maxAncho = Math.max(maxAncho, Math.abs(torresCargadas[i].centro.x) * 2 + torresCargadas[i].huella.ancho);
-      maxFondo = Math.max(maxFondo, torresCargadas[i].huella.fondo);
-      maxAlto = Math.max(maxAlto, torresCargadas[i].huella.altura);
-    }
-    huella = { ancho: maxAncho, fondo: maxFondo, altura: maxAlto };
-    ajustarSuelo(huella);
-    encuadrarCampus(maxAncho, maxFondo, maxAlto);
-    actualizarMarcadores();
-  }
-
-  function encuadrarCampus(ancho, fondo, alto) {
-    var maximo = Math.max(ancho, fondo, alto);
-    var centro = new THREE.Vector3(0, alto * 0.35, 0);
-
-    var fov = camara.fov * Math.PI / 180;
-    var distancia = (maximo / 2) / Math.tan(fov / 2) * 1.35;
-
-    controles.target.copy(centro);
-    camara.position.set(
-      centro.x + distancia * 0.45,
-      centro.y + distancia * 0.5,
-      centro.z + distancia * 0.85
-    );
-
-    camara.near = maximo / 300;
-    camara.far = maximo * 40;
-    camara.updateProjectionMatrix();
-
-    controles.minDistance = maximo * 0.1;
-    controles.maxDistance = maximo * 8;
-    controles.update();
-  }
-
-  /* ── CARGA DE MODELOS INDIVIDUALES ────────────────── */
-  function cargarModelo(clave) {
-    if (clave === 'campus') {
-      claveActual = 'campus';
-      claveEnEspera = null;
-      cargarCampus();
       return;
     }
 
-    var modelo = null;
-    for (var i = 0; i < MODELOS.length; i++) {
-      if (MODELOS[i].clave === clave) { modelo = MODELOS[i]; break; }
-    }
-    if (!modelo) return;
+    var restantes = cargas.length;
+    var alturaMaxima = 0;
+    var huboError = false;
+    mostrarCarga(20, UniMap.i18n.t('v3.cargandoModelo'));
 
-    if (cargando || campusCargando) {
-      claveEnEspera = (clave !== claveActual) ? clave : null;
-      return;
+    for (var c = 0; c < cargas.length; c++) {
+      cargarModeloDePiso(cargas[c].torre, cargas[c].definicion);
     }
 
-    if (!crearEscena()) return;
+    function cargarModeloDePiso(torre, definicion) {
+      UniMap.modelos.clonar(definicion.archivo, function (err, grupo) {
+        /* Si mientras cargaba se cambio de piso/torre, ignorar */
+        if (!grupoPlanta) return;
 
-    claveActual = clave;
-    claveEnEspera = null;
-    actualizarBotonModelo(modelo);
-    ocultarAviso();
+        restantes--;
+        if (err) {
+          huboError = true;
+        } else {
+          var info = UniMap.modelos.preparar(grupo);
+          /* Colores en lineal (salida sRGB) + castShadow/receiveShadow */
+          if (UniMap.modelos.prepararRender) UniMap.modelos.prepararRender(grupo);
+          var centro = centroTorre(torre, edificioId);
+          var medidas = UniMap.modelos.normalizar(grupo, info, ANCHO_MODELO_3D, centro.x, centro.z);
+          medidas.grupo.name = definicion.archivo;
+          grupoPlanta.add(medidas.grupo);
+          alturaMaxima = Math.max(alturaMaxima, medidas.altura);
+        }
 
-    /* Quitar campus si estaba */
-    if (campusGrupo && campusGrupo.parent) escena.remove(campusGrupo);
-    campusListo = false;  // forzar reinstalar si se vuelve al campus
+        mostrarCarga(Math.round((cargas.length - restantes) / cargas.length * 100),
+          UniMap.i18n.t('v3.cargandoModelo'));
 
-    if (cacheModelos[clave] && cacheModelos[clave].info) {
-      instalar(cacheModelos[clave].info);
-      return;
+        if (restantes > 0) return;
+
+        ocultarCarga();
+        if (huboError) mostrarAviso(UniMap.i18n.t('v3.errorModelo'));
+        /* Los marcadores flotan justo encima del modelo cargado */
+        alturaMarcaje = Math.max(12, Math.min(alturaMaxima + 4, 120));
+        encuadrar();
+        actualizarMarcadores();
+      });
     }
-
-    cargando = true;
-    mostrarCarga(0, 'Descargando ' + modelo.nombre + '...');
-
-    descargarModelo(modelo).then(function (objeto) {
-      var info = normalizar(objeto);
-      cacheModelos[clave] = { info: info, objetoCrudo: objeto };
-      cargando = false;
-      ocultarCarga();
-      instalar(info);
-      procesarClaveEnEspera();
-    }).catch(function () {
-      cargando = false;
-      ocultarCarga();
-      mostrarAviso(UniMap.i18n.t('v3.avisoModelo', { n: modelo.nombre }));
-      util.notificar(UniMap.i18n.t('v3.errorModelo'));
-      procesarClaveEnEspera();
-    });
   }
 
-  function procesarClaveEnEspera() {
-    var pendiente = claveEnEspera;
-    claveEnEspera = null;
-    if (pendiente && pendiente !== claveActual) cargarModelo(pendiente);
-  }
+  /* Encuadra la camara sobre la planta actual (ambas torres en
+     modo combinado). Solo mueve la camara: no recarga modelos. */
+  function encuadrar() {
+    var offsetTorre2 = (edificioActual === 0 ? (UniMap.datos.OFFSET_TORRE_2 || 0) : 0);
+    var anchoTotal = 800 + offsetTorre2;
+    var fondoTotal = 600;
+    var altoTotal = alturaMarcaje;
 
-  function instalar(info) {
-    if (modeloActual && modeloActual.parent) {
-      escena.remove(modeloActual);
-    }
-    modeloActual = info.objeto;
-    escena.add(modeloActual);
-
-    huella = { ancho: info.ancho, fondo: info.fondo, altura: info.altura };
-    torresCargadas = [];
-
-    ajustarSuelo(info);
-    encuadrarModelo(info);
-    actualizarMarcadores();
-  }
-
-  function ajustarSuelo(info) {
-    var extension = Math.max(info.ancho, info.fondo);
-    var base = extension * 2.6;
-
+    var extension = Math.max(anchoTotal, fondoTotal);
+    var base = extension * 2.2;
     suelo.scale.set(base, base, 1);
     cuadricula.scale.set(base, 1, base);
 
-    var distancia = extension * 1.6;
-    luzDireccional.position.set(distancia, extension * 2.2, distancia * 0.7);
+    var distancia = extension * 1.5;
+    luzDireccional.position.set(distancia, extension * 2, distancia * 0.7);
     luzDireccional.shadow.camera.left = -distancia;
     luzDireccional.shadow.camera.right = distancia;
     luzDireccional.shadow.camera.top = distancia;
@@ -714,107 +401,73 @@
     luzDireccional.shadow.camera.far = extension * 8;
     luzDireccional.shadow.camera.updateProjectionMatrix();
 
-    var maximo = Math.max(info.ancho, info.fondo, info.altura);
-    escena.fog.near = maximo * 2.6;
-    escena.fog.far = maximo * 6;
-  }
+    escena.fog.near = extension * 2;
+    escena.fog.far = extension * 6;
 
-  function encuadrarModelo(info) {
-    var caja = modeloActual ? cajaVisible(modeloActual) : null;
-    var centro = (caja && !caja.isEmpty()) ? caja.getCenter(new THREE.Vector3())
-                                           : new THREE.Vector3(0, info.altura / 2, 0);
-    var maximo = Math.max(info.ancho, info.fondo, info.altura);
-
+    var centroX = anchoTotal / 2;
+    var centroZ = fondoTotal / 2;
+    var maximo = Math.max(anchoTotal, fondoTotal, altoTotal);
     var fov = camara.fov * Math.PI / 180;
-    var distancia = (maximo / 2) / Math.tan(fov / 2) * 1.2;
+    var distCam = (maximo / 2) / Math.tan(fov / 2) * 1.4;
 
-    controles.target.copy(centro);
+    controles.target.set(centroX, altoTotal * 0.3, centroZ);
     camara.position.set(
-      centro.x + distancia * 0.5,
-      centro.y + distancia * 0.55,
-      centro.z + distancia * 0.85
+      centroX + distCam * 0.4,
+      altoTotal * 0.5 + distCam * 0.4,
+      centroZ + distCam * 0.85
     );
-
     camara.near = maximo / 300;
     camara.far = maximo * 40;
     camara.updateProjectionMatrix();
-
-    controles.minDistance = maximo * 0.12;
-    controles.maxDistance = maximo * 7;
+    controles.minDistance = maximo * 0.1;
+    controles.maxDistance = maximo * 8;
     controles.update();
+  }
+
+  /* Sincronizar edificio y piso desde el estado global.
+     Si la vista 3D no esta activa solo se invalida la planta pintada
+     (se volvera a dibujar al activarla), para no trabajar en 2D. */
+  function sincronizarEstado(forzar) {
+    /* Ojo: 0 (ambas torres) es un valor valido, no se sustituye por 1 */
+    var nuevoEdificio = (estado.edificioActual === undefined || estado.edificioActual === null)
+      ? 1
+      : estado.edificioActual;
+    var nuevoPiso = estado.pisoActual || 0;
+    var cambio = nuevoEdificio !== edificioActual || nuevoPiso !== pisoActual;
+
+    if (!activo) {
+      if (forzar || cambio || grupoPlanta) {
+        edificioActual = nuevoEdificio;
+        pisoActual = nuevoPiso;
+        limpiarPlanta();
+      }
+      return;
+    }
+
+    /* Tambien hay que pintar si la escena aun no tiene planta cargada
+       (primera activacion de la vista 3D) */
+    if (forzar || !grupoPlanta || cambio) {
+      edificioActual = nuevoEdificio;
+      pisoActual = nuevoPiso;
+      renderizarPlanta(edificioActual, pisoActual);
+    }
   }
 
   /* =========================================================
      MARCADORES 3D PROYECTADOS
      ========================================================= */
 
-  /* Busca la torre cargada correspondiente a un edificio */
-  function torreDe(edificio) {
-    for (var i = 0; i < torresCargadas.length; i++) {
-      if (torresCargadas[i].edificio === edificio) return torresCargadas[i];
-    }
-    return null;
-  }
-
-  /* Posicion en modo campus: sobre la torre correcta y a la altura del piso */
-  function calcularPosicionCampus(espacio) {
-    var torre = torreDe(espacio.edificio);
-    if (!torre) return null;
-
-    var cx2d = espacio.x + espacio.ancho / 2;
-    var cy2d = espacio.y + espacio.alto / 2;
-
-    var u = (cx2d - PLANO.x0) / (PLANO.x1 - PLANO.x0) - 0.5;
-    var v = (cy2d - PLANO.y0) / (PLANO.y1 - PLANO.y0) - 0.5;
-
-    var x = torre.centro.x + u * torre.huella.ancho * 0.92;
-    var z = torre.centro.z + v * torre.huella.fondo * 0.92;
-
-    /* Altura del piso dentro de la torre */
-    var alturaPiso = torre.huella.altura / torre.pisos;
-    var yBase = espacio.piso * alturaPiso;
-    var yTope = yBase + alturaPiso;
-
-    /* Raycast acotado a la banda del piso actual */
-    raycaster.set(new THREE.Vector3(x, yTope + 0.3, z), new THREE.Vector3(0, -1, 0));
-    raycaster.far = alturaPiso + 0.6;
-
-    var golpes = raycaster.intersectObjects(torre.grupo.children, true);
-    var y = yBase + alturaPiso * 0.5;
-    if (golpes.length) y = golpes[0].point.y + Math.max(0.4, alturaPiso * 0.08);
-
-    return new THREE.Vector3(x, y, z);
-  }
-
-  /* Posicion en modelo individual (comportamiento original) */
-  function calcularPosicionIndividual(espacio) {
-    if (!huella || !modeloActual) return null;
-
-    var cx2d = espacio.x + espacio.ancho / 2;
-    var cy2d = espacio.y + espacio.alto / 2;
-
-    var u = (cx2d - PLANO.x0) / (PLANO.x1 - PLANO.x0) - 0.5;
-    var v = (cy2d - PLANO.y0) / (PLANO.y1 - PLANO.y0) - 0.5;
-
-    var x = u * huella.ancho * 0.92;
-    var z = v * huella.fondo * 0.92;
-
-    var alturaTope = huella.altura + 5;
-    raycaster.set(new THREE.Vector3(x, alturaTope, z), new THREE.Vector3(0, -1, 0));
-    raycaster.far = alturaTope * 2;
-
-    var golpes = raycaster.intersectObjects(modeloActual.children, true);
-    var y = 1;
-    if (golpes.length) y = golpes[0].point.y + Math.max(0.6, huella.altura * 0.02);
-
-    return new THREE.Vector3(x, y, z);
-  }
-
+  /* Posicion de un espacio sobre la planta 2D renderizada en 3D.
+     estado.espacios ya trae las coordenadas finales (en modo "ambas
+     torres" la torre 2 viene desplazada), asi que no se suma nada. */
   function calcularPosicion(espacio) {
-    if (claveActual === 'campus' && torresCargadas.length) {
-      return calcularPosicionCampus(espacio);
-    }
-    return calcularPosicionIndividual(espacio);
+    if (!grupoPlanta) return null;
+
+    return new THREE.Vector3(
+      espacio.x + espacio.ancho / 2,
+      alturaMarcaje,
+      espacio.y + espacio.alto / 2
+    );
   }
 
   function actualizarMarcadores() {
@@ -830,7 +483,7 @@
     }
     marcadores = [];
 
-    if (!modeloActual) {
+    if (!grupoPlanta || !grupoPlanta.children.length) {
       mostrarAviso(UniMap.i18n.t('v3.eligeModelo'));
       return;
     }
@@ -843,9 +496,9 @@
     for (var v = 0; v < visibles.length; v++) {
       var espacio = visibles[v];
 
-      /* En modo campus solo se marcan espacios de la torre cargada
-         (si no hay torres, se marcan todos) */
-      if (claveActual === 'campus' && torresCargadas.length && !torreDe(espacio.edificio)) continue;
+      /* Solo marcar espacios de la planta actual (edificio + piso) */
+      if (espacio.edificio !== edificioActual && edificioActual !== 0) continue;
+      if (espacio.piso !== pisoActual) continue;
 
       var posicion = calcularPosicion(espacio);
       if (!posicion) continue;
@@ -972,16 +625,9 @@
       return false;
     }
 
-    if (!modeloActual) {
+    if (!grupoPlanta) {
       espacioPendiente = espacio;
-      cargarModelo(claveActual || 'campus');
-      return false;
-    }
-
-    /* Si es campus y la torre aun no esta cargada, cargar campus */
-    if (claveActual === 'campus' && !campusListo) {
-      espacioPendiente = espacio;
-      cargarCampus();
+      sincronizarEstado();
       return false;
     }
 
@@ -993,7 +639,7 @@
     }
 
     var destino = marcador.posicion;
-    var maximo = huella ? Math.max(huella.ancho, huella.fondo, huella.altura) : 100;
+    var maximo = Math.max(800, 600);
     var distancia = maximo * 0.35;
 
     var direccion = camara.position.clone().sub(controles.target);
@@ -1007,68 +653,17 @@
   }
 
   function restablecerCamara() {
-    if (claveActual === 'campus' && campusListo) {
-      var maxAncho = 0, maxFondo = 0, maxAlto = 0;
-      for (var i = 0; i < torresCargadas.length; i++) {
-        maxAncho = Math.max(maxAncho, Math.abs(torresCargadas[i].centro.x) * 2 + torresCargadas[i].huella.ancho);
-        maxFondo = Math.max(maxFondo, torresCargadas[i].huella.fondo);
-        maxAlto = Math.max(maxAlto, torresCargadas[i].huella.altura);
-      }
-      encuadrarCampus(maxAncho, maxFondo, maxAlto);
-    } else if (modeloActual && huella) {
-      encuadrarModelo(huella);
-    }
+    if (!inicializado || !activo) return;
+    /* Reencuadrar la planta actual (si aun no hay modelos
+       cargados, se vuelve a dibujar la escena entera) */
+    if (grupoPlanta && grupoPlanta.children.length) encuadrar();
+    else renderizarPlanta(edificioActual, pisoActual);
     UniMap.tooltip.ocultar();
   }
 
   /* =========================================================
      INTERFAZ DEL VISOR
      ========================================================= */
-  function conectarSelector() {
-    var boton = util.el('boton-modelo');
-    var lista = util.el('lista-modelos');
-    if (!boton || !lista) return;
-
-    var html = '';
-    for (var i = 0; i < MODELOS.length; i++) {
-      html += '<li data-clave="' + MODELOS[i].clave + '">' +
-        '<span>' + util.escapar(MODELOS[i].nombre) + '</span>' +
-        '<span class="tipo-modelo">' + MODELOS[i].formato + '</span></li>';
-    }
-    lista.innerHTML = html;
-
-    boton.addEventListener('click', function (e) {
-      e.stopPropagation();
-      lista.classList.toggle('hidden');
-    });
-
-    lista.addEventListener('click', function (e) {
-      var item = e.target.closest ? e.target.closest('li') : null;
-      if (!item) return;
-      lista.classList.add('hidden');
-      cargarModelo(item.getAttribute('data-clave'));
-    });
-
-    document.addEventListener('click', function (e) {
-      if (!e.target.closest || !e.target.closest('.selector-modelo')) {
-        lista.classList.add('hidden');
-      }
-    });
-  }
-
-  function actualizarBotonModelo(modelo) {
-    var boton = util.el('boton-modelo');
-    if (boton) boton.textContent = UniMap.i18n.t('v3.modelo', { n: modelo.nombre });
-
-    var lista = util.el('lista-modelos');
-    if (lista) {
-      var items = lista.querySelectorAll('li');
-      for (var i = 0; i < items.length; i++) {
-        items[i].classList.toggle('activo', items[i].getAttribute('data-clave') === modelo.clave);
-      }
-    }
-  }
-
   function conectarControles() {
     var reiniciar = util.el('camara-reiniciar');
     var rotacion = util.el('rotacion-auto');
@@ -1144,7 +739,7 @@
      DIAGNOSTICO DE LA ESCENA (uso de desarrollo)
      ========================================================= */
   function inspeccionar() {
-    var datos = { inicializado: inicializado, activo: activo, cargando: cargando, claveActual: claveActual, campusListo: campusListo, torres: torresCargadas.length };
+    var datos = { inicializado: inicializado, activo: activo, edificioActual: edificioActual, pisoActual: pisoActual };
     if (!inicializado) return datos;
 
     datos.camara = {
@@ -1152,11 +747,15 @@
       objetivo: controles.target.toArray().map(function (v) { return Math.round(v * 100) / 100; })
     };
     datos.marcadores = marcadores.length;
-    datos.huella = huella;
 
-    for (var i = 0; i < torresCargadas.length; i++) {
-      var t = torresCargadas[i];
-      datos['torre_' + t.clave] = { huella: t.huella, centro: t.centro, pisos: t.pisos };
+    /* Diagnostico: caja real (mundo) de la planta cargada */
+    if (grupoPlanta) {
+      var caja = new THREE.Box3().setFromObject(grupoPlanta);
+      datos.planta = {
+        hijos: grupoPlanta.children.length,
+        min: caja.min.toArray().map(function (v) { return Math.round(v); }),
+        max: caja.max.toArray().map(function (v) { return Math.round(v); })
+      };
     }
 
     return datos;
@@ -1195,15 +794,8 @@
 
     redimensionar();
 
-    /* Por defecto se carga el campus integrado */
-    if (claveActual === 'campus' || !claveActual) {
-      if (campusListo) instalarCampus();
-      else cargarCampus();
-    } else if (!modeloActual) {
-      cargarModelo(claveActual);
-    } else {
-      actualizarMarcadores();
-    }
+    /* Renderizar la planta actual (edificio + piso) */
+    sincronizarEstado();
 
     if (espacioPendiente) {
       var pendiente = espacioPendiente;
@@ -1224,17 +816,16 @@
     desactivar: desactivar,
     actualizarMarcadores: actualizarMarcadores,
     enfocarEspacio: enfocarEspacio,
-    cargarModelo: cargarModelo,
-    cargarCampus: cargarCampus,
     restablecerCamara: restablecerCamara,
+    sincronizarEstado: sincronizarEstado,
+    /* Vuelve a pintar la planta actual (su contenido puede haber
+       cambiado: filtros de torre, ediciones del administrador...) */
+    repintar: function () { sincronizarEstado(true); },
     inspeccionar: inspeccionar,
     capturar: capturar,
-    mostrarModelo: function (v) { if (modeloActual) modeloActual.visible = v !== false; },
     mostrarSuelo: function (v) {
       if (suelo) suelo.visible = v !== false;
       if (cuadricula) cuadricula.visible = v !== false;
-    },
-    modelos: MODELOS,
-    torres: TORRES
+    }
   };
 })();

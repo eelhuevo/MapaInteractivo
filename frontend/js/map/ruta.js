@@ -29,12 +29,23 @@
   function trazar(espacio) {
     if (!espacio) return false;
 
-    /* Si el destino esta en otra torre o piso, navegar primero */
-    if (espacio.edificio !== estado.edificioActual || espacio.piso !== estado.pisoActual) {
+    /* Si el destino esta en otra torre o piso, navegar primero.
+       En el modo "ambas torres" (edificio 0) solo cuenta el piso. */
+    var mismaPlanta = espacio.piso === estado.pisoActual &&
+      (estado.edificioActual === 0 || espacio.edificio === estado.edificioActual);
+
+    if (!mismaPlanta) {
       var lugar = (datos.nombreEdificio ? datos.nombreEdificio(espacio.edificio) : '') + ' · ' +
         (datos.nombrePiso ? datos.nombrePiso(espacio.piso) : '');
       util.notificar(UniMap.i18n.t('rut.otraPlanta', { lugar: lugar }), 2600);
       if (UniMap.ui) UniMap.ui.irAEspacio(espacio.id);
+
+      /* irAEspacio cambio de planta: tomar la copia que se esta pintando
+         (en modo combinado la torre 2 lleva su desplazamiento en X) */
+      var vivos = estado.espacios || [];
+      for (var v = 0; v < vivos.length; v++) {
+        if (vivos[v].id === espacio.id) { espacio = vivos[v]; break; }
+      }
     }
 
     var destinoX = espacio.x + espacio.ancho / 2;
@@ -89,9 +100,11 @@
 
   function activa() {
     if (!estado.rutaActiva) return null;
-    /* La ruta solo es valida en la planta donde se trazo */
-    if (estado.rutaActiva.edificio !== estado.edificioActual ||
-        estado.rutaActiva.piso !== estado.pisoActual) return null;
+    /* La ruta solo es valida en la planta donde se trazo
+       (en modo "ambas torres" el edificio no importa) */
+    if (estado.rutaActiva.piso !== estado.pisoActual) return null;
+    if (estado.edificioActual !== 0 &&
+        estado.rutaActiva.edificio !== estado.edificioActual) return null;
     return estado.rutaActiva;
   }
 

@@ -9,7 +9,7 @@
   left: 0;
   width: 310px;
   height: calc(100vh - 60px);
-  background: #fff;
+  background: var(--bg-surface);
   border-right: 1px solid var(--gray-200);
   box-shadow: 4px 0 20px rgba(0,0,0,0.08);
   z-index: 90;
@@ -34,7 +34,7 @@
   border-bottom: 1px solid var(--gray-200);
   position: sticky;
   top: 0;
-  background: #fff;
+  background: var(--bg-surface);
   z-index: 1;
 }
 
@@ -150,7 +150,7 @@
   right: 0;
   width: 310px;
   height: calc(100vh - 60px);
-  background: #fff;
+  background: var(--bg-surface);
   border-left: 1px solid var(--gray-200);
   box-shadow: -4px 0 20px rgba(0,0,0,0.08);
   z-index: 90;

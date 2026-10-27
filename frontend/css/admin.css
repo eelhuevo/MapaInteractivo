@@ -15,7 +15,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 24px;
-  background: #fff;
+  background: var(--bg-surface);
   border-bottom: 1px solid var(--gray-200);
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   position: sticky;
@@ -37,8 +37,8 @@
 
 .btn-admin-volver {
   padding: 9px 16px;
-  background: var(--primary);
-  color: #fff;
+  background: var(--primary-solid);
+  color: var(--primary-on);
   border: none;
   border-radius: 9px;
   font-size: 13.5px;
@@ -59,7 +59,7 @@
 }
 
 .admin-sin-permisos-card {
-  background: #fff;
+  background: var(--bg-surface);
   border-radius: 16px;
   box-shadow: var(--shadow-lg);
   padding: 46px 54px;
@@ -117,7 +117,7 @@
   border: 1.5px solid var(--gray-200);
   border-radius: 9px;
   font-size: 14px;
-  background: #fff;
+  background: var(--bg-surface);
 }
 .admin-toolbar input[type="text"]:focus {
   outline: none;
@@ -130,14 +130,14 @@
   border: 1.5px solid var(--gray-200);
   border-radius: 9px;
   font-size: 14px;
-  background: #fff;
+  background: var(--bg-surface);
   cursor: pointer;
 }
 
 .btn-admin-primario {
   padding: 10px 18px;
-  background: var(--primary);
-  color: #fff;
+  background: var(--primary-solid);
+  color: var(--primary-on);
   border: none;
   border-radius: 9px;
   font-size: 14px;
@@ -149,7 +149,7 @@
 
 .btn-admin-secundario {
   padding: 10px 16px;
-  background: #fff;
+  background: var(--bg-surface);
   color: var(--gray-600);
   border: 1.5px solid var(--gray-300);
   border-radius: 9px;
@@ -162,7 +162,7 @@
 
 /* ── TABLA ─────────────────────────────────────────── */
 .admin-tabla-wrap {
-  background: #fff;
+  background: var(--bg-surface);
   border: 1px solid var(--gray-200);
   border-radius: 14px;
   overflow-x: auto;
@@ -234,9 +234,9 @@
 .btn-tabla-editar {
   background: var(--primary-light);
   color: var(--primary-dark);
-  border: 1.5px solid #c7d8fb;
+  border: 1.5px solid var(--primary-light);
 }
-.btn-tabla-editar:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+.btn-tabla-editar:hover { background: var(--primary-solid); color: var(--primary-on); border-color: var(--primary-solid); }
 
 .btn-tabla-eliminar {
   background: var(--danger-bg);
@@ -261,7 +261,7 @@
 }
 
 .stats-card {
-  background: #fff;
+  background: var(--bg-surface);
   border: 1px solid var(--gray-200);
   border-radius: 14px;
   padding: 22px 24px;
@@ -282,7 +282,7 @@
 }
 
 .stats-bloque {
-  background: #fff;
+  background: var(--bg-surface);
   border: 1px solid var(--gray-200);
   border-radius: 14px;
   padding: 20px 24px;
@@ -364,7 +364,7 @@
   border: 1.5px solid var(--gray-200);
   border-radius: 9px;
   font-size: 14px;
-  background: #fff;
+  background: var(--bg-surface);
 }
 
 .modal-espacio input:focus,

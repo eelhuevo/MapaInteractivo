@@ -10,8 +10,8 @@
   var datos = UniMap.datos;
   var estado = UniMap.estado;
 
-  /* ── COLORES DEL MAPA ─────────────────────────────── */
-  var colores = {
+  /* ── COLORES DEL MAPA (según tema claro/oscuro) ───── */
+  var paletaClara = {
     disponible: '#059669',
     noDisponible: '#dc2626',
     reservado: '#d97706',
@@ -27,8 +27,49 @@
     resaltado: 'rgba(26,86,219,0.25)',
     seleccionado: 'rgba(26,86,219,0.4)',
     favorito: '#f59e0b',
-    sugerido: '#facc15'
+    sugerido: '#facc15',
+    anilloPin: '#ffffff',
+    fondoEtiqueta: 'rgba(255,255,255,0.9)',
+    bordeEtiqueta: '#d1d5db',
+    textoEtiqueta: '#374151',
+    textoInsignia: '#1342a8',
+    nombreTorre: 'rgba(26,86,219,0.9)',
+    chipUbicacion: 'rgba(26,86,219,0.9)',
+    textoCarga: '#9ca3af'
   };
+
+  var paletaOscura = {
+    disponible: '#34d399',
+    noDisponible: '#f87171',
+    reservado: '#fbbf24',
+    pared: '#94a3b8',
+    piso: '#0e1626',
+    lineaPiso: '#22304a',
+    pasillo: '#18233a',
+    ubicacion: '#3b82f6',
+    cesped: '#34d399',
+    estacionamiento: '#64748b',
+    entrada: '#fbbf24',
+    bordeEntrada: '#f59e0b',
+    resaltado: 'rgba(59,130,246,0.28)',
+    seleccionado: 'rgba(59,130,246,0.45)',
+    favorito: '#fbbf24',
+    sugerido: '#fde047',
+    anilloPin: '#0b1220',
+    fondoEtiqueta: 'rgba(14,22,38,0.92)',
+    bordeEtiqueta: '#2e3d59',
+    textoEtiqueta: '#e6ecf5',
+    textoInsignia: '#93c5fd',
+    nombreTorre: 'rgba(96,165,250,0.95)',
+    chipUbicacion: 'rgba(37,99,235,0.95)',
+    textoCarga: '#64748b'
+  };
+
+  function esOscuro() {
+    return document.documentElement.getAttribute('data-theme') === 'dark';
+  }
+
+  var colores = esOscuro() ? paletaOscura : paletaClara;
 
   var lienzo = util.el('lienzo-mapa');
   var contexto = lienzo ? lienzo.getContext('2d') : null;
@@ -46,29 +87,17 @@
 
   /* ── ETIQUETA DE PISO ─────────────────────────────── */
   function obtenerEtiquetaPiso() {
-    var torre = datos.nombreEdificio ? datos.nombreEdificio(estado.edificioActual) : '';
+    var nombreTorre;
+    if (estado.edificioActual === 0) {
+      nombreTorre = UniMap.i18n ? UniMap.i18n.t('torre.ambos') : 'Ambas torres';
+    } else {
+      nombreTorre = datos.nombreEdificio ? datos.nombreEdificio(estado.edificioActual) : '';
+    }
     var piso = datos.nombrePiso ? datos.nombrePiso(estado.pisoActual) : ('Piso ' + estado.pisoActual);
-    return torre + ' · ' + piso;
+    return nombreTorre + ' · ' + piso;
   }
 
   /* ── TEXTOS AJUSTADOS ─────────────────────────────── */
-  function ajustarTexto(texto, maxW) {
-    if (contexto.measureText(texto).width <= maxW) return [texto];
-    var palabras = texto.split(' ');
-    var lineas = [];
-    var actual = '';
-    for (var p = 0; p < palabras.length; p++) {
-      var prueba = actual ? actual + ' ' + palabras[p] : palabras[p];
-      if (contexto.measureText(prueba).width > maxW && actual) {
-        lineas.push(actual);
-        actual = palabras[p];
-      } else {
-        actual = prueba;
-      }
-    }
-    if (actual) lineas.push(actual);
-    return lineas;
-  }
 
   /* ── MARCADOR DE UBICACION ────────────────────────── */
   function dibujarMarcadorUbicacion() {
@@ -77,14 +106,16 @@
     var t = Date.now() / 1000;
     var pulso = Math.sin(t * 3) * 4 + 10;
 
+    var paleta = esOscuro() ? paletaOscura : paletaClara;
+
     contexto.beginPath();
     contexto.arc(px, py, pulso, 0, Math.PI * 2);
-    contexto.fillStyle = 'rgba(26,86,219,0.15)';
+    contexto.fillStyle = paleta.resaltado;
     contexto.fill();
 
     contexto.beginPath();
     contexto.arc(px, py, 8, 0, Math.PI * 2);
-    contexto.fillStyle = colores.ubicacion;
+    contexto.fillStyle = paleta.ubicacion;
     contexto.fill();
     contexto.strokeStyle = '#fff';
     contexto.lineWidth = 2;
@@ -97,7 +128,7 @@
 
     /* HU-15: etiqueta traducida */
     var textoUsted = UniMap.i18n ? UniMap.i18n.t('ley.usted') : 'Usted aqui';
-    contexto.fillStyle = 'rgba(26,86,219,0.9)';
+    contexto.fillStyle = paleta.chipUbicacion;
     var w = contexto.measureText(textoUsted).width + 16;
     contexto.fillRect(px - w / 2, py - 28, w, 18);
     contexto.fillStyle = '#fff';
@@ -140,7 +171,7 @@
     contexto.arc(puntos[0].x, puntos[0].y, 5, 0, Math.PI * 2);
     contexto.fillStyle = colores.disponible;
     contexto.fill();
-    contexto.strokeStyle = '#fff';
+    contexto.strokeStyle = colores.anilloPin;
     contexto.lineWidth = 2;
     contexto.stroke();
 
@@ -149,7 +180,7 @@
     contexto.arc(fin.x, fin.y, 7, 0, Math.PI * 2);
     contexto.fillStyle = colores.noDisponible;
     contexto.fill();
-    contexto.strokeStyle = '#fff';
+    contexto.strokeStyle = colores.anilloPin;
     contexto.lineWidth = 2;
     contexto.stroke();
 
@@ -160,17 +191,52 @@
     var bx = Math.min(fin.x + 12, 700);
     var by = fin.y - 30;
     if (by < 44) by = fin.y + 14;
-    contexto.fillStyle = '#fff';
+    contexto.fillStyle = colores.fondoEtiqueta;
     contexto.fillRect(bx, by, w, 20);
     contexto.strokeStyle = colores.ubicacion;
     contexto.lineWidth = 1.5;
     contexto.strokeRect(bx, by, w, 20);
-    contexto.fillStyle = '#1342a8';
+    contexto.fillStyle = colores.textoInsignia;
     contexto.textAlign = 'left';
     contexto.textBaseline = 'middle';
     contexto.fillText(etiqueta, bx + 8, by + 10.5);
 
     contexto.restore();
+  }
+
+  /* ── PLANTA DE LA TORRE (PLANO CENITAL DEL MODELO 3D) ─
+     Sin caja blanca ni marco: el plano se dibuja sobre el
+     fondo del propio mapa (que ya cambia con el tema). */
+  function dibujarPlantaTorre(plano, x, y, ancho, alto) {
+    contexto.save();
+    if (plano && plano.width && plano.height) {
+      /* Ajuste "contain": el plano 2D nunca se deforma */
+      var escala = Math.min(ancho / plano.width, alto / plano.height);
+      var dw = plano.width * escala;
+      var dh = plano.height * escala;
+      contexto.drawImage(plano, x + (ancho - dw) / 2, y + (alto - dh) / 2, dw, dh);
+    } else {
+      /* Mientras se dibuja el plano del modelo, solo el aviso */
+      contexto.fillStyle = colores.textoCarga;
+      contexto.font = '12px sans-serif';
+      contexto.textAlign = 'center';
+      contexto.textBaseline = 'middle';
+      contexto.fillText(
+        UniMap.i18n ? UniMap.i18n.t('v3.cargandoModelo') : 'Cargando plano...',
+        x + ancho / 2, y + alto / 2
+      );
+    }
+    contexto.restore();
+  }
+
+  /* Pide el plano 2D (redibujado desde el modelo 3D) de los pisos
+     visibles; cuando llega, el bucle de animacion repinta el mapa */
+  function solicitarPlanos() {
+    if (!UniMap.modelos || !UniMap.modelos.pedirPlano) return;
+    var torres = estado.edificioActual === 0 ? [1, 2] : [estado.edificioActual];
+    for (var t = 0; t < torres.length; t++) {
+      UniMap.modelos.pedirPlano(torres[t], estado.pisoActual, function () { /* repaint automatico */ });
+    }
   }
 
   /* ── DIBUJO PRINCIPAL ─────────────────────────────── */
@@ -180,154 +246,180 @@
     contexto.translate(estado.desplazamientoX, estado.desplazamientoY);
     contexto.scale(estado.nivelZoom, estado.nivelZoom);
 
+    /* En modo combinado el plano se ensancha para que quepa la torre 2 */
+    var offsetTorre2 = datos.OFFSET_TORRE_2 || 0;
+    var anchoPlano = estado.edificioActual === 0 ? 800 + offsetTorre2 : 800;
+
     /* Fondo */
     contexto.fillStyle = colores.piso;
-    contexto.fillRect(0, 0, 800, 600);
+    contexto.fillRect(0, 0, anchoPlano, 600);
 
     /* Cuadricula */
     contexto.strokeStyle = colores.lineaPiso;
     contexto.lineWidth = 0.5;
-    for (var x = 0; x <= 800; x += 40) {
+    for (var x = 0; x <= anchoPlano; x += 40) {
       contexto.beginPath(); contexto.moveTo(x, 0); contexto.lineTo(x, 600); contexto.stroke();
     }
     for (var y = 0; y <= 600; y += 40) {
-      contexto.beginPath(); contexto.moveTo(0, y); contexto.lineTo(800, y); contexto.stroke();
+      contexto.beginPath(); contexto.moveTo(0, y); contexto.lineTo(anchoPlano, y); contexto.stroke();
     }
 
-    /* Contorno edificio */
-    contexto.strokeStyle = colores.pared;
-    contexto.lineWidth = 3;
-    contexto.strokeRect(40, 40, 530, 470);
+    /* Planta de cada torre: si el plano 2D del piso (redibujado
+       desde su modelo 3D) ya esta listo se dibuja como fondo;
+       si no, se deja el hueco con el aviso de carga */
+    var torresPlanta = estado.edificioActual === 0 ? [1, 2] : [estado.edificioActual];
+    for (var tp = 0; tp < torresPlanta.length; tp++) {
+      var torre = torresPlanta[tp];
+      /* Cada torre solo dibuja si tiene ese piso */
+      if (torre !== 0 && datos.tienePiso && !datos.tienePiso(torre, estado.pisoActual)) continue;
+      var plano = (UniMap.modelos && UniMap.modelos.planoListo)
+        ? UniMap.modelos.planoListo(torre, estado.pisoActual)
+        : null;
+      /* El desplazamiento de la torre 2 solo existe en modo combinado */
+      var px = (torre === 2 && estado.edificioActual === 0) ? 40 + offsetTorre2 : 40;
+      dibujarPlantaTorre(plano, px, 40, 530, 470);
+    }
 
     /* Nombre de la torre en la esquina superior */
-    contexto.fillStyle = 'rgba(26,86,219,0.9)';
+    contexto.fillStyle = colores.nombreTorre;
     contexto.font = 'bold 12px sans-serif';
     contexto.textAlign = 'left';
     contexto.textBaseline = 'top';
-    contexto.fillText(datos.nombreEdificio ? datos.nombreEdificio(estado.edificioActual) : '', 50, 46);
-
-    /* Espacios visibles (respetando los filtros) */
-    var visibles = UniMap.filtros.espaciosVisibles();
-    for (var i = 0; i < visibles.length; i++) {
-      var s = visibles[i];
-      var esResaltado = estado.espacioResaltado && estado.espacioResaltado.id === s.id;
-      var esSeleccionado = estado.espacioSeleccionado && estado.espacioSeleccionado.id === s.id;
-      var esFav = UniMap.favoritos.esFavorito(s.id);
-
-      var color;
-      if (s.tipo === 'pasillo') color = colores.pasillo;
-      else if (s.tipo === 'jardin') color = colores.cesped;
-      else if (s.tipo === 'estacionamiento') color = colores.estacionamiento;
-      else if (s.tipo === 'entrada') color = colores.entrada;
-      else if (s.tipo === 'sanitarios') color = '#e0e7ff';
-      else if (s.estado === 'inactivo') color = '#fee2e2';
-      else color = '#d1fae5';
-
-      contexto.fillStyle = color;
-      contexto.fillRect(s.x, s.y, s.ancho, s.alto);
-
-      /* HU-08: la entrada principal se marca con borde propio */
-      if (s.tipo === 'entrada') {
-        contexto.strokeStyle = colores.bordeEntrada;
-        contexto.lineWidth = 2;
-        contexto.setLineDash([6, 4]);
-        contexto.strokeRect(s.x, s.y, s.ancho, s.alto);
-        contexto.setLineDash([]);
-        contexto.strokeStyle = colores.pared;
-        contexto.lineWidth = 1.5;
-      } else {
-        contexto.strokeStyle = esResaltado || esSeleccionado ? colores.ubicacion : colores.pared;
-        contexto.lineWidth = esResaltado || esSeleccionado ? 2.5 : 1.5;
-        contexto.strokeRect(s.x, s.y, s.ancho, s.alto);
-      }
-
-      if (esSeleccionado) {
-        contexto.fillStyle = colores.seleccionado;
-        contexto.fillRect(s.x, s.y, s.ancho, s.alto);
-      }
-
-      /* Estrella de favorito */
-      if (esFav && s.tipo !== 'pasillo') {
-        contexto.fillStyle = colores.favorito;
-        contexto.font = '12px sans-serif';
-        contexto.textAlign = 'left';
-        contexto.textBaseline = 'top';
-        contexto.fillText('\u2605', s.x + 4, s.y + 4);
-      }
-
-      /* HU-20: destello de las sugerencias del perfil */
-      if (UniMap.sugerencias && UniMap.sugerencias.esSugerido && UniMap.sugerencias.esSugerido(s)) {
-        contexto.fillStyle = colores.sugerido;
-        contexto.font = 'bold 12px sans-serif';
-        contexto.textAlign = 'right';
-        contexto.textBaseline = 'top';
-        contexto.fillText('\u2728', s.x + s.ancho - 4, s.y + 4);
-        contexto.strokeStyle = colores.sugerido;
-        contexto.lineWidth = 2;
-        contexto.strokeRect(s.x - 1, s.y - 1, s.ancho + 2, s.alto + 2);
-        contexto.lineWidth = esResaltado || esSeleccionado ? 2.5 : 1.5;
-      }
-
-      /* HU-08: distintivo "P" de los estacionamientos */
-      if (s.tipo === 'estacionamiento') {
-        contexto.fillStyle = '#fff';
-        contexto.fillRect(s.x + 8, s.y + 8, 20, 20);
-        contexto.strokeStyle = '#4b5563';
-        contexto.lineWidth = 1.5;
-        contexto.strokeRect(s.x + 8, s.y + 8, 20, 20);
-        contexto.fillStyle = '#374151';
-        contexto.font = 'bold 13px sans-serif';
-        contexto.textAlign = 'center';
-        contexto.textBaseline = 'middle';
-        contexto.fillText('P', s.x + 18, s.y + 18.5);
-      }
-
-      /* Etiqueta + indicador de estado */
-      if (s.ancho > 50 && (s.alto > 30 || s.tipo === 'entrada') && s.tipo !== 'pasillo') {
-        contexto.fillStyle = s.tipo === 'entrada' ? '#92400e' : '#374151';
-        contexto.font = (s.tipo === 'entrada' ? 'bold ' : 'bold ') + '11px sans-serif';
-        contexto.textAlign = 'center';
-        contexto.textBaseline = 'middle';
-
-        var lineas = ajustarTexto(s.nombre, s.ancho - 8);
-        var lineH = 13;
-        var startY = s.y + s.alto / 2 - (lineas.length - 1) * lineH / 2;
-        for (var l = 0; l < lineas.length; l++) {
-          contexto.fillText(lineas[l], s.x + s.ancho / 2, startY + l * lineH);
-        }
-
-        var esNormal = s.tipo !== 'pasillo' && s.tipo !== 'jardin' &&
-          s.tipo !== 'estacionamiento' && s.tipo !== 'sanitarios' && s.tipo !== 'entrada';
-        if (esNormal) {
-          contexto.beginPath();
-          contexto.arc(s.x + s.ancho - 10, s.y + 10, 4, 0, Math.PI * 2);
-          contexto.fillStyle = s.estado === 'activo' ? colores.disponible : colores.noDisponible;
-          contexto.fill();
-        }
-      }
+    var nombreTorre = estado.edificioActual === 0
+      ? (UniMap.i18n ? UniMap.i18n.t('torre.ambos') : 'Ambas torres')
+      : (datos.nombreEdificio ? datos.nombreEdificio(estado.edificioActual) : '');
+    contexto.fillText(nombreTorre, 50, 46);
+    if (estado.edificioActual === 0) {
+      contexto.fillText(
+        datos.nombreEdificio ? datos.nombreEdificio(2) : 'Torre Innovacion',
+        50 + offsetTorre2, 46
+      );
     }
+
+    /* ── ESPACIOS (pines) ──────────────────────────────
+       El plano 2D ya es el diseño redibujado del modelo 3D,
+       asi que las "habitaciones" de color sintéticas NO se
+       pintan encima: duplicaban el diseño y no se parecian
+       al modelo.
+
+       Para no dejar areas "fantasma" invisibles, cada espacio
+       se marca ahora con un pin visible (punto + nombre), al
+       estilo de los marcadores del modo 3D: el hover y el
+       clic solo reaccionan sobre el pin dibujado. */
+    /* Pines de los espacios con ficha (los mismos que el hit-test) */
+    var visibles = UniMap.filtros.espaciosInteractuales();
+    for (var i = 0; i < visibles.length; i++) dibujarPin(visibles[i]);
 
     dibujarMarcadorUbicacion();
 
     /* HU-10: trazado de la ruta peatonal (encima de todo) */
     dibujarRuta();
 
-    /* Etiqueta de piso */
-    contexto.fillStyle = 'rgba(255,255,255,0.9)';
-    contexto.fillRect(600, 500, 160, 30);
-    contexto.strokeStyle = '#d1d5db';
+    /* Etiqueta de piso (en la franja libre bajo la planta,
+       con margen para que no la corte el borde del lienzo) */
+    contexto.fillStyle = colores.fondoEtiqueta;
+    contexto.fillRect(520, 520, 160, 30);
+    contexto.strokeStyle = colores.bordeEtiqueta;
     contexto.lineWidth = 1;
-    contexto.strokeRect(600, 500, 160, 30);
-    contexto.fillStyle = '#374151';
+    contexto.strokeRect(520, 520, 160, 30);
+    contexto.fillStyle = colores.textoEtiqueta;
     contexto.font = 'bold 13px sans-serif';
     contexto.textAlign = 'center';
     contexto.textBaseline = 'middle';
-    contexto.fillText(obtenerEtiquetaPiso(), 680, 515);
+    contexto.fillText(obtenerEtiquetaPiso(), 600, 535);
 
     contexto.restore();
 
     var etiquetaZoom = util.el('nivel-zoom');
     if (etiquetaZoom) etiquetaZoom.textContent = Math.round(estado.nivelZoom * 100) + '%';
+  }
+
+  /* ── PINES DE ESPACIOS ──────────────────────────────
+     El plano 2D procede del modelo 3D y no tiene "habitaciones"
+     con nombre identificables, asi que cada espacio interactuable
+     se localiza mediante un pin visible (punto + etiqueta), igual
+     que los marcadores del modo 3D. Hover y clic solo actuan
+     sobre lo que esta dibujado: no quedan areas fantasma. */
+  var RADIO_PIN = 7;      /* radio del punto, en unidades de mundo */
+  var TOLERANCIA_PIN = 7; /* margen extra del punto al detectar */
+
+  function centroDelEspacio(s) {
+    return { x: s.x + s.ancho / 2, y: s.y + s.alto / 2 };
+  }
+
+  /* Color del punto segun la disponibilidad del espacio */
+  function colorDelPin(s) {
+    if (s.estado === 'inactivo') return colores.noDisponible;
+    return colores.disponible;
+  }
+
+  /* Caja de la etiqueta del nombre (a la derecha del punto).
+     Se comparte entre el dibujo y el hit-test para que el
+     cursor detecte exactamente lo que se ve en pantalla. */
+  function cajaEtiquetaPin(s, marcado) {
+    var centro = centroDelEspacio(s);
+    contexto.font = marcado ? 'bold 11px sans-serif' : '11px sans-serif';
+    var ancho = contexto.measureText(s.nombre).width + 10;
+    var alto = 16;
+    return {
+      x: centro.x + RADIO_PIN + 4,
+      y: centro.y - alto / 2,
+      ancho: ancho,
+      alto: alto
+    };
+  }
+
+  function dibujarPin(s) {
+    var centro = centroDelEspacio(s);
+    var esResaltado = estado.espacioResaltado && estado.espacioResaltado.id === s.id;
+    var esSeleccionado = estado.espacioSeleccionado && estado.espacioSeleccionado.id === s.id;
+    var marcado = esResaltado || esSeleccionado;
+
+    /* Etiqueta con el nombre del espacio */
+    var caja = cajaEtiquetaPin(s, marcado);
+    contexto.fillStyle = colores.fondoEtiqueta;
+    contexto.fillRect(caja.x, caja.y, caja.ancho, caja.alto);
+    contexto.strokeStyle = marcado ? colores.ubicacion : colores.bordeEtiqueta;
+    contexto.lineWidth = 1;
+    contexto.strokeRect(caja.x, caja.y, caja.ancho, caja.alto);
+
+    contexto.fillStyle = marcado ? colores.ubicacion : colores.textoEtiqueta;
+    contexto.font = marcado ? 'bold 11px sans-serif' : '11px sans-serif';
+    contexto.textAlign = 'left';
+    contexto.textBaseline = 'middle';
+    contexto.fillText(s.nombre, caja.x + 5, caja.y + caja.alto / 2);
+
+    /* Halo del pin cuando esta resaltado o seleccionado */
+    if (marcado) {
+      contexto.beginPath();
+      contexto.arc(centro.x, centro.y, RADIO_PIN + 5, 0, Math.PI * 2);
+      contexto.fillStyle = esSeleccionado ? colores.seleccionado : colores.resaltado;
+      contexto.fill();
+    }
+
+    /* Punto del pin */
+    contexto.beginPath();
+    contexto.arc(centro.x, centro.y, RADIO_PIN, 0, Math.PI * 2);
+    contexto.fillStyle = marcado ? colores.ubicacion : colorDelPin(s);
+    contexto.fill();
+    contexto.strokeStyle = colores.anilloPin;
+    contexto.lineWidth = 2;
+    contexto.stroke();
+
+    contexto.beginPath();
+    contexto.arc(centro.x, centro.y, 2.5, 0, Math.PI * 2);
+    contexto.fillStyle = colores.anilloPin;
+    contexto.fill();
+
+    /* Aro dorado si es favorito */
+    if (UniMap.favoritos && UniMap.favoritos.esFavorito &&
+        UniMap.favoritos.esFavorito(s.id)) {
+      contexto.beginPath();
+      contexto.arc(centro.x, centro.y, RADIO_PIN + 2.5, 0, Math.PI * 2);
+      contexto.strokeStyle = colores.favorito;
+      contexto.lineWidth = 2;
+      contexto.stroke();
+    }
   }
 
   /* ── COORDENADAS ──────────────────────────────────── */
@@ -338,11 +430,25 @@
     };
   }
 
+  /* Deteccion del cursor SOBRE LOS PINES DIBUJADOS (punto o
+     etiqueta). Antes se comprobaba contra los rectangulos del
+     antiguo diseño sintetico y el hover aparecia sobre areas
+     vacias del plano redibujado. */
   function buscarEspacioEn(wx, wy) {
-    var visibles = UniMap.filtros.espaciosVisibles();
+    var visibles = UniMap.filtros.espaciosInteractuales();
     for (var i = visibles.length - 1; i >= 0; i--) {
       var s = visibles[i];
-      if (wx >= s.x && wx <= s.x + s.ancho && wy >= s.y && wy <= s.y + s.alto) return s;
+
+      /* Punto del pin */
+      var centro = centroDelEspacio(s);
+      var dx = wx - centro.x, dy = wy - centro.y;
+      var r = RADIO_PIN + TOLERANCIA_PIN;
+      if (dx * dx + dy * dy <= r * r) return s;
+
+      /* Etiqueta del nombre */
+      var caja = cajaEtiquetaPin(s, false);
+      if (wx >= caja.x && wx <= caja.x + caja.ancho &&
+          wy >= caja.y && wy <= caja.y + caja.alto) return s;
     }
     return null;
   }
@@ -557,12 +663,47 @@
   }
 
   /* ── SELECTOR DE PISO Y TORRE ─────────────────────── */
+  /* Encuadrado de la vista: al mostrar las dos torres juntas el plano
+     se ensancha, asi que hay que alejar la camara para verlas todas. */
+  function encuadrarAmbasTorres() {
+    if (!lienzo || !lienzo.width) return;
+    var anchoPlano = 800 + (datos.OFFSET_TORRE_2 || 0);
+    var escala = Math.min(1, (lienzo.width - 40) / anchoPlano);
+    estado.nivelZoom = Math.max(0.3, escala);
+    estado.desplazamientoX = (lienzo.width - anchoPlano * estado.nivelZoom) / 2;
+    estado.desplazamientoY = (lienzo.height - 600 * estado.nivelZoom) / 2;
+  }
+
+  function encuadrarPlantaNormal() {
+    estado.nivelZoom = 1;
+    estado.desplazamientoX = 0;
+    estado.desplazamientoY = 0;
+  }
+
+  /* Devuelve el piso de la lista mas cercano al pedido (para cuando
+     el piso no existe en la torre seleccionada: p. ej. la TA no
+     tiene planta baja y la TI no tiene el piso 5) */
+  function pisoCercano(piso, pisos) {
+    if (!pisos || !pisos.length) return piso;
+    if (pisos.indexOf(piso) !== -1) return piso;
+    var mejor = pisos[0];
+    for (var i = 0; i < pisos.length; i++) {
+      if (Math.abs(pisos[i] - piso) < Math.abs(mejor - piso)) mejor = pisos[i];
+    }
+    return mejor;
+  }
+
   function cambiarPiso(nuevoPiso, sincronizarBotones) {
+    /* Solo pisos que existen en la seleccion actual */
+    if (datos.pisosDeVista) nuevoPiso = pisoCercano(nuevoPiso, datos.pisosDeVista(estado.edificioActual));
     estado.pisoActual = nuevoPiso;
-    /* Espacios del piso aplicando los cambios del administrador (HU-06) */
-    estado.espacios = UniMap.personalizacion
-      ? UniMap.personalizacion.espaciosDelPiso(estado.edificioActual, nuevoPiso)
-      : datos.construirEspacios(estado.edificioActual, nuevoPiso);
+
+    /* Una sola fuente: torre 1, torre 2 o ambas (edificio 0) con la
+       torre 2 ya desplazada en X. Ver UniMap.datos.espaciosDeVista */
+    estado.espacios = datos.espaciosDeVista
+      ? datos.espaciosDeVista(estado.edificioActual, nuevoPiso)
+      : datos.construirEspacios(estado.edificioActual || 1, nuevoPiso);
+
     estado.espacioSeleccionado = null;
     estado.espacioResaltado = null;
 
@@ -573,16 +714,24 @@
 
     UniMap.tooltip.ocultar();
     refrescarVistas();
+    /* Plano 2D del piso: redibujado desde el modelo 3D que le toca */
+    solicitarPlanos();
   }
 
   function cambiarEdificio(nuevoEdificio, pisoDestino) {
-    var maxPisos = datos.pisosDeEdificio ? datos.pisosDeEdificio(nuevoEdificio) : 8;
+    var anterior = estado.edificioActual;
     estado.edificioActual = nuevoEdificio;
 
-    /* Ajustar el piso al rango valido de la nueva torre */
+    /* Reencuadrar al entrar o salir del modo "ambas torres" */
+    if (nuevoEdificio === 0 && anterior !== 0) encuadrarAmbasTorres();
+    else if (nuevoEdificio !== 0 && anterior === 0) encuadrarPlantaNormal();
+
+    /* Ajustar el piso al rango valido de la nueva torre: si el
+       piso actual no existe ahi, ir al valido mas cercano */
+    var pisosValidos = datos.pisosDeVista ? datos.pisosDeVista(nuevoEdificio) : [0];
     var piso = (pisoDestino !== undefined && pisoDestino !== null) ? pisoDestino : estado.pisoActual;
-    if (piso >= maxPisos) piso = maxPisos - 1;
-    if (piso < 0) piso = 0;
+    piso = pisoCercano(piso, pisosValidos);
+    estado.pisoActual = piso;
 
     /* Sincronizar el conmutador de torre */
     var botonesTorre = document.querySelectorAll('.boton-torre');
@@ -594,17 +743,23 @@
     generarBotonesPiso();
     cambiarPiso(piso);
 
-    util.notificar(datos.nombreEdificio ? datos.nombreEdificio(nuevoEdificio) : '');
+    util.notificar(nuevoEdificio === 0
+      ? (UniMap.i18n ? UniMap.i18n.t('torre.ambos') : 'Ambas torres')
+      : (datos.nombreEdificio ? datos.nombreEdificio(nuevoEdificio) : ''));
   }
 
   function generarBotonesPiso() {
     var contenedor = util.el('selector-pisos');
     if (!contenedor) return;
 
-    var maxPisos = datos.pisosDeEdificio ? datos.pisosDeEdificio(estado.edificioActual) : 8;
+    /* Pisos reales de la seleccion actual (p. ej. TA 4-17) */
+    var pisos = datos.pisosDeVista ? datos.pisosDeVista(estado.edificioActual) : [0];
+    pisos = pisos.slice().sort(function (a, b) { return b - a; });
+
     var html = '';
     /* De mayor a menor, como en el selector original */
-    for (var p = maxPisos - 1; p >= 0; p--) {
+    for (var i = 0; i < pisos.length; i++) {
+      var p = pisos[i];
       var etiqueta = p === 0 ? 'PB' : 'P' + p;
       var activo = p === estado.pisoActual ? ' active' : '';
       html += '<button class="boton-piso' + activo + '" data-floor="' + p + '">' + etiqueta + '</button>';
@@ -650,20 +805,31 @@
       botones[b].addEventListener('click', function () {
         var edificio = parseInt(this.getAttribute('data-building'), 10);
         if (edificio === estado.edificioActual) return;
-        if (estado.filtros.edificios && estado.filtros.edificios.indexOf(edificio) === -1) {
+
+        var ocultas = (estado.filtros && estado.filtros.edificios) || null;
+        if (edificio === 0) {
+          /* "Ambas torres": al menos una de las dos debe estar visible */
+          var algunaVisible = !ocultas || ocultas.indexOf(1) !== -1 || ocultas.indexOf(2) !== -1;
+          if (!algunaVisible) {
+            util.notificar(UniMap.i18n.t('filtros.torreOculta'));
+            return;
+          }
+        } else if (ocultas && ocultas.indexOf(edificio) === -1) {
           util.notificar(UniMap.i18n.t('filtros.torreOculta'));
           return;
         }
+
         cambiarEdificio(edificio);
       });
     }
   }
 
-  /* Refresca 2D + marcadores 3D */
+  /* Refresca 2D + vista 3D (marcadores y planta) */
   function refrescarVistas() {
     dibujar();
-    if (UniMap.vista3D && UniMap.vista3D.actualizarMarcadores) {
-      UniMap.vista3D.actualizarMarcadores();
+    if (UniMap.vista3D) {
+      if (UniMap.vista3D.sincronizarEstado) UniMap.vista3D.sincronizarEstado();
+      else if (UniMap.vista3D.actualizarMarcadores) UniMap.vista3D.actualizarMarcadores();
     }
   }
 
@@ -683,10 +849,21 @@
       redimensionarLienzo();
       UniMap.tooltip.ocultar();
     });
+    /* Al cambiar el tema se cambia la paleta del lienzo y se
+       vuelven a pedir los planos (estan cacheados con la
+       paleta anterior). El bucle animar() repinta solo. */
+    document.addEventListener('tema:cambiado', function () {
+      colores = esOscuro() ? paletaOscura : paletaClara;
+      if (UniMap.modelos && UniMap.modelos.invalidarPlanos) {
+        UniMap.modelos.invalidarPlanos();
+      }
+      solicitarPlanos();
+    });
     conectarZoom();
     conectarSelectorTorre();
     generarBotonesPiso();
     redimensionarLienzo();
+    solicitarPlanos();
     animar();
   }
 
@@ -705,6 +882,7 @@
     centrarEn: centrarEn,
     redimensionarLienzo: redimensionarLienzo,
     refrescarBotonesPiso: refrescarBotonesPiso,
-    pantallaAMundo: pantallaAMundo
+    pantallaAMundo: pantallaAMundo,
+    solicitarPlanos: solicitarPlanos
   };
 })();

@@ -127,6 +127,27 @@
     return null;
   }
 
+  /* Pisos del selector del modal: los que existen en la torre elegida
+     (p. ej. Torre Antigua 4-17, Torre Innovacion PB y 4-11) */
+  function rellenarPisos(valorDeseado) {
+    var sel = util.el('esp-piso');
+    if (!sel) return;
+    var torre = parseInt(util.el('esp-torre').value, 10) || 1;
+    var pisos = UniMap.datos.pisosDe ? UniMap.datos.pisosDe(torre) : [0, 1, 2, 3, 4, 5, 6, 7, 8];
+
+    var html = '';
+    for (var i = 0; i < pisos.length; i++) {
+      html += '<option value="' + pisos[i] + '">' +
+        (pisos[i] === 0 ? 'PB' : 'P' + pisos[i]) + '</option>';
+    }
+    sel.innerHTML = html;
+
+    var valor = (valorDeseado !== undefined && valorDeseado !== null && pisos.indexOf(valorDeseado) !== -1)
+      ? valorDeseado
+      : pisos[0];
+    sel.value = String(valor);
+  }
+
   function abrirModal(idEspacio) {
     editandoId = idEspacio || null;
     var modal = util.el('modal-espacio');
@@ -140,7 +161,7 @@
       util.el('esp-nombre').value = s.nombre;
       util.el('esp-tipo').value = s.tipo;
       util.el('esp-torre').value = String(s.edificio);
-      util.el('esp-piso').value = String(s.piso);
+      rellenarPisos(s.piso);
       util.el('esp-horario').value = s.horarioAtencion || '';
       util.el('esp-telefono').value = s.telefono || '';
       util.el('esp-capacidad').value = String(s.capacidad || 0);
@@ -150,7 +171,7 @@
       util.el('esp-nombre').value = '';
       util.el('esp-tipo').value = 'aula';
       util.el('esp-torre').value = '1';
-      util.el('esp-piso').value = '0';
+      rellenarPisos();
       util.el('esp-horario').value = '';
       util.el('esp-telefono').value = '';
       util.el('esp-capacidad').value = '0';
@@ -177,15 +198,19 @@
       util.el('esp-nombre-error').textContent = nombre ? 'Min. 2 caracteres' : 'Requerido';
       return;
     }
-    if (isNaN(piso) || piso < 0 || piso > 8) {
-      util.el('esp-piso-error').textContent = '0 - 8';
+    var edificio = parseInt(util.el('esp-torre').value, 10);
+    var pisosTorre = UniMap.datos.pisosDe ? UniMap.datos.pisosDe(edificio) : [];
+    if (isNaN(piso) || pisosTorre.indexOf(piso) === -1) {
+      util.el('esp-piso-error').textContent = pisosTorre.length
+        ? pisosTorre.map(function (p) { return p === 0 ? 'PB' : 'P' + p; }).join(', ')
+        : 'Requerido';
       return;
     }
 
     var cambios = {
       nombre: nombre,
       tipo: util.el('esp-tipo').value,
-      edificio: parseInt(util.el('esp-torre').value, 10),
+      edificio: edificio,
       piso: piso,
       horarioAtencion: util.el('esp-horario').value.trim(),
       telefono: util.el('esp-telefono').value.trim(),
@@ -285,6 +310,8 @@
 
     /* Acciones */
     util.el('admin-nuevo').addEventListener('click', function () { abrirModal(null); });
+    /* Al cambiar la torre, el selector de piso pasa a sus pisos */
+    util.el('esp-torre').addEventListener('change', function () { rellenarPisos(); });
     util.el('admin-restaurar').addEventListener('click', function () {
       if (window.confirm(t('adm.restaurar') + '?')) {
         UniMap.personalizacion.restaurarTodo();
