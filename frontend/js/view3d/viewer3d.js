@@ -34,11 +34,21 @@
   var luzDireccional = null, suelo = null, cuadricula = null;
   var grupoPlanta = null;               // grupo que contiene todas las cajas de la planta actual
   var marcadores = [];
+  var marcadorUbicacion3D = null;       // marcador HTML "Usted aqui" en 3D
   var espacioPendiente = null;
   var animacionCamara = null;
   var raycaster = null;
   var edificioActual = 1;               // 1 = TA, 2 = TI, 0 = ambas
   var pisoActual = 0;
+
+  /* Arrastre en 3D (modo edicion) */
+  var marcadorArrastrando = null;       // {espacio, elemento, posicion}
+  var ubicacionArrastrando3D = false;
+  var arrastreInicioPantalla = null;    // {x, y} en pantalla
+
+  /* Estado de edicion de posiciones en 3D (igual que 2D) */
+  var posicionesOriginales3D = {};      // idEspacio -> {x, y} snapshot al activar
+  var pinesModificados3D = {};          // idEspacio -> {x, y} cambios pendientes
 
   /* =========================================================
      INICIALIZACION DE LA ESCENA
@@ -502,6 +512,17 @@
     var visibles = UniMap.filtros.espaciosInteractuales();
     var seleccionado = estado.espacioSeleccionado;
 
+    /* ── Marcador "Usted aqui" en 3D ── */
+    if (!marcadorUbicacion3D) {
+      var elUbi = document.createElement('div');
+      elUbi.className = 'marcador-3d marcador-ubicacion';
+      elUbi.innerHTML = '<span class="punto"></span><span class="texto">Usted aqui</span>';
+      elUbi.setAttribute('title', 'Usted aqui');
+      capa.appendChild(elUbi);
+      marcadorUbicacion3D = { elemento: elUbi };
+      conectarMarcadorUbicacion(elUbi);
+    }
+
     for (var v = 0; v < visibles.length; v++) {
       var espacio = visibles[v];
 
@@ -551,6 +572,33 @@
       estado.espacioResaltado = null;
       if (UniMap.mapa2D) UniMap.mapa2D.dibujar();
     });
+
+    /* ── Arrastre en modo edicion (solo admin) ── */
+    elemento.addEventListener('pointerdown', function (e) {
+      if (!modoEdicionPines3D()) return;
+      e.stopPropagation();
+      marcadorArrastrando = { espacio: espacio, elemento: elemento, posicion: posicion };
+      arrastreInicioPantalla = { x: e.clientX, y: e.clientY };
+      elemento.style.cursor = 'grabbing';
+      contenedor.style.cursor = 'grabbing';
+    });
+  }
+
+  function modoEdicionPines3D() {
+    return (UniMap.mapa2D && UniMap.mapa2D.estaEnModoEdicion && UniMap.mapa2D.estaEnModoEdicion()
+      && estado.usuarioActual && estado.usuarioActual.rol === 'admin');
+  }
+
+  /* ── Arrastre del marcador "Usted aqui" en 3D ── */
+  function conectarMarcadorUbicacion(elemento) {
+    elemento.addEventListener('pointerdown', function (e) {
+      if (!modoEdicionPines3D()) return;
+      e.stopPropagation();
+      ubicacionArrastrando3D = true;
+      arrastreInicioPantalla = { x: e.clientX, y: e.clientY };
+      elemento.style.cursor = 'grabbing';
+      contenedor.style.cursor = 'grabbing';
+    });
   }
 
   function seleccionarEspacio(espacio, posicion) {
@@ -594,6 +642,49 @@
       m.elemento.style.left = ((vector.x * 0.5 + 0.5) * ancho) + 'px';
       m.elemento.style.top = ((-vector.y * 0.5 + 0.5) * alto) + 'px';
     }
+
+    /* Marcador "Usted aqui" en 3D */
+    if (marcadorUbicacion3D && estado.ubicacionUsuario) {
+      var posUbi = new THREE.Vector3(
+        estado.ubicacionUsuario.x,
+        alturaMarcaje,
+        estado.ubicacionUsuario.y
+      );
+      var v = posUbi.clone().project(camara);
+      var fuera = v.z > 1 || v.x < -1.15 || v.x > 1.15 || v.y < -1.15 || v.y > 1.15;
+      if (fuera) {
+        marcadorUbicacion3D.elemento.style.display = 'none';
+      } else {
+        marcadorUbicacion3D.elemento.style.display = 'flex';
+        marcadorUbicacion3D.elemento.style.left = ((v.x * 0.5 + 0.5) * ancho) + 'px';
+        marcadorUbicacion3D.elemento.style.top = ((-v.y * 0.5 + 0.5) * alto) + 'px';
+      }
+    }
+  }
+
+  /* ── RAYCAST: punto en el suelo desde coordenadas de pantalla ======
+     Devuelve {x, y} en unidades del plano (equivalente a x, y del espacio) */
+  function raycasterSuelo(pantallaX, pantallaY) {
+    if (!camara || !raycaster) return null;
+
+    var rect = contenedor.getBoundingClientRect();
+    var nx = ((pantallaX - rect.left) / rect.width) * 2 - 1;
+    var ny = -((pantallaY - rect.top) / rect.height) * 2 + 1;
+
+    raycaster.setFromCamera(new THREE.Vector2(nx, ny), camara);
+
+    /* Plano del suelo en Y = alturaMarcaje (misma altura que los marcadores) */
+    var planoY = alturaMarcaje;
+    var direccion = raycaster.ray.direction;
+    var origen = raycaster.ray.origin;
+
+    if (Math.abs(direccion.y) < 0.001) return null;
+
+    var t = (planoY - origen.y) / direccion.y;
+    if (t < 0) return null;
+
+    var punto = new THREE.Vector3().copy(origen).add(direccion.multiplyScalar(t));
+    return { x: punto.x, y: punto.z };
   }
 
   function buscarMarcador(idEspacio) {
@@ -687,6 +778,80 @@
     });
   }
 
+  /* ── MODO EDICION DE POSICIONES EN 3D (solo admin) ─────
+     Igual que el 2D: snapshot al activar, restaurar al cancelar,
+     guardar con notificaciones y avisos. ─────────────── */
+  function activarEdicionPosiciones3D() {
+    if (!estado.usuarioActual || estado.usuarioActual.rol !== 'admin') {
+      util.notificar(UniMap.i18n ? UniMap.i18n.t('adm.sinPermisos') : 'Solo administrador');
+      return;
+    }
+    /* Guardar snapshot de posiciones actuales antes de editar */
+    var visibles = UniMap.filtros.espaciosInteractuales ? UniMap.filtros.espaciosInteractuales() : [];
+    posicionesOriginales3D = {};
+    for (var i = 0; i < visibles.length; i++) {
+      var s = visibles[i];
+      posicionesOriginales3D[s.id] = { x: s.x, y: s.y };
+    }
+    pinesModificados3D = {};
+    var btnEditar = util.el('boton-editar-posiciones');
+    var btnGuardar = util.el('boton-guardar-posiciones');
+    if (btnEditar) {
+      btnEditar.classList.add('activo');
+      btnEditar.setAttribute('data-i18n-title', 'top.cancelarEdicion');
+      btnEditar.title = UniMap.i18n ? UniMap.i18n.t('top.cancelarEdicion') : 'Cancelar edicion';
+    }
+    if (btnGuardar) btnGuardar.classList.remove('hidden');
+    contenedor.style.cursor = 'crosshair';
+    util.notificar('Modo edicion activado: arrastra los marcadores donde quieras, luego pulsa Guardar o Cancelar', 5000);
+    actualizarMarcadores();
+  }
+
+  function desactivarEdicionPosiciones3D() {
+    /* Restaurar posiciones originales al cancelar */
+    if (Object.keys(posicionesOriginales3D).length > 0) {
+      var visibles = UniMap.filtros.espaciosInteractuales ? UniMap.filtros.espaciosInteractuales() : [];
+      for (var i = 0; i < visibles.length; i++) {
+        var s = visibles[i];
+        var orig = posicionesOriginales3D[s.id];
+        if (orig) {
+          s.x = orig.x;
+          s.y = orig.y;
+        }
+      }
+    }
+    pinesModificados3D = {};
+    posicionesOriginales3D = {};
+    var btnEditar = util.el('boton-editar-posiciones');
+    var btnGuardar = util.el('boton-guardar-posiciones');
+    if (btnEditar) {
+      btnEditar.classList.remove('activo');
+      btnEditar.setAttribute('data-i18n-title', 'top.editarPosiciones');
+      btnEditar.title = UniMap.i18n ? UniMap.i18n.t('top.editarPosiciones') : 'Editar posiciones';
+    }
+    if (btnGuardar) btnGuardar.classList.add('hidden');
+    contenedor.style.cursor = '';
+    actualizarMarcadores();
+    if (UniMap.mapa2D) UniMap.mapa2D.dibujar();
+    /* Aplicar nuevo idioma si es necesario */
+    if (UniMap.i18n) UniMap.i18n.aplicar();
+  }
+
+  function guardarPosiciones3D() {
+    if (Object.keys(pinesModificados3D).length === 0) return;
+    var n = 0;
+    for (var id in pinesModificados3D) {
+      if (!pinesModificados3D.hasOwnProperty(id)) continue;
+      UniMap.personalizacion.guardarEdicion(id, pinesModificados3D[id]);
+      n++;
+    }
+    pinesModificados3D = {};
+    posicionesOriginales3D = {};
+    desactivarEdicionPosiciones3D();
+    actualizarMarcadores();
+    if (UniMap.mapa2D) UniMap.mapa2D.dibujar();
+  }
+
   function conectarInteraccionLienzo() {
     var inicio = null;
 
@@ -705,6 +870,71 @@
       UniMap.tooltip.ocultar();
       actualizarClasesMarcadores();
       if (UniMap.mapa2D) UniMap.mapa2D.dibujar();
+    });
+
+    /* ── Arrastre global: mover marcadores 3D en modo edicion ── */
+    document.addEventListener('pointermove', function (e) {
+      if (marcadorArrastrando) {
+        var dx = e.clientX - arrastreInicioPantalla.x;
+        var dy = e.clientY - arrastreInicioPantalla.y;
+        var el = marcadorArrastrando.elemento;
+        var left = parseFloat(el.style.left || '0') + dx;
+        var top = parseFloat(el.style.top || '0') + dy;
+        el.style.left = left + 'px';
+        el.style.top = top + 'px';
+        arrastreInicioPantalla = { x: e.clientX, y: e.clientY };
+        return;
+      }
+      if (ubicacionArrastrando3D && marcadorUbicacion3D) {
+        var dx = e.clientX - arrastreInicioPantalla.x;
+        var dy = e.clientY - arrastreInicioPantalla.y;
+        var el = marcadorUbicacion3D.elemento;
+        var left = parseFloat(el.style.left || '0') + dx;
+        var top = parseFloat(el.style.top || '0') + dy;
+        el.style.left = left + 'px';
+        el.style.top = top + 'px';
+        arrastreInicioPantalla = { x: e.clientX, y: e.clientY };
+        return;
+      }
+    });
+
+    document.addEventListener('pointerup', function (e) {
+      /* ── Soltar marcador de espacio en modo edicion ── */
+      if (marcadorArrastrando) {
+        var el = marcadorArrastrando.elemento;
+        var px = parseFloat(el.style.left || '0');
+        var py = parseFloat(el.style.top || '0');
+        var suelo = raycasterSuelo(px, py);
+        if (suelo) {
+          var esp = marcadorArrastrando.espacio;
+          esp.x = suelo.x - esp.ancho / 2;
+          esp.y = suelo.y - esp.alto / 2;
+          pinesModificados3D[esp.id] = { x: esp.x, y: esp.y };
+        }
+        marcadorArrastrando.elemento.style.cursor = '';
+        marcadorArrastrando = null;
+        arrastreInicioPantalla = null;
+        contenedor.style.cursor = '';
+        actualizarMarcadores();
+        return;
+      }
+
+      /* ── Soltar marcador "Usted aqui" ── */
+      if (ubicacionArrastrando3D && marcadorUbicacion3D) {
+        var el = marcadorUbicacion3D.elemento;
+        var px = parseFloat(el.style.left || '0');
+        var py = parseFloat(el.style.top || '0');
+        var suelo = raycasterSuelo(px, py);
+        if (suelo) {
+          estado.ubicacionUsuario = { x: suelo.x, y: suelo.y };
+        }
+        ubicacionArrastrando3D = false;
+        el.style.cursor = '';
+        arrastreInicioPantalla = null;
+        contenedor.style.cursor = '';
+        actualizarPosicionesMarcadores();
+        return;
+      }
     });
   }
 
@@ -835,6 +1065,10 @@
     mostrarSuelo: function (v) {
       if (suelo) suelo.visible = v !== false;
       if (cuadricula) cuadricula.visible = v !== false;
-    }
+    },
+    /* Modo edicion de posiciones (igual que 2D) */
+    activarEdicionPosiciones: activarEdicionPosiciones3D,
+    desactivarEdicionPosiciones: desactivarEdicionPosiciones3D,
+    guardarPosiciones: guardarPosiciones3D
   };
 })();

@@ -18,6 +18,16 @@ class EspacioMapaResource extends JsonResource
             'latitud' => $this->latitud !== null ? (float) $this->latitud : null,
             'longitud' => $this->longitud !== null ? (float) $this->longitud : null,
             'estadoAtencion' => $this->estadoAtencion,
+            'estaActivo' => $this->estaActivo,
+            'contactoEspacio' => $this->contactoEspacio,
+            // Horarios compactos ("HH:MM-HH:MM") para la web del mapa
+            'horarios' => $this->whenLoaded('horariosEspacio', fn () => $this->horariosEspacio
+                ->map(fn ($horario) => [
+                    'diaSemana' => $horario->diaSemana,
+                    'horaApertura' => substr((string) $horario->horaApertura, 0, 5),
+                    'horaCierre' => substr((string) $horario->horaCierre, 0, 5),
+                ])
+                ->values()),
             'tipoEspacio' => $this->whenLoaded('tipoEspacio', fn () => [
                 'idTipoEspacio' => $this->tipoEspacio->idTipoEspacio,
                 'nombreTipoEspacio' => $this->tipoEspacio->nombreTipoEspacio,
@@ -47,6 +57,7 @@ class EspacioMapaResource extends JsonResource
             'aula' => $this->whenLoaded('aula', fn () => $this->aula ? [
                 'idAula' => $this->aula->idAula,
                 'numeroAula' => $this->aula->numeroAula,
+                'capacidadAula' => $this->aula->capacidadAula,
             ] : null),
         ];
     }

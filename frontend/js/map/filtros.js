@@ -13,9 +13,10 @@
   /* Pisos con modelo hoy (union de las dos torres, numeracion real) */
   var PISOS_POR_DEFECTO = [0, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17];
   var EDIFICIOS_POR_DEFECTO = [1, 2];
-  /* HU-19: subtipos de laboratorio visibles por defecto (todos) */
-  var LABS_POR_DEFECTO = ['informatica', 'electronica', 'fisica', 'quimica', 'mecanica',
-    'ia', 'robotica', 'iot', 'ciberseguridad', 'produccion'];
+  /* HU-19: subtipos de laboratorio visibles por defecto. Es el
+     catalogo que siembra el backend (CatalogoSeeder): quimica,
+     redes, fisica y sistemas */
+  var LABS_POR_DEFECTO = ['quimica', 'redes', 'fisica', 'sistemas'];
 
   /* Tipos "de planta": pasillos, jardin, estacionamiento, sanitarios y
      la entrada principal (HU-08) forman parte del propio edificio, no de

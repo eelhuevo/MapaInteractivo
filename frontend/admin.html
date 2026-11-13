@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -20,7 +20,7 @@
 
   <link rel="stylesheet" href="css/base.css?v=4">
   <link rel="stylesheet" href="css/hus.css?v=4">
-  <link rel="stylesheet" href="css/admin.css?v=4">
+  <link rel="stylesheet" href="css/admin.css?v=6">
 </head>
 <body class="admin-body">
 
@@ -58,6 +58,14 @@
     <!-- Tabs -->
     <nav class="admin-tabs" role="tablist">
       <button class="admin-tab active" data-tab="espacios" data-i18n="adm.espacios">Espacios</button>
+      <button class="admin-tab" data-tab="usuarios" data-i18n="adm.tabUsuarios">Usuarios</button>
+      <button class="admin-tab" data-tab="estudiantes" data-i18n="adm.tabEstudiantes">Estudiantes</button>
+      <button class="admin-tab" data-tab="docentes" data-i18n="adm.tabDocentes">Docentes</button>
+      <button class="admin-tab" data-tab="administradores" data-i18n="adm.tabAdministradores">Administradores</button>
+      <button class="admin-tab" data-tab="materias" data-i18n="adm.tabMaterias">Materias</button>
+      <button class="admin-tab" data-tab="carreras" data-i18n="adm.tabCarreras">Carreras</button>
+      <button class="admin-tab" data-tab="roles" data-i18n="adm.tabRoles">Roles</button>
+      <button class="admin-tab" data-tab="catalogos" data-i18n="adm.tabCatalogos">Catalogos</button>
       <button class="admin-tab" data-tab="estadisticas" data-i18n="adm.estadisticas">Estadisticas</button>
     </nav>
 
@@ -125,6 +133,136 @@
       <div class="stats-bloque">
         <h3 data-i18n="adm.seccionTipo">Distribucion por tipo</h3>
         <div id="stats-tipos" class="stats-lista"></div>
+      </div>
+    </section>
+    <!-- ══ CRUD: USUARIOS ══ -->
+    <section id="tab-usuarios" class="admin-tab-panel hidden" data-entidad="usuarios">
+      <div class="admin-toolbar">
+        <input type="text" id="buscar-usuarios" data-i18n-placeholder="adm.buscarPh2" placeholder="Buscar...">
+        <select id="filtro-rol"><option value="" data-i18n="adm.filtroTodos">Todos</option></select>
+        <select id="filtro-estado">
+          <option value="" data-i18n="adm.filtroTodos">Todos</option>
+          <option value="activo" data-i18n="ley.activo">Activo</option>
+          <option value="inactivo" data-i18n="ley.inactivo">Inactivo</option>
+        </select>
+        <span class="admin-contador" id="contador-usuarios"></span>
+        <button class="btn-admin-primario" data-alta="usuarios" data-i18n="adm.nuevoUsuario">Nuevo usuario</button>
+      </div>
+      <div class="admin-tabla-wrap">
+        <table class="admin-tabla"><thead id="cabecera-usuarios"></thead><tbody id="cuerpo-usuarios"></tbody></table>
+        <div id="vacio-usuarios" class="admin-vacio hidden" data-i18n="adm.vacio">Sin resultados</div>
+      </div>
+    </section>
+
+    <!-- ══ CRUD: ESTUDIANTES ══ -->
+    <section id="tab-estudiantes" class="admin-tab-panel hidden" data-entidad="estudiantes">
+      <div class="admin-toolbar">
+        <input type="text" id="buscar-estudiantes" data-i18n-placeholder="adm.buscarPh2" placeholder="Buscar...">
+        <select id="filtro-carrera-estudiantes"><option value="" data-i18n="adm.filtroTodos">Todas</option></select>
+        <select id="filtro-estado-estudiantes">
+          <option value="" data-i18n="adm.filtroTodos">Todos</option>
+          <option value="activo" data-i18n="ley.activo">Activo</option>
+          <option value="inactivo" data-i18n="ley.inactivo">Inactivo</option>
+        </select>
+        <span class="admin-contador" id="contador-estudiantes"></span>
+        <button class="btn-admin-primario" data-alta="estudiantes" data-i18n="adm.nuevoEstudiante">Nuevo estudiante</button>
+      </div>
+      <div class="admin-tabla-wrap">
+        <table class="admin-tabla"><thead id="cabecera-estudiantes"></thead><tbody id="cuerpo-estudiantes"></tbody></table>
+        <div id="vacio-estudiantes" class="admin-vacio hidden" data-i18n="adm.vacio">Sin resultados</div>
+      </div>
+    </section>
+
+    <!-- ══ CRUD: DOCENTES ══ -->
+    <section id="tab-docentes" class="admin-tab-panel hidden" data-entidad="docentes">
+      <div class="admin-toolbar">
+        <input type="text" id="buscar-docentes" data-i18n-placeholder="adm.buscarPh2" placeholder="Buscar...">
+        <select id="filtro-estado-docentes">
+          <option value="" data-i18n="adm.filtroTodos">Todos</option>
+          <option value="activo" data-i18n="ley.activo">Activo</option>
+          <option value="inactivo" data-i18n="ley.inactivo">Inactivo</option>
+        </select>
+        <span class="admin-contador" id="contador-docentes"></span>
+        <button class="btn-admin-primario" data-alta="docentes" data-i18n="adm.nuevoDocente">Nuevo docente</button>
+      </div>
+      <div class="admin-tabla-wrap">
+        <table class="admin-tabla"><thead id="cabecera-docentes"></thead><tbody id="cuerpo-docentes"></tbody></table>
+        <div id="vacio-docentes" class="admin-vacio hidden" data-i18n="adm.vacio">Sin resultados</div>
+      </div>
+    </section>
+
+    <!-- ══ CRUD: ADMINISTRADORES ══ -->
+    <section id="tab-administradores" class="admin-tab-panel hidden" data-entidad="administradores">
+      <div class="admin-toolbar">
+        <input type="text" id="buscar-administradores" data-i18n-placeholder="adm.buscarPh2" placeholder="Buscar...">
+        <select id="filtro-estado-administradores">
+          <option value="" data-i18n="adm.filtroTodos">Todos</option>
+          <option value="activo" data-i18n="ley.activo">Activo</option>
+          <option value="inactivo" data-i18n="ley.inactivo">Inactivo</option>
+        </select>
+        <span class="admin-contador" id="contador-administradores"></span>
+        <button class="btn-admin-primario" data-alta="administradores" data-i18n="adm.nuevoAdministrador">Nuevo administrador</button>
+      </div>
+      <div class="admin-tabla-wrap">
+        <table class="admin-tabla"><thead id="cabecera-administradores"></thead><tbody id="cuerpo-administradores"></tbody></table>
+        <div id="vacio-administradores" class="admin-vacio hidden" data-i18n="adm.vacio">Sin resultados</div>
+      </div>
+    </section>
+
+    <!-- ══ CRUD: MATERIAS ══ -->
+    <section id="tab-materias" class="admin-tab-panel hidden" data-entidad="materias">
+      <div class="admin-toolbar">
+        <input type="text" id="buscar-materias" data-i18n-placeholder="adm.buscarPh2" placeholder="Buscar...">
+        <span class="admin-contador" id="contador-materias"></span>
+        <button class="btn-admin-primario" data-alta="materias" data-i18n="adm.nuevaMateria">Nueva materia</button>
+      </div>
+      <div class="admin-tabla-wrap">
+        <table class="admin-tabla"><thead id="cabecera-materias"></thead><tbody id="cuerpo-materias"></tbody></table>
+        <div id="vacio-materias" class="admin-vacio hidden" data-i18n="adm.vacio">Sin resultados</div>
+      </div>
+    </section>
+
+    <!-- ══ CRUD: CARRERAS ══ -->
+    <section id="tab-carreras" class="admin-tab-panel hidden" data-entidad="carreras">
+      <div class="admin-toolbar">
+        <input type="text" id="buscar-carreras" data-i18n-placeholder="adm.buscarPh2" placeholder="Buscar...">
+        <span class="admin-contador" id="contador-carreras"></span>
+        <button class="btn-admin-primario" data-alta="carreras" data-i18n="adm.nuevaCarrera">Nueva carrera</button>
+      </div>
+      <div class="admin-tabla-wrap">
+        <table class="admin-tabla"><thead id="cabecera-carreras"></thead><tbody id="cuerpo-carreras"></tbody></table>
+        <div id="vacio-carreras" class="admin-vacio hidden" data-i18n="adm.vacio">Sin resultados</div>
+      </div>
+    </section>
+
+    <!-- ══ CRUD: ROLES ══ -->
+    <section id="tab-roles" class="admin-tab-panel hidden" data-entidad="roles">
+      <div class="admin-toolbar">
+        <input type="text" id="buscar-roles" data-i18n-placeholder="adm.buscarPh2" placeholder="Buscar...">
+        <span class="admin-contador" id="contador-roles"></span>
+        <button class="btn-admin-primario" data-alta="roles" data-i18n="adm.nuevoRol">Nuevo rol</button>
+      </div>
+      <div class="admin-tabla-wrap">
+        <table class="admin-tabla"><thead id="cabecera-roles"></thead><tbody id="cuerpo-roles"></tbody></table>
+        <div id="vacio-roles" class="admin-vacio hidden" data-i18n="adm.vacio">Sin resultados</div>
+      </div>
+    </section>
+
+    <!-- ══ CRUD: CATALOGOS (tipos de espacio, categorias, tipos de lab) ══ -->
+    <section id="tab-catalogos" class="admin-tab-panel hidden" data-entidad="catalogos">
+      <div class="admin-toolbar">
+        <select id="selector-catalogo" data-i18n-title="adm.catSelecciona">
+          <option value="tipos-espacio" data-i18n="adm.catTiposEspacio">Tipos de espacio</option>
+          <option value="categorias-servicio" data-i18n="adm.catCategoriasServicio">Categorias de servicio</option>
+          <option value="tipos-laboratorio" data-i18n="adm.catTiposLaboratorio">Tipos de laboratorio</option>
+        </select>
+        <input type="text" id="buscar-catalogos" data-i18n-placeholder="adm.buscarPh2" placeholder="Buscar...">
+        <span class="admin-contador" id="contador-catalogos"></span>
+        <button class="btn-admin-primario" data-alta="catalogos" data-i18n="adm.nuevoRegistro">Nuevo registro</button>
+      </div>
+      <div class="admin-tabla-wrap">
+        <table class="admin-tabla"><thead id="cabecera-catalogos"></thead><tbody id="cuerpo-catalogos"></tbody></table>
+        <div id="vacio-catalogos" class="admin-vacio hidden" data-i18n="adm.vacio">Sin resultados</div>
       </div>
     </section>
   </main>
@@ -198,8 +336,38 @@
           </div>
         </div>
 
+        <div class="form-row">
+          <div class="form-group">
+            <label for="esp-x">X (posicion marcador)</label>
+            <input type="number" id="esp-x" min="0" max="800" value="0">
+            <span class="error-msg" id="esp-x-error"></span>
+          </div>
+          <div class="form-group">
+            <label for="esp-y">Y (posicion marcador)</label>
+            <input type="number" id="esp-y" min="0" max="600" value="0">
+            <span class="error-msg" id="esp-y-error"></span>
+          </div>
+        </div>
+
         <div class="admin-form-acciones">
           <button type="button" class="btn-admin-secundario cerrar-modal-admin" data-i18n="adm.cancelar">Cancelar</button>
+          <button type="submit" class="btn-admin-primario" data-i18n="adm.guardar">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: alta / edicion de usuarios, estudiantes, docentes y catalogos -->
+  <div id="modal-registro" class="modal hidden">
+    <div class="modal-content modal-espacio modal-registro">
+      <div class="modal-header">
+        <h3 id="modal-registro-titulo"></h3>
+        <button class="btn-close cerrar-modal-registro">&times;</button>
+      </div>
+      <form id="form-registro" novalidate>
+        <div id="campos-registro" class="form-campos"></div>
+        <div class="admin-form-acciones">
+          <button type="button" class="btn-admin-secundario cerrar-modal-registro" data-i18n="adm.cancelar">Cancelar</button>
           <button type="submit" class="btn-admin-primario" data-i18n="adm.guardar">Guardar</button>
         </div>
       </form>
@@ -212,17 +380,18 @@
     <button id="cerrar-notificacion" class="btn-close-sm">&times;</button>
   </div>
 
-  <script src="js/core/store.js?v=6"></script>
-  <script src="js/core/i18n.js?v=7"></script>
-  <script src="js/core/estadisticas.js?v=3"></script>
-  <script src="js/core/avisos.js?v=3"></script>
-  <script src="js/data/categorias.js?v=3"></script>
+  <script src="js/core/store.js?v=10"></script>
+  <script src="js/core/api.js?v=9"></script>
+  <script src="js/core/i18n.js?v=17"></script>
+  <script src="js/core/estadisticas.js?v=4"></script>
+  <script src="js/core/avisos.js?v=4"></script>
+  <script src="js/data/categorias.js?v=4"></script>
   <script src="js/data/edificios.js?v=6"></script>
-  <script src="js/data/docentes.js?v=3"></script>
-  <script src="js/data/espacios.js?v=5"></script>
-  <script src="js/core/personalizacion.js?v=4"></script>
-  <script src="js/auth/auth.js?v=3"></script>
-  <script src="js/admin/admin.js?v=4"></script>
+  <script src="js/data/docentes.js?v=4"></script>
+  <script src="js/data/espacios.js?v=9"></script>
+  <script src="js/core/personalizacion.js?v=7"></script>
+  <script src="js/auth/auth.js?v=6"></script>
+  <script src="js/admin/admin.js?v=16"></script>
   <script>
     /* Tema claro/oscuro en la pantalla de administracion */
     (function () {

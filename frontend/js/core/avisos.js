@@ -153,33 +153,42 @@
     refrescarContador();
 
     /* Sincronizacion opcional con el backend Laravel */
-    if (UniMap.config && UniMap.config.activa) {
+    if (UniMap.config && UniMap.config.activa && UniMap.api && UniMap.api.token()) {
       setTimeout(function () {
-        try {
-          fetch(UniMap.config.apiBase + '/avisos', {
-            headers: { 'Accept': 'application/json' }
-          }).then(function (r) { return r.ok ? r.json() : null; })
-            .then(function (json) {
-              if (!json || !json.data) return;
-              var lista = obtener();
-              for (var i = 0; i < json.data.length; i++) {
-                var remoto = json.data[i];
-                lista.push({
-                  id: 'api' + (remoto.id || i),
-                  tipo: remoto.tipo || 'estado',
-                  espacioId: remoto.espacio_id || null,
-                  nombre: remoto.nombre || '',
-                  antes: remoto.antes || '',
-                  despues: remoto.despues || '',
-                  fecha: remoto.fecha || new Date().toISOString(),
-                  leido: false
-                });
-              }
-              guardar(lista);
-              refrescarContador();
-            })
-            .catch(function () { /* sin backend */ });
-        } catch (e) { /* sin red */ }
+        UniMap.api.solicitar('GET', '/notificaciones?soloNoLeidas=0').then(function (r) {
+          if (!r.ok || !r.json || !r.json.notificaciones) return;
+          var lista = obtener();
+          var existentes = {};
+          for (var e = 0; e < lista.length; e++) existentes[lista[e].id] = true;
+
+          var nuevas = 0;
+          for (var i = 0; i < r.json.notificaciones.length; i++) {
+            var remoto = r.json.notificaciones[i];
+            var idAviso = 'api' + remoto.idNotificacion;
+            if (existentes[idAviso]) continue;
+
+            /* El mensaje ya viene redactado desde el backend; se guarda
+               con tipo 'remoto' para que la UI lo muestre tal cual.
+               Si el espacio esta mapeado, el aviso lleva su id local. */
+            lista.push({
+              id: idAviso,
+              tipo: 'remoto',
+              espacioId: UniMap.api.idLocalDe(remoto.espacio && remoto.espacio.idEspacio),
+              nombre: remoto.mensajeNotificacion || '',
+              antes: '',
+              despues: '',
+              fecha: remoto.creadoEn || new Date().toISOString(),
+              leido: !!remoto.estaLeida
+            });
+            nuevas++;
+          }
+
+          if (nuevas > 0) {
+            guardar(lista);
+            refrescarContador();
+            refrescarPanel();
+          }
+        });
       }, 2500);
     }
 

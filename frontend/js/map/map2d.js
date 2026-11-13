@@ -90,6 +90,11 @@
     var nombreTorre;
     if (estado.edificioActual === 0) {
       nombreTorre = UniMap.i18n ? UniMap.i18n.t('torre.ambos') : 'Ambas torres';
+      var pisoTA = datos.obtenerPisoTA ? datos.obtenerPisoTA() : estado.pisoActual;
+      var pisoTI = datos.obtenerPisoTI ? datos.obtenerPisoTI() : estado.pisoActual;
+      var etiquetaTA = datos.nombrePiso ? datos.nombrePiso(pisoTA) : ('Piso ' + pisoTA);
+      var etiquetaTI = datos.nombrePiso ? datos.nombrePiso(pisoTI) : ('Piso ' + pisoTI);
+      return nombreTorre + ' · TA: ' + etiquetaTA + ' | TI: ' + etiquetaTI;
     } else {
       nombreTorre = datos.nombreEdificio ? datos.nombreEdificio(estado.edificioActual) : '';
     }
@@ -235,7 +240,16 @@
     if (!UniMap.modelos || !UniMap.modelos.pedirPlano) return;
     var torres = estado.edificioActual === 0 ? [1, 2] : [estado.edificioActual];
     for (var t = 0; t < torres.length; t++) {
-      UniMap.modelos.pedirPlano(torres[t], estado.pisoActual, function () { /* repaint automatico */ });
+      var torre = torres[t];
+      var pisoPlano = estado.pisoActual;
+      /* En modo ambas torres, la torre 2 usa su piso equivalente */
+      if (estado.edificioActual === 0 && torre === 2) {
+        var pisoEq = UniMap.datos.pisoEquivalenteTAaTI
+          ? UniMap.datos.pisoEquivalenteTAaTI(estado.pisoActual)
+          : null;
+        if (pisoEq !== null) pisoPlano = pisoEq;
+      }
+      UniMap.modelos.pedirPlano(torre, pisoPlano, function () { /* repaint automatico */ });
     }
   }
 
@@ -271,13 +285,28 @@
     for (var tp = 0; tp < torresPlanta.length; tp++) {
       var torre = torresPlanta[tp];
       /* Cada torre solo dibuja si tiene ese piso */
-      if (torre !== 0 && datos.tienePiso && !datos.tienePiso(torre, estado.pisoActual)) continue;
+      var pisoParaTorre = estado.pisoActual;
+      if (estado.edificioActual === 0 && torre === 2) {
+        var pisoEq = UniMap.datos.pisoEquivalenteTAaTI
+          ? UniMap.datos.pisoEquivalenteTAaTI(estado.pisoActual)
+          : null;
+        if (pisoEq !== null) pisoParaTorre = pisoEq;
+      }
+      if (torre !== 0 && datos.tienePiso && !datos.tienePiso(torre, pisoParaTorre)) continue;
       var plano = (UniMap.modelos && UniMap.modelos.planoListo)
-        ? UniMap.modelos.planoListo(torre, estado.pisoActual)
+        ? UniMap.modelos.planoListo(torre, pisoParaTorre)
         : null;
       /* El desplazamiento de la torre 2 solo existe en modo combinado */
-      var px = (torre === 2 && estado.edificioActual === 0) ? 40 + offsetTorre2 : 40;
-      dibujarPlantaTorre(plano, px, 40, 530, 470);
+      /* El plano se dibuja centrado en (400, 300) para que coincida
+         con el sistema de coordenadas de posicionEnPlano() en api.js.
+         Antes se dibujaba en el offset (40, 40), lo que desubicaba
+         los pines de los espacios respecto a la planta. */
+      var planW = 530;
+      var planH = 470;
+      var px = 400 - planW / 2;   /* 135 */
+      var py = 300 - planH / 2;   /* 65  */
+      if (torre === 2 && estado.edificioActual === 0) px += offsetTorre2;
+      dibujarPlantaTorre(plano, px, py, planW, planH);
     }
 
     /* Nombre de la torre en la esquina superior */
@@ -458,6 +487,26 @@
   var arrastre = null;        // { inicioX, inicioY, movido }
   var pinza = null;           // distancia entre los dos dedos
   var arrastreReciente = false; // el ultimo gesto fue un arrastre
+  var pinArrastrando = null;
+var ubicacionArrastrando = false;  // espacio cuyo pin se esta arrastrando (para reposicionar visualmente)
+  var modoEdicionPines = false; // modo edicion: solo admin puede activarlo
+  var pinesModificados = {};  // idEspacio -> {x, y} cambios pendientes de guardar
+  var posicionesOriginales = {}; // idEspacio -> {x, y} posiciones antes de editar (para restaurar al cancelar)
+  /* Estado independiente por modo: {1: TA, 2: TI, 0: Ambas torres} */
+  var pisosOcultosPorModo = {1: false, 2: false, 0: false};
+
+  function modoActual() {
+    return estado.edificioActual !== undefined ? estado.edificioActual : 1;
+  }
+
+  function pisosOcultos() {
+    return pisosOcultosPorModo[modoActual()] || false;
+  }
+
+  function setPisosOcultos(valor) {
+    pisosOcultosPorModo[modoActual()] = !!valor;
+    try { localStorage.setItem('unimap_pisos_ocultos', JSON.stringify(pisosOcultosPorModo)); } catch (e) { /* sin storage */ }
+  }
 
   function puntoEnLienzo(e) {
     var rect = lienzo.getBoundingClientRect();
@@ -486,6 +535,48 @@
     punteros[e.pointerId] = puntoEnLienzo(e);
     arrastreReciente = false;
 
+    /* Detectar si se hace clic sobre un pin para arrastrarlo y reposicionarlo */
+    var rect = lienzo.getBoundingClientRect();
+    var mundo = pantallaAMundo(e.clientX - rect.left, e.clientY - rect.top);
+    var pin = buscarEspacioEn(mundo.x, mundo.y);
+
+    /* Solo en modo edicion y solo administrador / personal administrativo puede reposicionar pines */
+    var puedeMoverPines = (modoEdicionPines && estado.usuarioActual && estado.usuarioActual.rol === 'admin');
+
+    if (numeroDePunteros() === 1 && pin && esInteractable(pin) && puedeMoverPines) {
+      /* Arrastrar el pin (reposicionar marcador) en vez de mover el mapa */
+      pinArrastrando = pin;
+      arrastre = null;
+      estado.estaArrastrando = true;
+      lienzo.style.cursor = 'grabbing';
+      UniMap.tooltip.ocultar();
+      return;
+    }
+
+    /* Detectar clic sobre el marcador "Usted aqui" para moverlo en modo edicion */
+    var puedeMoverUbicacion = (modoEdicionPines && estado.usuarioActual && estado.usuarioActual.rol === 'admin');
+    if (numeroDePunteros() === 1 && puedeMoverUbicacion) {
+      var posUbi = estado.ubicacionUsuario || { x: 400, y: 280 };
+      var dx = mundo.x - posUbi.x;
+      var dy = mundo.y - posUbi.y;
+      if (dx * dx + dy * dy <= 100) {
+        ubicacionArrastrando = true;
+        arrastre = null;
+        estado.estaArrastrando = true;
+        lienzo.style.cursor = 'grabbing';
+        UniMap.tooltip.ocultar();
+        return;
+      }
+    }
+
+    if (numeroDePunteros() === 1 && !puedeMoverPines && pin) {
+      /* No esta en modo edicion o no es admin: clic normal (abre ficha) pero no arrastra el pin */
+      arrastre = null;
+      estado.estaArrastrando = false;
+      lienzo.style.cursor = 'pointer';
+      return;
+    }
+
     if (numeroDePunteros() === 1) {
       arrastre = {
         inicioX: e.clientX - estado.desplazamientoX,
@@ -507,6 +598,32 @@
 
   lienzo.addEventListener('pointermove', function (e) {
     if (punteros[e.pointerId]) punteros[e.pointerId] = puntoEnLienzo(e);
+
+    /* ── Arrastrar el marcador "Usted aqui" ── */
+    if (ubicacionArrastrando) {
+      var rect = lienzo.getBoundingClientRect();
+      var mundo = pantallaAMundo(e.clientX - rect.left, e.clientY - rect.top);
+      estado.ubicacionUsuario = { x: mundo.x, y: mundo.y };
+      dibujar();
+      arrastreReciente = true;
+      return;
+    }
+
+    /* ── Arrastrar un pin para reposicionarlo visualmente ── */
+    if (pinArrastrando) {
+      var rect = lienzo.getBoundingClientRect();
+      var mundo = pantallaAMundo(e.clientX - rect.left, e.clientY - rect.top);
+      pinArrastrando.x = mundo.x - pinArrastrando.ancho / 2;
+      pinArrastrando.y = mundo.y - pinArrastrando.alto / 2;
+      /* Mantener dentro del plano */
+      if (pinArrastrando.x < 0) pinArrastrando.x = 0;
+      if (pinArrastrando.y < 0) pinArrastrando.y = 0;
+      if (pinArrastrando.x + pinArrastrando.ancho > 800) pinArrastrando.x = 800 - pinArrastrando.ancho;
+      if (pinArrastrando.y + pinArrastrando.alto > 600) pinArrastrando.y = 600 - pinArrastrando.alto;
+      dibujar();
+      arrastreReciente = true;
+      return;
+    }
 
     /* ── Pinza: dos dedos para hacer zoom ── */
     if (pinza && numeroDePunteros() >= 2) {
@@ -572,6 +689,19 @@
     }
 
     if (numeroDePunteros() === 0) {
+      /* Si soltas un pin que estabas arrastrando en modo edicion, marca como modificado */
+      if (pinArrastrando && modoEdicionPines) {
+        pinesModificados[pinArrastrando.id] = {
+          x: pinArrastrando.x,
+          y: pinArrastrando.y
+        };
+        pinArrastrando = null;
+        arrastreReciente = true;
+      }
+      if (ubicacionArrastrando) {
+        ubicacionArrastrando = false;
+        arrastreReciente = true;
+      }
       if (arrastre && arrastre.movido) arrastreReciente = true;
       arrastre = null;
       estado.estaArrastrando = false;
@@ -693,13 +823,24 @@
     return mejor;
   }
 
-  function cambiarPiso(nuevoPiso, sincronizarBotones) {
+  function cambiarPiso(nuevoPiso, sincronizarBotones, torre) {
     /* Solo pisos que existen en la seleccion actual */
-    if (datos.pisosDeVista) nuevoPiso = pisoCercano(nuevoPiso, datos.pisosDeVista(estado.edificioActual));
-    estado.pisoActual = nuevoPiso;
+    var pisosValidos = datos.pisosDeVista ? datos.pisosDeVista(estado.edificioActual) : [0];
+    nuevoPiso = pisoCercano(nuevoPiso, pisosValidos);
 
-    /* Una sola fuente: torre 1, torre 2 o ambas (edificio 0) con la
-       torre 2 ya desplazada en X. Ver UniMap.datos.espaciosDeVista */
+    if (estado.edificioActual === 0) {
+      /* Modo ambas torres: cada torre tiene su piso independiente */
+      if (torre === 2) {
+        datos.establecerPisoTI(nuevoPiso);
+      } else {
+        datos.establecerPisoTA(nuevoPiso);
+        estado.pisoActual = nuevoPiso; /* para compatibilidad con etiqueta */
+      }
+    } else {
+      estado.pisoActual = nuevoPiso;
+    }
+
+    /* Una sola fuente: torre 1, torre 2 o ambas (edificio 0) */
     estado.espacios = datos.espaciosDeVista
       ? datos.espaciosDeVista(estado.edificioActual, nuevoPiso)
       : datos.construirEspacios(estado.edificioActual || 1, nuevoPiso);
@@ -726,12 +867,22 @@
     if (nuevoEdificio === 0 && anterior !== 0) encuadrarAmbasTorres();
     else if (nuevoEdificio !== 0 && anterior === 0) encuadrarPlantaNormal();
 
-    /* Ajustar el piso al rango valido de la nueva torre: si el
-       piso actual no existe ahi, ir al valido mas cercano */
-    var pisosValidos = datos.pisosDeVista ? datos.pisosDeVista(nuevoEdificio) : [0];
-    var piso = (pisoDestino !== undefined && pisoDestino !== null) ? pisoDestino : estado.pisoActual;
-    piso = pisoCercano(piso, pisosValidos);
-    estado.pisoActual = piso;
+    if (nuevoEdificio === 0) {
+      /* Modo ambas torres: inicializar pisos independientes */
+      datos.inicializarPisosDuales();
+      var pisoTA = datos.obtenerPisoTA();
+      var pisoTI = datos.obtenerPisoTI();
+      estado.pisoActual = pisoTA;
+      pisoDestino = pisoTA;
+    } else {
+      /* Ajustar el piso al rango valido de la nueva torre: si el
+         piso actual no existe ahi, ir al valido mas cercano */
+      var pisosValidos = datos.pisosDeVista ? datos.pisosDeVista(nuevoEdificio) : [0];
+      var piso = (pisoDestino !== undefined && pisoDestino !== null) ? pisoDestino : estado.pisoActual;
+      piso = pisoCercano(piso, pisosValidos);
+      estado.pisoActual = piso;
+      pisoDestino = piso;
+    }
 
     /* Sincronizar el conmutador de torre */
     var botonesTorre = document.querySelectorAll('.boton-torre');
@@ -741,7 +892,7 @@
     }
 
     generarBotonesPiso();
-    cambiarPiso(piso);
+    cambiarPiso(pisoDestino);
 
     util.notificar(nuevoEdificio === 0
       ? (UniMap.i18n ? UniMap.i18n.t('torre.ambos') : 'Ambas torres')
@@ -752,21 +903,74 @@
     var contenedor = util.el('selector-pisos');
     if (!contenedor) return;
 
+    /* Marcar el edificio actual en el contenedor para estilos CSS */
+    contenedor.setAttribute('data-edificio', String(estado.edificioActual));
+
+    /* Modo ambas torres: dos grupos de botones independientes (TA y TI) */
+    if (estado.edificioActual === 0) {
+      var pisosTA = datos.pisosDe ? datos.pisosDe(1) : [0];
+      var pisosTI = datos.pisosDe ? datos.pisosDe(2) : [0];
+      pisosTA = pisosTA.slice().sort(function (a, b) { return b - a; });
+      pisosTI = pisosTI.slice().sort(function (a, b) { return b - a; });
+      var pisoTAActual = datos.obtenerPisoTA ? datos.obtenerPisoTA() : estado.pisoActual;
+      var pisoTIActual = datos.obtenerPisoTI ? datos.obtenerPisoTI() : estado.pisoActual;
+
+      /* Boton ojo: mostrar/ocultar pisos (al principio, mas intuitivo) */
+      var html = '';
+      html += '<button id="boton-ocultar-pisos" class="boton-ojo-pisos" title="Ocultar / Mostrar pisos" aria-label="Ocultar / Mostrar botones de pisos" data-i18n-title="top.ocultarPisos" aria-pressed="false">';
+      html += '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+      html += '</button>';
+
+      /* Modo ambas torres: dos grupos de pisos lado a lado con abreviaturas TA y TI */
+      html += '<div class="floor-pares">';
+      html += '<div class="floor-grupo"><strong>TA</strong>';
+      for (var i = 0; i < pisosTA.length; i++) {
+        var p = pisosTA[i];
+        var etiqueta = p === 0 ? 'PB' : 'P' + p;
+        var activo = p === pisoTAActual ? ' active' : '';
+        html += '<button class="boton-piso' + activo + '" data-floor="' + p + '" data-torre="1">' + etiqueta + '</button>';
+      }
+      html += '</div>';
+
+      html += '<div class="floor-grupo"><strong>TI</strong>';
+      for (var j = 0; j < pisosTI.length; j++) {
+        var p2 = pisosTI[j];
+        var etiqueta2 = p2 === 0 ? 'PB' : 'P' + p2;
+        var activo2 = p2 === pisoTIActual ? ' active' : '';
+        html += '<button class="boton-piso' + activo2 + '" data-floor="' + p2 + '" data-torre="2">' + etiqueta2 + '</button>';
+      }
+      html += '</div>';
+      html += '</div>';
+
+      contenedor.innerHTML = html;
+      conectarSelectorPisoDual();
+      conectarBotonOcultarPisos();
+      aplicarVisibilidadPisos();
+      return;
+    }
+
     /* Pisos reales de la seleccion actual (p. ej. TA 4-17) */
     var pisos = datos.pisosDeVista ? datos.pisosDeVista(estado.edificioActual) : [0];
     pisos = pisos.slice().sort(function (a, b) { return b - a; });
 
+    /* Boton ojo: mostrar/ocultar pisos (al principio, mas intuitivo) */
     var html = '';
+    html += '<button id="boton-ocultar-pisos" class="boton-ojo-pisos" title="Ocultar / Mostrar pisos" aria-label="Ocultar / Mostrar botones de pisos" data-i18n-title="top.ocultarPisos" aria-pressed="false">';
+    html += '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+    html += '</button>';
+
     /* De mayor a menor, como en el selector original */
     for (var i = 0; i < pisos.length; i++) {
       var p = pisos[i];
       var etiqueta = p === 0 ? 'PB' : 'P' + p;
       var activo = p === estado.pisoActual ? ' active' : '';
-      html += '<button class="boton-piso' + activo + '" data-floor="' + p + '">' + etiqueta + '</button>';
+      html += '<button class="boton-piso' + activo + '" data-floor="' + p + '" data-torre="' + estado.edificioActual + '">' + etiqueta + '</button>';
     }
+
     contenedor.innerHTML = html;
     conectarSelectorPiso();
-    refrescarBotonesPiso();
+    conectarBotonOcultarPisos();
+    aplicarVisibilidadPisos();
   }
 
   /* Botones activos / desactivados segun los filtros de piso */
@@ -774,13 +978,23 @@
     var botones = document.querySelectorAll('.boton-piso');
     for (var b = 0; b < botones.length; b++) {
       var piso = parseInt(botones[b].getAttribute('data-floor'), 10);
+      var torreBtn = parseInt(botones[b].getAttribute('data-torre'), 10);
       var permitido = !estado.filtros ||
         !estado.filtros.pisos ||
         estado.filtros.pisos.indexOf(piso) !== -1;
 
       botones[b].disabled = !permitido;
       botones[b].classList.toggle('deshabilitado', !permitido);
-      botones[b].classList.toggle('active', permitido && piso === estado.pisoActual);
+
+      var pisoActivo;
+      if (estado.edificioActual === 0) {
+        pisoActivo = (torreBtn === 2)
+          ? (datos.obtenerPisoTI ? datos.obtenerPisoTI() : estado.pisoActual)
+          : (datos.obtenerPisoTA ? datos.obtenerPisoTA() : estado.pisoActual);
+      } else {
+        pisoActivo = estado.pisoActual;
+      }
+      botones[b].classList.toggle('active', permitido && piso === pisoActivo);
     }
   }
 
@@ -795,6 +1009,48 @@
           return;
         }
         cambiarPiso(piso);
+      });
+    }
+  }
+
+  function conectarSelectorPisoDual() {
+    var botones = document.querySelectorAll('.boton-piso[data-torre]');
+    for (var b = 0; b < botones.length; b++) {
+      botones[b].addEventListener('click', function () {
+        if (this.disabled) return;
+        var piso = parseInt(this.getAttribute('data-floor'), 10);
+        var torre = parseInt(this.getAttribute('data-torre'), 10);
+        if (estado.filtros && estado.filtros.pisos && estado.filtros.pisos.indexOf(piso) === -1) {
+          util.notificar(UniMap.i18n.t('filtros.pisoOculto'));
+          return;
+        }
+        /* Sincronizar con la otra torre automáticamente */
+        if (torre === 1) {
+          /* Clic en TA: establecer TA y su equivalente en TI */
+          datos.establecerPisoTA(piso);
+          var pisoTI = datos.pisoEquivalenteTAaTI ? datos.pisoEquivalenteTAaTI(piso) : null;
+          if (pisoTI !== null) datos.establecerPisoTI(pisoTI);
+          estado.pisoActual = piso;
+        } else if (torre === 2) {
+          /* Clic en TI: establecer TI y su equivalente en TA */
+          datos.establecerPisoTI(piso);
+          var pisoTA = datos.pisoEquivalenteTIAaTA ? datos.pisoEquivalenteTIAaTA(piso) : null;
+          if (pisoTA !== null) datos.establecerPisoTA(pisoTA);
+          estado.pisoActual = piso;
+        }
+        /* Pintar el mapa con los pisos de ambas torres */
+        estado.espacios = datos.espaciosDeVista
+          ? datos.espaciosDeVista(estado.edificioActual, estado.pisoActual)
+          : datos.construirEspacios(estado.edificioActual || 1, estado.pisoActual);
+        estado.espacioSeleccionado = null;
+        estado.espacioResaltado = null;
+        /* Repintar la lista de pisos para que se vea la sincronización visual */
+        generarBotonesPiso();
+        var etiqueta = util.el('etiqueta-piso-actual');
+        if (etiqueta) etiqueta.textContent = obtenerEtiquetaPiso();
+        UniMap.tooltip.ocultar();
+        refrescarVistas();
+        solicitarPlanos();
       });
     }
   }
@@ -822,6 +1078,62 @@
         cambiarEdificio(edificio);
       });
     }
+  }
+
+  /* ── OCULTAR / MOSTRAR BOTONES DE PISO (independiente por modo) ── */
+  function aplicarVisibilidadPisos() {
+    var contenedor = util.el('selector-pisos');
+    var btn = util.el('boton-ocultar-pisos');
+    if (!contenedor) return;
+
+    var ocultar = pisosOcultos();
+
+    /* Cuando esta oculto: ocultar TODO excepto el boton ojo
+       (grupos de pisos, header, fondo). Solo queda el ojo. */
+    contenedor.classList.toggle('pisos-ocultos', ocultar);
+
+    if (btn) {
+      btn.classList.toggle('activo', ocultar);
+      btn.setAttribute('aria-pressed', String(ocultar));
+      /* SVG del ojo: abierto = visible, tachado = oculto */
+      var svg = btn.querySelector('svg');
+      if (svg) {
+        if (ocultar) {
+          /* Ojo tachado */
+          svg.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" fill="none" stroke-width="2.5"/><circle cx="12" cy="12" r="3" stroke="currentColor" fill="none" stroke-width="2.5"/><path d="M4.93 4.93l14.14 14.14" stroke="currentColor" fill="none" stroke-width="2.5" stroke-linecap="round"/>';
+        } else {
+          /* Ojo abierto */
+          svg.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" fill="none" stroke-width="2.5"/><circle cx="12" cy="12" r="3" stroke="currentColor" fill="none" stroke-width="2.5"/>';
+        }
+      }
+    }
+  }
+
+  function togglearPisos() {
+    setPisosOcultos(!pisosOcultos());
+    aplicarVisibilidadPisos();
+  }
+
+  function conectarBotonOcultarPisos() {
+    var btn = util.el('boton-ocultar-pisos');
+    if (btn) {
+      btn.addEventListener('click', togglearPisos);
+    }
+  }
+
+  /* Cargar estado guardado por modo desde localStorage */
+  function cargarEstadoPisosOcultos() {
+    try {
+      var guardado = localStorage.getItem('unimap_pisos_ocultos');
+      if (guardado) {
+        var obj = JSON.parse(guardado);
+        for (var k in obj) {
+          if (obj.hasOwnProperty(k)) {
+            pisosOcultosPorModo[parseInt(k, 10)] = !!obj[k];
+          }
+        }
+      }
+    } catch (e) { /* sin storage: valores por defecto (false) */ }
   }
 
   /* Refresca 2D + vista 3D (marcadores y planta) */
@@ -861,7 +1173,10 @@
     });
     conectarZoom();
     conectarSelectorTorre();
+    conectarBotonOcultarPisos();
+    cargarEstadoPisosOcultos();
     generarBotonesPiso();
+    aplicarVisibilidadPisos();
     redimensionarLienzo();
     solicitarPlanos();
     animar();
@@ -870,6 +1185,108 @@
   function animar() {
     dibujar();
     requestAnimationFrame(animar);
+  }
+
+  /* ── MODO EDICION DE POSICIONES (solo admin) ───────── */
+  function activarEdicionPosiciones() {
+    if (!estado.usuarioActual || estado.usuarioActual.rol !== 'admin') {
+      util.notificar(UniMap.i18n ? UniMap.i18n.t('adm.sinPermisos') : 'Solo administrador');
+      return;
+    }
+    /* Guardar snapshot de posiciones actuales antes de editar */
+    var visibles = UniMap.filtros.espaciosInteractuales ? UniMap.filtros.espaciosInteractuales() : [];
+    posicionesOriginales = {};
+    for (var i = 0; i < visibles.length; i++) {
+      var s = visibles[i];
+      posicionesOriginales[s.id] = { x: s.x, y: s.y };
+    }
+    modoEdicionPines = true;
+    pinesModificados = {};
+    var btnEditar = util.el('boton-editar-posiciones');
+    var btnGuardar = util.el('boton-guardar-posiciones');
+    if (btnEditar) {
+      btnEditar.classList.add('activo');
+      btnEditar.setAttribute('data-i18n-title', 'top.cancelarEdicion');
+      btnEditar.title = UniMap.i18n ? UniMap.i18n.t('top.cancelarEdicion') : 'Cancelar edicion';
+    }
+    if (btnGuardar) btnGuardar.classList.remove('hidden');
+    lienzo.style.cursor = 'crosshair';
+    util.notificar('Modo edicion activado: arrastra los marcadores donde quieras, luego pulsa Guardar o Cancelar', 5000);
+    dibujar();
+    /* Activar tambien modo edicion en 3D */
+    if (UniMap.vista3D && UniMap.vista3D.activarEdicionPosiciones) UniMap.vista3D.activarEdicionPosiciones();
+  }
+
+  function desactivarEdicionPosiciones() {
+    modoEdicionPines = false;
+    /* Restaurar posiciones originales al cancelar */
+    if (Object.keys(posicionesOriginales).length > 0) {
+      var visibles = UniMap.filtros.espaciosInteractuales ? UniMap.filtros.espaciosInteractuales() : [];
+      for (var i = 0; i < visibles.length; i++) {
+        var s = visibles[i];
+        var orig = posicionesOriginales[s.id];
+        if (orig) {
+          s.x = orig.x;
+          s.y = orig.y;
+        }
+      }
+    }
+    pinesModificados = {};
+    posicionesOriginales = {};
+    var btnEditar = util.el('boton-editar-posiciones');
+    var btnGuardar = util.el('boton-guardar-posiciones');
+    if (btnEditar) {
+      btnEditar.classList.remove('activo');
+      btnEditar.setAttribute('data-i18n-title', 'top.editarPosiciones');
+      btnEditar.title = UniMap.i18n ? UniMap.i18n.t('top.editarPosiciones') : 'Editar posiciones';
+    }
+    if (btnGuardar) btnGuardar.classList.add('hidden');
+    lienzo.style.cursor = estado.espacioResaltado ? 'pointer' : 'grab';
+    dibujar();
+    /* Desactivar tambien modo edicion en 3D */
+    if (UniMap.vista3D && UniMap.vista3D.desactivarEdicionPosiciones) UniMap.vista3D.desactivarEdicionPosiciones();
+    /* Aplicar nuevo idioma si es necesario */
+    UniMap.i18n.aplicar();
+  }
+
+  function guardarPosiciones() {
+    var n2d = 0;
+    for (var id in pinesModificados) {
+      if (!pinesModificados.hasOwnProperty(id)) continue;
+      UniMap.personalizacion.guardarEdicion(id, pinesModificados[id]);
+      n2d++;
+    }
+    pinesModificados = {};
+    posicionesOriginales = {};
+
+    /* Guardar tambien cambios en 3D */
+    var n3d = 0;
+    if (UniMap.vista3D && UniMap.vista3D.guardarPosiciones3D) {
+      n3d = Object.keys(pinesModificados3D).length;
+      UniMap.vista3D.guardarPosiciones3D();
+    }
+
+    var total = n2d + n3d;
+    if (total === 0) {
+      util.notificar('No hay cambios que guardar');
+      return;
+    }
+    util.notificar(total + ' posicion(es) guardada(s)');
+
+    /* Desactivar modo edicion en ambos modos (SIN restaurar: ya se guardaron) */
+    modoEdicionPines = false;
+    var btnEditar = util.el('boton-editar-posiciones');
+    var btnGuardar = util.el('boton-guardar-posiciones');
+    if (btnEditar) {
+      btnEditar.classList.remove('activo');
+      btnEditar.setAttribute('data-i18n-title', 'top.editarPosiciones');
+      btnEditar.title = UniMap.i18n ? UniMap.i18n.t('top.editarPosiciones') : 'Editar posiciones';
+    }
+    if (btnGuardar) btnGuardar.classList.add('hidden');
+    lienzo.style.cursor = estado.espacioResaltado ? 'pointer' : 'grab';
+    dibujar();
+    if (UniMap.vista3D && UniMap.vista3D.desactivarEdicionPosiciones) UniMap.vista3D.desactivarEdicionPosiciones();
+    UniMap.i18n.aplicar();
   }
 
   UniMap.mapa2D = {
@@ -883,6 +1300,10 @@
     redimensionarLienzo: redimensionarLienzo,
     refrescarBotonesPiso: refrescarBotonesPiso,
     pantallaAMundo: pantallaAMundo,
-    solicitarPlanos: solicitarPlanos
+    solicitarPlanos: solicitarPlanos,
+    activarEdicionPosiciones: activarEdicionPosiciones,
+    desactivarEdicionPosiciones: desactivarEdicionPosiciones,
+    guardarPosiciones: guardarPosiciones,
+    estaEnModoEdicion: function () { return modoEdicionPines; }
   };
 })();

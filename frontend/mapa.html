@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -24,7 +24,7 @@
 
   <!-- CSS: hojas divididas por capitulo (v=4 modo oscuro) -->
   <link rel="stylesheet" href="css/base.css?v=4">
-  <link rel="stylesheet" href="css/map.css?v=5">
+  <link rel="stylesheet" href="css/map.css?v=8">
   <link rel="stylesheet" href="css/panels.css?v=4">
   <link rel="stylesheet" href="css/components.css?v=4">
   <link rel="stylesheet" href="css/view3d.css?v=4">
@@ -78,6 +78,18 @@
         <button id="boton-servicios" class="btn-icon" title="Servicios del edificio" aria-label="Servicios del edificio" data-i18n-title="top.servicios">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M9 13h.01M9 17h.01M15 9h.01M15 13h.01M15 17h.01"/></svg>
           <span class="btn-label" data-i18n="top.lblServicios">Servicios</span>
+        </button>
+
+        <div class="top-sep" aria-hidden="true"></div>
+
+        <!-- HU-06: editar posiciones de marcadores (solo admin) -->
+        <button id="boton-editar-posiciones" class="btn-icon btn-admin-accion hidden" title="Editar posiciones de marcadores" aria-label="Editar posiciones de marcadores" data-i18n-title="top.editarPosiciones">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M15 12l-3 3l-2-2"/></svg>
+          <span class="btn-label" data-i18n="top.lblEditarPosiciones">Editar</span>
+        </button>
+        <button id="boton-guardar-posiciones" class="btn-icon btn-admin-accion hidden" title="Guardar posiciones de marcadores" aria-label="Guardar posiciones de marcadores" data-i18n-title="top.guardarPosiciones">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><polyline points="7 3 12 8 17 3"/></svg>
+          <span class="btn-label" data-i18n="top.lblGuardarPosiciones">Guardar</span>
         </button>
 
         <div class="top-sep" aria-hidden="true"></div>
@@ -160,16 +172,10 @@
       <!-- HU-19: filtro especifico por tipo de laboratorio -->
       <div class="filter-section" id="filtros-lab">
         <h4 data-i18n="filtros.labTipo">Tipo de laboratorio</h4>
-        <label class="filter-check"><input type="checkbox" value="informatica" checked> <span data-i18n="lab.informatica">Informatica</span></label>
-        <label class="filter-check"><input type="checkbox" value="electronica" checked> <span data-i18n="lab.electronica">Electronica</span></label>
-        <label class="filter-check"><input type="checkbox" value="fisica" checked> <span data-i18n="lab.fisica">Fisica</span></label>
         <label class="filter-check"><input type="checkbox" value="quimica" checked> <span data-i18n="lab.quimica">Quimica</span></label>
-        <label class="filter-check"><input type="checkbox" value="mecanica" checked> <span data-i18n="lab.mecanica">Mecanica</span></label>
-        <label class="filter-check"><input type="checkbox" value="ia" checked> <span data-i18n="lab.ia">Inteligencia Artificial</span></label>
-        <label class="filter-check"><input type="checkbox" value="robotica" checked> <span data-i18n="lab.robotica">Robotica</span></label>
-        <label class="filter-check"><input type="checkbox" value="iot" checked> <span data-i18n="lab.iot">IoT</span></label>
-        <label class="filter-check"><input type="checkbox" value="ciberseguridad" checked> <span data-i18n="lab.ciberseguridad">Ciberseguridad</span></label>
-        <label class="filter-check"><input type="checkbox" value="produccion" checked> <span data-i18n="lab.produccion">Produccion</span></label>
+        <label class="filter-check"><input type="checkbox" value="redes" checked> <span data-i18n="lab.redes">Redes</span></label>
+        <label class="filter-check"><input type="checkbox" value="fisica" checked> <span data-i18n="lab.fisica">Fisica</span></label>
+        <label class="filter-check"><input type="checkbox" value="sistemas" checked> <span data-i18n="lab.sistemas">Sistemas</span></label>
       </div>
       <div class="filter-section">
         <h4 data-i18n="filtros.torre">Torre</h4>
@@ -442,40 +448,90 @@
   <script src="vendor/three/FBXLoader.js"></script>
   <script src="vendor/three/OrbitControls.js"></script>
 
-  <!-- ===== nucleo (v=6 modo oscuro) ===== -->
-  <script src="js/core/store.js?v=6"></script>
-  <script src="js/core/i18n.js?v=7"></script>
-  <script src="js/core/estadisticas.js?v=3"></script>
-  <script src="js/core/avisos.js?v=3"></script>
+  <!-- ===== nucleo (v=6 modo oscuro; v=7-8 sincronizacion con backend) ===== -->
+  <script src="js/core/store.js?v=10"></script>
+  <script src="js/core/api.js?v=9"></script>
+  <script src="js/core/i18n.js?v=17"></script>
+  <script src="js/core/estadisticas.js?v=4"></script>
+  <script src="js/core/avisos.js?v=4"></script>
 
   <!-- ===== datos ===== -->
-  <script src="js/data/categorias.js?v=3"></script>
+  <script src="js/data/categorias.js?v=4"></script>
   <script src="js/data/edificios.js?v=6"></script>
-  <script src="js/data/docentes.js?v=3"></script>
-  <script src="js/data/espacios.js?v=5"></script>
+  <script src="js/data/docentes.js?v=4"></script>
+  <script src="js/data/espacios.js?v=9"></script>
   <script src="js/modelos.js?v=11"></script>
-  <script src="js/core/personalizacion.js?v=4"></script>
+  <script src="js/core/personalizacion.js?v=7"></script>
 
   <!-- ===== sesion ===== -->
-  <script src="js/auth/auth.js?v=3"></script>
+  <script src="js/auth/auth.js?v=7"></script>
 
   <!-- ===== mapa 2D ===== -->
   <script src="js/map/tooltip.js?v=3"></script>
-  <script src="js/map/map2d.js?v=11"></script>
-  <script src="js/map/filtros.js?v=6"></script>
-  <script src="js/map/busqueda.js?v=3"></script>
-  <script src="js/map/horarios.js?v=3"></script>
+  <script src="js/map/map2d.js?v=21"></script>
+  <script src="js/map/filtros.js?v=7"></script>
+  <script src="js/map/busqueda.js?v=4"></script>
+  <script src="js/map/horarios.js?v=4"></script>
   <script src="js/map/favoritos.js?v=3"></script>
-  <script src="js/map/ruta.js?v=3"></script>
+  <script src="js/map/ruta.js?v=8"></script>
   <script src="js/map/qr.js?v=3"></script>
-  <script src="js/map/servicios.js?v=3"></script>
+  <script src="js/map/servicios.js?v=4"></script>
   <script src="js/map/sugerencias.js?v=3"></script>
 
   <!-- ===== visor 3D ===== -->
-  <script src="js/view3d/viewer3d.js?v=12"></script>
+  <script src="js/view3d/viewer3d.js?v=14"></script>
 
   <!-- ===== interfaz y arranque ===== -->
-  <script src="js/core/ui.js?v=6"></script>
-  <script src="js/app.js?v=3"></script>
+  <script src="js/core/ui.js?v=7"></script>
+  <script src="js/app.js?v=6"></script>
+
+  <script>
+    /* Conectar botones de edicion de posiciones (solo admin) */
+    (function () {
+      var btnEditar = document.getElementById('boton-editar-posiciones');
+      var btnGuardar = document.getElementById('boton-guardar-posiciones');
+      var lblEditar = btnEditar ? btnEditar.querySelector('.btn-label') : null;
+      if (!btnEditar || !btnGuardar || !lblEditar) return;
+
+      var sesion = UniMap.auth ? UniMap.auth.sesionGuardada() : null;
+      var esAdmin = sesion && sesion.rol === 'admin';
+
+      if (!esAdmin) return; /* solo admin ve estos botones */
+
+      btnEditar.classList.remove('hidden');
+      btnGuardar.classList.add('hidden');
+
+      function textoBoton(modoActivo) {
+        lblEditar.textContent = modoActivo
+          ? (UniMap.i18n ? UniMap.i18n.t('top.cancelarEdicion') : 'Cancelar edicion')
+          : (UniMap.i18n ? UniMap.i18n.t('top.lblEditarPosiciones') : 'Editar posiciones');
+        btnEditar.setAttribute('data-i18n-title', modoActivo ? 'top.cancelarEdicion' : 'top.editarPosiciones');
+        btnEditar.title = lblEditar.textContent;
+      }
+
+      /* Editar: solo activa/desactiva el modo, NO guarda */
+      btnEditar.addEventListener('click', function () {
+        var activo = btnEditar.classList.contains('activo');
+        if (activo) {
+          UniMap.mapa2D.desactivarEdicionPosiciones();
+        } else {
+          UniMap.mapa2D.activarEdicionPosiciones();
+        }
+        /* Actualizar texto visible del botón segun el estado */
+        var ahoraActivo = btnEditar.classList.contains('activo');
+        lblEditar.textContent = ahoraActivo
+          ? (UniMap.i18n ? UniMap.i18n.t('top.cancelarEdicion') : 'Cancelar edicion')
+          : (UniMap.i18n ? UniMap.i18n.t('top.lblEditarPosiciones') : 'Editar posiciones');
+      });
+
+      /* Guardar: el unico boton que guarda y notifica */
+      btnGuardar.addEventListener('click', function () {
+        UniMap.mapa2D.guardarPosiciones();
+        lblEditar.textContent = UniMap.i18n ? UniMap.i18n.t('top.lblEditarPosiciones') : 'Editar posiciones';
+        btnEditar.setAttribute('data-i18n-title', 'top.editarPosiciones');
+        btnEditar.title = lblEditar.textContent;
+      });
+    })();
+  </script>
 </body>
 </html>

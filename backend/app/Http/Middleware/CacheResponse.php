@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  *
  * - Solo afecta a peticiones GET/HEAD.
  * - Genera clave: "response:{url}:{query}:{user_id_or_guest}".
- * - TTL configurable vía header `X-Cache-TTL` (segundos) o 60 por defecto.
+ * - TTL configurable vía header `X-Cache-TTL` (segundos) o 600 por defecto.
  * - Añade header `X-Cache: HIT/MISS` para depuración.
  */
 class CacheResponse
@@ -25,12 +25,26 @@ class CacheResponse
             return $next($request);
         }
 
+        // X-Cache-TTL: 0 (o negativo) = sin caché: respuesta al momento.
+        // Herramienta manual/de depuración: la web NO envía esta cabecera
+        // (las escrituras del panel admin vacían la caché con cache.invalidar,
+        // así que siempre ve los datos recién guardados). Se usa para pedir
+        // una respuesta fresca a mano sin reiniciar el backend.
+        $ttlSolicitado = $request->header('X-Cache-TTL');
+        if ($ttlSolicitado !== null && (int) $ttlSolicitado <= 0) {
+            return $next($request)->header('X-Cache', 'OFF');
+        }
+
         // No cachear si hay Authorization (salvo que se configure otherwise)
         // Para endpoints públicos sin token, sí cacheamos.
         $userId = $request->user()?->getAuthIdentifier() ?? 'guest';
 
         $key = 'response:' . $request->fullUrl() . ':' . $userId;
-        $ttl = (int) ($request->header('X-Cache-TTL') ?? 60); // 60 s por defecto
+        // 600 s por defecto: la caché se invalida sola cuando el panel
+        // admin guarda cambios (middleware cache.invalidar), así que no
+        // hace falta refrescarla en cada carga. El estado "abierto/
+        // cerrado" de la ficha viene de /espacios/{id}/estado, sin caché.
+        $ttl = (int) ($request->header('X-Cache-TTL') ?? 600);
 
         if (Cache::has($key)) {
             $cached = Cache::get($key);

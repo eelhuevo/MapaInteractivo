@@ -97,6 +97,14 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
+            // Conexion persistente: "artisan serve" atiende en un solo
+            // proceso, asi que el handshake TLS a Supabase (~0,7 s) se hace
+            // una vez y se reutiliza en todas las peticiones siguientes.
+            // Si el pooler corta la conexion ociosa, Laravel la detecta
+            // (causedByLostConnection), reconecta y reintenta la query.
+            'options' => [
+                PDO::ATTR_PERSISTENT => true,
+            ],
         ],
 
         'sqlsrv' => [

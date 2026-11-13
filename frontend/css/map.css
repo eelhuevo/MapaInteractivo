@@ -101,7 +101,8 @@
   align-items: center;
   gap: 6px;
   margin-left: auto;
-  flex-shrink: 0;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 /* Separador visual entre grupos de botones */
@@ -194,6 +195,9 @@
   background: var(--bg-surface-3);
   border-radius: 10px;
   border: 1px solid var(--border);
+  margin-left: auto;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 #nombre-usuario {
@@ -264,7 +268,7 @@
 
 .boton-torre.active .torre-nombre { opacity: .95; }
 
-/* ── SELECTOR DE PISO ──────────────────────────────── */
+/* ── SELECTOR DE PISO (vertical, scrollbar solo vertical) ─────────── */
 .floor-selector {
   position: fixed;
   left: 24px;
@@ -272,31 +276,46 @@
   transform: translateY(-50%);
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 10px;
   z-index: 80;
-  /* Nunca alcanza al selector de torre de abajo */
-  max-height: min(460px, calc(100vh - 320px));
+  width: auto;
+  max-width: 220px;
+  height: min(65vh, 540px);
   overflow-y: auto;
-  padding: 4px;
+  overflow-x: hidden;
+  padding: 10px 12px;
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
   scrollbar-width: thin;
   scrollbar-color: var(--primary) transparent;
+  transition: width 0.2s ease;
 }
 
-/* En vista 3D el selector de pisos se recoloca arriba a la izquierda
-   (el selector de torre sigue abajo a la izquierda) */
+/* En vista 3D el selector de pisos se recoloca arriba a la izquierda */
 body.vista-3d .floor-selector {
-  top: calc(var(--topbar-h) + 10px);
+  top: calc(var(--topbar-h) + 16px);
   bottom: auto;
   transform: none;
-  max-height: min(300px, calc(100vh - 260px));
+  height: min(55vh, 360px);
 }
 
 body.vista-3d .selector-torre {
   bottom: 24px;
 }
 
+/* En modo ambas torres: expandir ancho para que quepan TA y TI lado a lado */
+.floor-selector[data-edificio="0"] {
+  max-width: 420px;
+}
+
 .floor-selector::-webkit-scrollbar {
-  width: 4px;
+  width: 5px;
+}
+
+.floor-selector::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .floor-selector::-webkit-scrollbar-thumb {
@@ -304,41 +323,182 @@ body.vista-3d .selector-torre {
   border-radius: 4px;
 }
 
+/* Encabezado del selector de pisos (titulo) */
+.floor-selector-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 6px;
+}
+
+.floor-selector-header h4 {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-3);
+  margin: 0;
+}
+
+/* Botones de piso: cuadrados mas pequenos */
 .boton-piso {
-  width: 50px;
-  height: 50px;
-  border-radius: 12px;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  border-radius: 11px;
   border: 2px solid var(--border);
   background: var(--bg-surface);
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 800;
   font-family: inherit;
   cursor: pointer;
   transition: all var(--transition);
   color: var(--text-2);
   box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .boton-piso:hover {
   border-color: var(--primary);
   color: var(--primary);
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(30,64,175,.2);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 6px 16px rgba(30,64,175,.25);
 }
 
 .boton-piso.active {
   background: linear-gradient(135deg, var(--primary-solid) 0%, #2563EB 100%);
   border-color: var(--primary);
   color: var(--primary-on);
-  box-shadow: 0 4px 14px rgba(30,64,175,.4);
+  box-shadow: 0 6px 18px rgba(30,64,175,.5);
+}
+
+/* Piso oculto: mantiene su lugar pero invisible y sin clic */
+.boton-piso.oculto,
+.boton-piso:disabled,
+.boton-piso.deshabilitado {
+  visibility: hidden;
+  opacity: 0;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+  pointer-events: none;
+}
+
+.boton-piso:disabled:hover,
+.boton-piso.oculto:hover {
+  transform: none;
+  border-color: var(--border);
+  color: var(--text-2);
+  box-shadow: none;
+}
+
+/* Modo ambas torres: botones mas pequenos para que quepan lado a lado */
+.floor-pares .boton-piso {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  min-height: 42px;
+  font-size: 12px;
+}
+
+/* Grupos de piso en modo ambas torres: se expanden para mostrar todos los pisos */
+.floor-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 6px;
+  padding: 6px 8px;
+  background: var(--bg-surface-3);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  flex-shrink: 0;
+}
+
+/* Dos grupos lado a lado en modo ambas torres */
+.floor-pares {
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.floor-pares .floor-grupo {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+/* Boton ojo: cuadrado (48x48px) */
+.boton-ojo-pisos {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  border-radius: 11px;
+  border: 2px solid var(--border);
+  background: var(--bg-surface);
+  font-size: 20px;
+  font-weight: 800;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all var(--transition);
+  color: var(--text-2);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.boton-ojo-pisos svg {
+  width: 24px;
+  height: 24px;
+}
+
+.boton-ojo-pisos:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(30,64,175,.25);
+}
+
+.boton-ojo-pisos.activo {
+  background: linear-gradient(135deg, var(--primary-solid) 0%, #2563EB 100%);
+  border-color: var(--primary);
+  color: var(--primary-on);
+  box-shadow: 0 6px 18px rgba(30,64,175,.5);
+}
+
+/* Cuando los pisos estan ocultos: ocultar TODO excepto el boton ojo */
+.floor-selector.pisos-ocultos .floor-selector-header,
+.floor-selector.pisos-ocultos .floor-grupo,
+.floor-selector.pisos-ocultos .floor-pares,
+.floor-selector.pisos-ocultos .boton-piso {
+  display: none !important;
+}
+
+/* Ajustar padding cuando solo queda el ojo */
+.floor-selector.pisos-ocultos {
+  gap: 0;
+  padding: 8px 8px;
+  height: auto;
+  max-height: none;
 }
 
 /* Piso oculto por los filtros */
 .boton-piso:disabled,
 .boton-piso.deshabilitado {
-  opacity: .4;
+  opacity: .45;
   cursor: not-allowed;
   box-shadow: none;
+  transform: none;
 }
 
 .boton-piso:disabled:hover {

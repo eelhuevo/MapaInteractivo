@@ -1,5 +1,12 @@
 /* =========================================================
-   data/categorias.js — tipos de espacio del campus
+   data/categorias.js — tipos/categorias de espacio
+
+   IMPORTANTE: las categorias NO se inventan aqui. La unica fuente
+   de datos es el backend (GET /api/catalogos/tipos-espacio y
+   GET /api/catalogos/categorias-servicio, sembrados por
+   CatalogoSeeder). Este archivo queda vacio como punto de entrada
+   para no romper la etiqueta <script> de mapa.html y admin.html
+   (igual que data/espacios.js y data/docentes.js).
    ========================================================= */
 (function () {
   'use strict';
@@ -7,14 +14,6 @@
   var UniMap = window.UniMap;
   UniMap.datos = UniMap.datos || {};
 
-  UniMap.datos.categorias = [
-    { id: 1, nombre: 'Aula', descripcion: 'Espacios de clase para impartir materias', icono: 'aula' },
-    { id: 2, nombre: 'Laboratorio', descripcion: 'Espacios equipados para practicas', icono: 'laboratorio' },
-    { id: 3, nombre: 'Oficina', descripcion: 'Oficinas administrativas y academicas', icono: 'oficina' },
-    { id: 4, nombre: 'Biblioteca', descripcion: 'Centro de recursos de informacion', icono: 'biblioteca' },
-    { id: 5, nombre: 'Auditorio', descripcion: 'Espacios para eventos y conferencias', icono: 'auditorio' },
-    { id: 6, nombre: 'Comedor', descripcion: 'Area de alimentacion', icono: 'comedor' },
-    { id: 7, nombre: 'Deportivo', descripcion: 'Instalaciones deportivas', icono: 'deportivo' },
-    { id: 8, nombre: 'Salon', descripcion: 'Salones multiuso y de eventos', icono: 'salon' }
-  ];
+  /* Sin datos locales: solo lo que traiga el backend */
+  UniMap.datos.categorias = [];
 })();

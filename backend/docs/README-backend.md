@@ -2,12 +2,12 @@
 
 Proyecto para centralizar, consultar y actualizar la información de aulas, oficinas, laboratorios, bibliotecas, áreas deportivas y demás servicios del campus, mediante un mapa interactivo accesible desde web y móvil.
 
-La solución se divide en **dos proyectos separados**:
+La solución se divide en **dos partes dentro del mismo repositorio**:
 
-| Proyecto | Rol | Carpeta |
+| Parte | Rol | Carpeta |
 |---|---|---|
-| **MapaInteractivo** | Backend — API REST (Laravel + PostgreSQL + PostGIS) | `MapaInteractivo/` |
-| **MapaInteractivoFrontend** | Frontend — mapa interactivo (React + Vite + Leaflet) | `MapaInteractivoFrontend/` |
+| **Backend** | API REST (Laravel 13 + Sanctum + Supabase/PostgreSQL + PostGIS) | `backend/` |
+| **Frontend** | Mapa interactivo (Vanilla JS + Three.js + Canvas 2D, sin build) | `frontend/` |
 
 La conexión entre ambos es una **API REST**: el frontend consume los endpoints del backend Laravel.
 
@@ -42,11 +42,11 @@ La universidad no tiene un medio único y actualizado para consultar la distribu
 
 | Capa | Tecnología | Motivo |
 |---|---|---|
-| Backend | Laravel (API REST) | Ya lo tienen iniciado; solo endpoints, sin vistas |
-| Base de datos | PostgreSQL + PostGIS | Consultas geoespaciales (coordenadas, rutas, zonas) |
-| Frontend | React + Vite (carpeta aparte) | SPA rápida y organizada; fácil separar servicios/API |
-| Mapas | Leaflet + GeoJSON de QGIS | Gratuito, funciona con exportaciones de QGIS y diseños de Blender |
-| Rutas | pgRouting (PostGIS) | Rutas peatonales dentro del campus |
+| Backend | Laravel 13 (API REST) | Ya iniciado; solo endpoints, sin vistas |
+| Base de datos | PostgreSQL + PostGIS (Supabase) | Consultas geoespaciales (coordenadas, rutas, zonas) |
+| Frontend | Vanilla JS + Three.js + Canvas 2D | Sin dependencias externas, sin build, funciona offline |
+| Mapas | Canvas 2D + Three.js (visor 3D) | Plano 2D en canvas y modelos 3D en escena unificada |
+| Rutas | pgRouting (PostGIS) | Rutas peatonales dentro del campus (línea recta si no hay pgRouting) |
 | Comunicación | API REST (JSON) | Frontend y backend desacoplados |
 
 > 💡 Como usan QGIS: exportar las capas del campus como **GeoJSON** y cargarlas como capa base de Leaflet en el frontend. Las coordenadas en PostGIS irán en `geometry(Point, 4326)`.
@@ -63,10 +63,10 @@ La universidad no tiene un medio único y actualizado para consultar la distribu
 
 ---
 
-## 🖥️ Estructura de carpetas — Frontend (`MapaInteractivoFrontend`)
+## 🖥️ Estructura de carpetas — Frontend (`frontend/`)
 
 ```
-MapaInteractivoFrontend/
+frontend/
 ├── public/
 │   ├── img/
 │   │   ├── iconos/
@@ -372,6 +372,20 @@ MapaInteractivoFrontend/
 | semestreObjetivo | int |
 | idEspacio | FK → espacios |
 
+**horariosDocente** (turnos de atención; los siembra `DocenteSeeder`)
+| Campo | Tipo |
+|---|---|
+| idHorarioDocente | PK |
+| idDocente | FK → docentes |
+| diaSemana | string (lunes…domingo) |
+| horaInicio | time |
+| horaFin | time |
+
+Se expone en `GET /api/docentes` (público), que la web usa para el panel
+"Horarios": cada docente trae sus tres campos de nombre (3FN), su
+`idEspacioOficina` (vínculo al espacio del plano) y sus turnos ordenados de
+lunes a domingo en "HH:MM".
+
 ---
 
 ## 🔗 Relaciones principales
@@ -385,6 +399,8 @@ espacios N───1 tiposEspacio / categoriasServicio
 espacios 1───1 aulas | laboratorios | oficinas
 laboratorios N───1 tiposLaboratorio
 espacios 1───N horariosEspacio
+docentes 1───N horariosDocente
+docentes N───1 espacios (idEspacioOficina, oficina/aula de atención)
 edificios 1───N codigosQr
 usuarios N───N espacios (favoritos, notificaciones, eventosConsulta)
 carreras N───N espacios (sugerenciasEspacio, por semestre)
@@ -417,7 +433,7 @@ Solución: usar el **Session pooler**, que es IPv4 en todos los planes:
    ```dotenv
    DB_CONNECTION=pgsql
    DB_HOST=aws-1-sa-east-1.pooler.supabase.com
-   DB_PORT=5432
+   DB_PORT=6543                           # pooler IPv4 (transaction mode)
    DB_DATABASE=postgres
    DB_USERNAME=postgres.<project-ref>   # usuario del pooler, con el ref del proyecto
    DB_PASSWORD=<tu-password>
