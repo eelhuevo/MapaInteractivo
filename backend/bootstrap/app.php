@@ -14,8 +14,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'rol'        => \App\Http\Middleware\VerificarRol::class,
-            'cache.res'  => \App\Http\Middleware\CacheResponse::class,
+            'rol'            => \App\Http\Middleware\VerificarRol::class,
+            'cache.res'      => \App\Http\Middleware\CacheResponse::class,
+            'cache.invalidar' => \App\Http\Middleware\InvalidarCacheRespuestas::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

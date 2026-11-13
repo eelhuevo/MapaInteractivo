@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Carrera;
-use App\Models\Estudiante;
 use App\Models\Rol;
 use App\Models\Usuario;
 use Illuminate\Http\JsonResponse;
@@ -16,42 +14,40 @@ class AuthController extends Controller
 {
     /**
      * HU-17 — Registrar usuario.
-     * Permite ingresar nombre, correo, contraseña y rol.
+     * Permite ingresar nombre, correo y contraseña.
      * El correo no debe estar previamente registrado.
-     * Registro público: solo roles estudiante y docente.
+     * Registro público: se asigna automáticamente el rol 'personal'
+     * (nunca se permite elegir administrador ni ningún otro rol).
      */
     public function registrar(Request $request): JsonResponse
     {
         $datosValidados = $request->validate([
             'nombreUsuario' => ['required', 'string', 'max:120'],
+            // Apellidos separados (3FN); si llegan vacios el backend
+            // divide el nombre completo (nombreUsuario) automaticamente
+            'apellidoPaternoUsuario' => ['nullable', 'string', 'max:60'],
+            'apellidoMaternoUsuario' => ['nullable', 'string', 'max:60'],
             'correoUsuario' => ['required', 'email', 'max:150', 'unique:usuarios,correoUsuario'],
             'contrasena' => ['required', 'string', 'min:8'],
-            'nombreRol' => ['required', Rule::in(['estudiante', 'docente'])],
-            // Opcionales: completan el perfil de estudiante (HU-20)
-            'idCarrera' => ['required_if:nombreRol,estudiante', 'nullable', 'integer', 'exists:carreras,idCarrera'],
-            'semestreEstudiante' => ['required_if:nombreRol,estudiante', 'nullable', 'integer', 'min:1', 'max:15'],
             'idiomaPreferido' => ['nullable', Rule::in(['es', 'en'])],
         ], [
             'correoUsuario.unique' => 'El correo ya está registrado.',
         ]);
 
-        $rolUsuario = Rol::where('nombreRol', $datosValidados['nombreRol'])->firstOrFail();
+        /* Rol fijo para todo registro público: nunca se elige desde el formulario. */
+        $rolUsuario = Rol::where('nombreRol', 'personal')->firstOrFail();
+
+        [$nombreReal, $paternoReal, $maternoReal] = Usuario::resolverNombre($datosValidados);
 
         $usuarioNuevo = Usuario::create([
             'idRol' => $rolUsuario->idRol,
-            'nombreUsuario' => $datosValidados['nombreUsuario'],
+            'nombreUsuario' => $nombreReal,
+            'apellidoPaternoUsuario' => $paternoReal,
+            'apellidoMaternoUsuario' => $maternoReal,
             'correoUsuario' => $datosValidados['correoUsuario'],
             'contrasenaHash' => $datosValidados['contrasena'],
             'idiomaPreferido' => $datosValidados['idiomaPreferido'] ?? 'es',
         ]);
-
-        if ($datosValidados['nombreRol'] === 'estudiante') {
-            Estudiante::create([
-                'idUsuario' => $usuarioNuevo->idUsuario,
-                'idCarrera' => $datosValidados['idCarrera'],
-                'semestreEstudiante' => $datosValidados['semestreEstudiante'],
-            ]);
-        }
 
         $tokenAcceso = $usuarioNuevo->createToken('token-mapa')->plainTextToken;
 
@@ -142,6 +138,9 @@ class AuthController extends Controller
         return [
             'idUsuario' => $usuario->idUsuario,
             'nombreUsuario' => $usuario->nombreUsuario,
+            'apellidoPaternoUsuario' => $usuario->apellidoPaternoUsuario ?? '',
+            'apellidoMaternoUsuario' => $usuario->apellidoMaternoUsuario ?? '',
+            'nombreCompleto' => $usuario->nombre_completo,
             'correoUsuario' => $usuario->correoUsuario,
             'idiomaPreferido' => $usuario->idiomaPreferido,
             'rol' => $usuario->rol?->nombreRol,

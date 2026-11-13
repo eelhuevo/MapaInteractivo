@@ -87,6 +87,7 @@
       estudiante: UniMap.i18n.t('auth.rolEstudiante'),
       docente: UniMap.i18n.t('auth.rolDocente'),
       admin: UniMap.i18n.t('rol.admin'),
+      personal: UniMap.i18n.t('auth.rolPersonal'),
       invitado: UniMap.i18n.t('rol.invitado')
     };
     return roles[rol] || rol;

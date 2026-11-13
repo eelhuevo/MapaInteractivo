@@ -1,6 +1,8 @@
 /* =========================================================
    core/personalizacion.js — capa de personalizacion de espacios
    (base de la HU-06: administrar oficinas / servicios)
+   · la base de cada piso son los espacios del backend (Supabase);
+     si el backend esta apagado no hay datos que mostrar
    · permite editar, eliminar y crear espacios sin tocar los
      archivos de datos (los cambios viven en localStorage)
    · al editar genera avisos de cambio (HU-13)
@@ -23,12 +25,16 @@
     util.almacen.escribir(LLAVE, store);
   }
 
-  /* Aplica los overrides a una lista de espacios concreta
-     (elimina los marcados como eliminado y sobreescribe campos) */
-  function aplicarOverridesA(lista) {
+  /* Aplica los overrides a la lista base (los espacios del backend):
+     elimina los marcados como eliminado y sobreescribe campos.
+     remotosPiso: ids del backend presentes en la lista base
+     (null cuando no hay backend); sirve para no agregar dos
+     veces un espacio nuevo que ya viene del backend */
+  function aplicarOverridesA(lista, remotosPiso) {
     var store = obtenerCambios();
     var resultado = [];
-    for (var i = 0; i < lista.length; i++) {
+    var i;
+    for (i = 0; i < lista.length; i++) {
       var espacio = lista[i];
       var ov = store[espacio.id];
       if (ov) {
@@ -46,6 +52,10 @@
       if (!store.hasOwnProperty(id)) continue;
       var nuevo = store[id];
       if (nuevo.nuevo && !nuevo.eliminado) {
+        /* Si ese espacio nuevo ya fue sincronizado, el backend lo trae
+           en la lista fusionada: no se agrega otra vez */
+        var idB = UniMap.api && UniMap.api.idDeBackend ? UniMap.api.idDeBackend(id) : null;
+        if (remotosPiso && idB !== null && remotosPiso.indexOf(String(idB)) !== -1) continue;
         var clon = {};
         for (var c in nuevo) {
           if (nuevo.hasOwnProperty(c) && c !== 'nuevo' && c !== 'eliminado') clon[c] = nuevo[c];
@@ -57,9 +67,30 @@
     return resultado;
   }
 
-  /* Espacios de un piso concreto (reemplaza a construirEspacios) */
+  /* ── ESPACIOS DEL BACKEND (fuente de verdad) ─────────
+     La base de cada piso son los espacios que trae el backend
+     (Supabase): se clonan para no mutar la cache y se ordenan
+     de arriba a abajo. Si el backend esta apagado no hay base:
+     el piso se ve vacio y aparece el aviso de backend apagado
+     (los cambios del administrador siguen en localStorage y se
+     reintentan solos cuando vuelve). */
   function espaciosDelPiso(edificio, piso) {
-    return aplicarOverridesA(datos.construirEspacios(edificio, piso));
+    var base = [];
+    var remotosPiso = null;
+    if (UniMap.api && UniMap.api.remotosListos && UniMap.api.remotosListos()) {
+      var remotos = UniMap.api.espaciosRemotos() || [];
+      remotosPiso = [];
+      for (var i = 0; i < remotos.length; i++) {
+        var r = remotos[i];
+        if (r.edificio !== edificio || r.piso !== piso) continue;
+        var clon = {};
+        for (var k in r) if (r.hasOwnProperty(k)) clon[k] = r[k];
+        base.push(clon);
+        remotosPiso.push(String(r.idBackend));
+      }
+      base.sort(function (a, b) { return a.y - b.y; });
+    }
+    return aplicarOverridesA(base, remotosPiso);
   }
 
   /* Reconstruye el listado global tras un cambio */
@@ -137,15 +168,15 @@
   }
 
   /* Geometria por defecto para espacios nuevos: zona libre
-     a la derecha del pasillo (x 600..780) */
+     dentro del area del plano (centrado en 400,300, 530x470) */
   function siguientePosicionLibre() {
     var usados = 0;
     var store = obtenerCambios();
     for (var id in store) {
       if (store.hasOwnProperty(id) && store[id].nuevo && !store[id].eliminado) usados++;
     }
-    var y = 60 + (usados % 6) * 70;
-    var x = 600;
+    var y = 80 + (usados % 6) * 70;   /* 80..430, dentro del plano */
+    var x = 150 + (usados % 5) * 100; /* 150..550, dentro del plano */
     return { x: x, y: y, ancho: 170, alto: 60 };
   }
 

@@ -219,6 +219,7 @@
 .estado-punto.inactivo { background: var(--danger); }
 
 .col-acciones { white-space: nowrap; }
+.admin-tabla .col-estado { width: 1%; white-space: nowrap; }
 
 .btn-tabla-editar,
 .btn-tabla-eliminar {
@@ -244,6 +245,27 @@
   border: 1.5px solid #fecaca;
 }
 .btn-tabla-eliminar:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
+
+/* Activar / desactivar cuentas (usuarios, estudiantes, docentes) */
+.btn-tabla-estado {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-right: 6px;
+  transition: all var(--transition);
+  background: var(--gray-100);
+  color: var(--gray-600);
+  border: 1.5px solid var(--gray-200);
+}
+.btn-tabla-estado:hover { background: var(--gray-200); }
+.btn-tabla-estado.encender {
+  background: #ecfdf5;
+  color: var(--success);
+  border-color: #a7f3d0;
+}
+.btn-tabla-estado.encender:hover { background: var(--success); color: #fff; border-color: var(--success); }
 
 .admin-vacio {
   padding: 34px;
@@ -397,3 +419,32 @@
   .stat-nombre { width: 120px; }
   .admin-toolbar input[type="text"] { min-width: 100%; }
 }
+
+/* ── NUEVOS CRUD DEL PANEL (usuarios, estudiantes, docentes, catalogos) ── */
+.admin-tabs { flex-wrap: wrap; }
+.admin-toolbar { flex-wrap: wrap; align-items: center; }
+.admin-contador { margin-left: auto; font-size: 12.5px; color: var(--gray-500); }
+.admin-tabla .etiqueta-rol,
+.admin-tabla .etiqueta-carrera {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--gray-100);
+  color: var(--gray-600);
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+.admin-tabla .celda-secundaria {
+  display: block;
+  font-size: 11.5px;
+  color: var(--gray-500);
+  margin-top: 2px;
+}
+.admin-tabla .celda-multi { max-width: 280px; font-size: 12.5px; color: var(--gray-600); }
+.modal-registro .campo-ancho { grid-column: 1 / -1; }
+.modal-registro select[multiple] {
+  min-height: 120px;
+  padding: 9px 10px;
+}
+.modal-registro select[multiple] option { padding: 4px 6px; }
+.form-campos .error-msg { min-height: 14px; display: block; }

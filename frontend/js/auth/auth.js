@@ -27,27 +27,9 @@
     util.almacen.escribir(llaveUsuarios, lista);
   }
 
-  function usuarioPorDefecto() {
-    return {
-      id: 'u1',
-      nombre: 'Admin',
-      apellido: 'Sistema',
-      correo: 'admin@uni.edu',
-      rol: 'admin',
-      contrasena: '123456',
-      fechaRegistro: new Date().toISOString()
-    };
-  }
-
-  /* Inicializar usuario admin por defecto si no hay usuarios */
-  (function inicializarUsuarios() {
-    var guardados = obtenerUsuarios();
-    if (guardados.length === 0) {
-      var admin = usuarioPorDefecto();
-      guardados.push(admin);
-      guardarUsuarios(guardados);
-    }
-  })();
+  /* Sin usuarios inventados: la unica fuente de cuentas es el backend
+     (seeders de Laravel). Lo unico que vive en localStorage son las
+     cuentas que el propio usuario registro con el backend apagado. */
 
   /* ── SESION ENTRE PAGINAS ─────────────────────────── */
   function guardarSesion(usuario) {
@@ -60,10 +42,44 @@
   }
 
   function cerrarSesion() {
+    /* Revoca el token del backend si existe (no bloquea la salida) */
+    if (UniMap.api && UniMap.api.token()) UniMap.api.cerrarSesionBackend();
     util.almacen.quitar(llaveSesion);
     estado.usuarioActual = null;
     estado.favoritos = [];
     window.location.href = RUTA_INDEX;
+  }
+
+  /* ── TRADUCCION DE CUENTAS DEL BACKEND ────────────── */
+  function mapearRolBackend(rol) {
+    if (rol === 'administrador' || rol === 'personalAdministrativo') return 'admin';
+    if (rol === 'estudiante') return 'estudiante';
+    if (rol === 'docente') return 'docente';
+    return rol || 'invitado';
+  }
+
+  function sesionDesdeBackend(u) {
+    /* Los apellidos viajan separados (3FN). Si un backend antiguo no
+       los manda, se divide el nombre completo como respaldo. */
+    var nombre;
+    var apellido;
+    if (u.apellidoPaternoUsuario !== undefined || u.apellidoMaternoUsuario !== undefined) {
+      nombre = String(u.nombreUsuario || '').trim();
+      apellido = (String(u.apellidoPaternoUsuario || '').trim() + ' ' +
+        String(u.apellidoMaternoUsuario || '').trim()).trim();
+    } else {
+      var partes = String(u.nombreUsuario || '').split(' ');
+      nombre = partes[0] || u.nombreUsuario || '';
+      apellido = partes.slice(1).join(' ') || '';
+    }
+    return {
+      id: 'b' + u.idUsuario,
+      nombre: nombre,
+      apellido: apellido,
+      correo: u.correoUsuario || '',
+      rol: mapearRolBackend(u.rol),
+      backend: true
+    };
   }
 
   /* ── VALIDACIONES / ERRORES ───────────────────────── */
@@ -166,22 +182,47 @@
 
       if (!ok) return;
 
-      var usuarios = obtenerUsuarios();
-      var encontrado = null;
-      for (var u = 0; u < usuarios.length; u++) {
-        if (usuarios[u].correo === correo && usuarios[u].contrasena === pass) {
-          encontrado = usuarios[u];
-          break;
+      /* Comprueba solo cuentas que el usuario haya registrado el
+         mismo con el backend apagado (nada inventado por nosotros).
+         `sinBackend` avisa de que la fuente de cuentas es la BD. */
+      function loginLocal(mensajeSinBackend) {
+        var usuarios = obtenerUsuarios();
+        var encontrado = null;
+        for (var u = 0; u < usuarios.length; u++) {
+          if (usuarios[u].correo === correo && usuarios[u].contrasena === pass) {
+            encontrado = usuarios[u];
+            break;
+          }
         }
+
+        if (!encontrado) {
+          mostrarError('contrasena-login', UniMap.i18n.t(mensajeSinBackend || 'err.credenciales'));
+          return;
+        }
+
+        guardarSesion(encontrado);
+        window.location.href = RUTA_MAPA;
       }
 
-      if (!encontrado) {
-        mostrarError('contrasena-login', UniMap.i18n.t('err.credenciales'));
+      /* 1) Intento con el backend Laravel: si la cuenta existe ahi se
+            guarda el token (Sanctum) que usa el panel de administracion
+            para sincronizar los cambios con la base de datos.
+         2) Si el backend esta apagado no hay cuentas que comprobar
+            (la unica fuente de usuarios es la base de datos): se
+            comprueba la lista local y, si esta vacia, se avisa. */
+      if (UniMap.api && UniMap.api.activa()) {
+        UniMap.api.iniciarSesion(correo, pass).then(function (res) {
+          if (res.ok) {
+            guardarSesion(sesionDesdeBackend(res.usuario));
+            window.location.href = RUTA_MAPA;
+            return;
+          }
+          loginLocal(res.estado === 0 ? 'err.sinBackend' : null);
+        });
         return;
       }
 
-      guardarSesion(encontrado);
-      window.location.href = RUTA_MAPA;
+      loginLocal('err.sinBackend');
     });
 
     /* REGISTRO */
@@ -192,7 +233,6 @@
       var nombre = util.el('nombre-registro').value.trim();
       var apellido = util.el('apellido-registro').value.trim();
       var correo = util.el('correo-registro').value.trim();
-      var rol = util.el('rol-registro').value;
       var pass = util.el('contrasena-registro').value;
       var pass2 = util.el('contrasena2-registro').value;
 
@@ -200,7 +240,6 @@
       if (!apellido || apellido.length < 2) { mostrarError('apellido-registro', apellido ? UniMap.i18n.t('err.min2') : UniMap.i18n.t('err.apellido')); ok = false; }
       if (!correo) { mostrarError('correo-registro', UniMap.i18n.t('err.correoRequerido')); ok = false; }
       else if (!util.validarCorreo(correo)) { mostrarError('correo-registro', UniMap.i18n.t('err.correoInvalido')); ok = false; }
-      if (!rol) { mostrarError('rol-registro', UniMap.i18n.t('err.rol')); ok = false; }
       if (!pass) { mostrarError('contrasena-registro', UniMap.i18n.t('err.passRequerida')); ok = false; }
       else if (pass.length < 6) { mostrarError('contrasena-registro', UniMap.i18n.t('err.min6')); ok = false; }
       if (!pass2) { mostrarError('contrasena2-registro', UniMap.i18n.t('err.confirma')); ok = false; }
@@ -216,20 +255,47 @@
         }
       }
 
-      var nuevo = {
-        id: 'u' + Date.now(),
-        nombre: nombre,
-        apellido: apellido,
-        correo: correo,
-        rol: rol,
-        contrasena: pass,
-        fechaRegistro: new Date().toISOString()
-      };
+      function registroLocal() {
+        var nuevo = {
+          id: 'u' + Date.now(),
+          nombre: nombre,
+          apellido: apellido,
+          correo: correo,
+          rol: 'personal',
+          contrasena: pass,
+          fechaRegistro: new Date().toISOString()
+        };
 
-      usuarios.push(nuevo);
-      guardarUsuarios(usuarios);
-      guardarSesion(nuevo);
-      window.location.href = RUTA_MAPA;
+        usuarios.push(nuevo);
+        guardarUsuarios(usuarios);
+        guardarSesion(nuevo);
+        window.location.href = RUTA_MAPA;
+      }
+
+      /* Intento en el backend Laravel. El backend asigna automaticamente
+         el rol 'personal' (no se elige desde el formulario) y exige
+         contrasenas de 8+ caracteres. Si no hay backend, el registro
+         queda en local con rol 'personal'. */
+      if (UniMap.api && UniMap.api.activa() && pass.length >= 8) {
+        var campoMaterno = util.el('apellidoMaterno-registro');
+        UniMap.api.registrarse({
+          nombre: nombre,
+          apellidoPaterno: apellido,
+          apellidoMaterno: campoMaterno ? campoMaterno.value.trim() : '',
+          correo: correo,
+          contrasena: pass
+        }).then(function (res) {
+          if (res.ok) {
+            guardarSesion(sesionDesdeBackend(res.usuario));
+            window.location.href = RUTA_MAPA;
+            return;
+          }
+          registroLocal();
+        });
+        return;
+      }
+
+      registroLocal();
     });
   }
 

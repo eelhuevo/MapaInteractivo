@@ -16,38 +16,61 @@ class UsuarioSeeder extends Seeder
     {
         $mapaRoles = Rol::pluck('idRol', 'nombreRol');
 
-        // Administrador del sistema
-        Usuario::firstOrCreate(
-            ['correoUsuario' => 'admin@univalle.edu.bo'],
+        // Cuentas de demostracion. Los nombres van separados en tres
+        // columnas (3FN): nombre, apellidoPaterno y apellidoMaterno.
+        // Las contrasenas no cambian (las usan los tests HU).
+        $cuentasDemo = [
             [
+                'correoUsuario' => 'admin@univalle.edu.bo',
                 'idRol' => $mapaRoles['administrador'],
-                'nombreUsuario' => 'Administrador del Sistema',
+                'nombreUsuario' => 'Adriana',
+                'apellidoPaternoUsuario' => 'Quispe',
+                'apellidoMaternoUsuario' => 'Mamani',
                 'contrasenaHash' => 'Admin12345',
-                'idiomaPreferido' => 'es',
-            ]
-        );
-
-        // Personal administrativo (gestiona oficinas del mapa, HU-06)
-        Usuario::firstOrCreate(
-            ['correoUsuario' => 'gestion@univalle.edu.bo'],
+            ],
             [
+                'correoUsuario' => 'gestion@univalle.edu.bo',
                 'idRol' => $mapaRoles['personalAdministrativo'],
-                'nombreUsuario' => 'Gestión de Espacios',
+                'nombreUsuario' => 'Carla',
+                'apellidoPaternoUsuario' => 'Flores',
+                'apellidoMaternoUsuario' => 'Rojas',
                 'contrasenaHash' => 'Gestion12345',
-                'idiomaPreferido' => 'es',
-            ]
-        );
+            ],
+            [
+                'correoUsuario' => 'docente@univalle.edu.bo',
+                'idRol' => $mapaRoles['docente'],
+                'nombreUsuario' => 'Marco',
+                'apellidoPaternoUsuario' => 'Vargas',
+                'apellidoMaternoUsuario' => 'Choque',
+                'contrasenaHash' => 'Docente12345',
+            ],
+            [
+                'correoUsuario' => 'estudiante@univalle.edu.bo',
+                'idRol' => $mapaRoles['estudiante'],
+                'nombreUsuario' => 'Lucia',
+                'apellidoPaternoUsuario' => 'Mamani',
+                'apellidoMaternoUsuario' => 'Ticona',
+                'contrasenaHash' => 'Estudiante12345',
+            ],
+        ];
+
+        foreach ($cuentasDemo as $datosCuenta) {
+            $usuarioCuenta = Usuario::firstOrCreate(
+                ['correoUsuario' => $datosCuenta['correoUsuario']],
+                $datosCuenta + ['idiomaPreferido' => 'es']
+            );
+
+            // Si la cuenta ya existia (p. ej. con el nombre completo en
+            // una sola columna), se actualizan los tres campos de nombre.
+            $usuarioCuenta->fill([
+                'nombreUsuario' => $datosCuenta['nombreUsuario'],
+                'apellidoPaternoUsuario' => $datosCuenta['apellidoPaternoUsuario'],
+                'apellidoMaternoUsuario' => $datosCuenta['apellidoMaternoUsuario'],
+            ])->save();
+        }
 
         // Docente de ejemplo con materias asignadas
-        $usuarioDocente = Usuario::firstOrCreate(
-            ['correoUsuario' => 'docente@univalle.edu.bo'],
-            [
-                'idRol' => $mapaRoles['docente'],
-                'nombreUsuario' => 'Docente de Ejemplo',
-                'contrasenaHash' => 'Docente12345',
-                'idiomaPreferido' => 'es',
-            ]
-        );
+        $usuarioDocente = Usuario::where('correoUsuario', 'docente@univalle.edu.bo')->firstOrFail();
 
         $docenteEjemplo = Docente::firstOrCreate(
             ['idUsuario' => $usuarioDocente->idUsuario],
@@ -63,15 +86,7 @@ class UsuarioSeeder extends Seeder
         }
 
         // Estudiante de ejemplo (para sugerencias HU-20)
-        $usuarioEstudiante = Usuario::firstOrCreate(
-            ['correoUsuario' => 'estudiante@univalle.edu.bo'],
-            [
-                'idRol' => $mapaRoles['estudiante'],
-                'nombreUsuario' => 'Estudiante de Ejemplo',
-                'contrasenaHash' => 'Estudiante12345',
-                'idiomaPreferido' => 'es',
-            ]
-        );
+        $usuarioEstudiante = Usuario::where('correoUsuario', 'estudiante@univalle.edu.bo')->firstOrFail();
 
         Estudiante::firstOrCreate(
             ['idUsuario' => $usuarioEstudiante->idUsuario],

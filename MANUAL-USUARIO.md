@@ -73,11 +73,19 @@ navegador bloquea la descarga de los modelos por seguridad (política CORS).
 
 Al abrir la aplicación aparece la **pantalla de acceso** con tres opciones.
 
-### 4.1 Cuenta de prueba
+### 4.1 Cuentas de prueba (del backend)
 
 | Correo | Contraseña | Rol |
 |---|---|---|
-| `admin@uni.edu` | `123456` | Administrador |
+| `admin@univalle.edu.bo` | `Admin12345` | Administrador |
+| `gestion@univalle.edu.bo` | `Gestion12345` | Personal administrativo |
+| `docente@univalle.edu.bo` | `Docente12345` | Docente |
+| `estudiante@univalle.edu.bo` | `Estudiante12345` | Estudiante |
+
+Estas cuentas viven en la **base de datos** (seeders del backend), así que
+**para iniciar sesión el backend tiene que estar encendido**
+(`INICIAR-BACKEND.bat`). Si está apagado, el formulario avisa con el mensaje
+«Sin backend no hay cuentas…».
 
 Escribe el correo y la contraseña, pulsa **Entrar** y accede al mapa.
 

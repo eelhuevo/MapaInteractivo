@@ -104,25 +104,20 @@
               <span class="error-msg" id="nombre-registro-error"></span>
             </div>
             <div class="form-group">
-              <label for="apellido-registro" data-i18n="auth.apellido">Apellido</label>
+              <label for="apellido-registro" data-i18n="auth.apellido">Apellido paterno</label>
               <input type="text" id="apellido-registro" placeholder="Perez" data-i18n-placeholder="auth.phApellido" autocomplete="family-name">
               <span class="error-msg" id="apellido-registro-error"></span>
             </div>
           </div>
           <div class="form-group">
+            <label for="apellidoMaterno-registro" data-i18n="auth.apellidoMaterno">Apellido materno (opcional)</label>
+            <input type="text" id="apellidoMaterno-registro" placeholder="Ticona" data-i18n-placeholder="auth.phApellidoMaterno" autocomplete="additional-name">
+            <span class="error-msg" id="apellidoMaterno-registro-error"></span>
+          </div>
+          <div class="form-group">
             <label for="correo-registro" data-i18n="auth.correo">Correo electronico</label>
             <input type="email" id="correo-registro" placeholder="ejemplo@universidad.edu" data-i18n-placeholder="auth.phCorreo" autocomplete="email">
             <span class="error-msg" id="correo-registro-error"></span>
-          </div>
-          <div class="form-group">
-            <label for="rol-registro" data-i18n="auth.rol">Rol</label>
-            <select id="rol-registro">
-              <option value="" data-i18n="auth.seleccionaRol">Selecciona tu rol</option>
-              <option value="estudiante" data-i18n="auth.rolEstudiante">Estudiante</option>
-              <option value="docente" data-i18n="auth.rolDocente">Docente</option>
-              <option value="admin" data-i18n="auth.rolAdmin">Administrativo</option>
-            </select>
-            <span class="error-msg" id="rol-registro-error"></span>
           </div>
           <div class="form-group">
             <label for="contrasena-registro" data-i18n="auth.contrasena">Contrasena</label>
@@ -149,15 +144,16 @@
         </div>
         <button id="boton-invitado" class="btn-guest" data-i18n="auth.invitado">Entrar como Invitado</button>
 
-        <p class="auth-demo"><span data-i18n="auth.demo">Cuenta de prueba:</span> <strong>admin@uni.edu</strong> / <strong>123456</strong></p>
+        <p class="auth-demo"><span data-i18n="auth.demo">Cuenta admin (requiere el backend):</span> <strong>admin@univalle.edu.bo</strong> / <strong>Admin12345</strong></p>
       </div>
     </div>
   </div>
 
-  <!-- JS: modulo de autenticacion (v=6 modo oscuro) -->
-  <script src="frontend/js/core/store.js?v=6"></script>
-  <script src="frontend/js/core/i18n.js?v=7"></script>
-  <script src="frontend/js/auth/auth.js?v=3"></script>
+  <!-- JS: modulo de autenticacion (v=6 modo oscuro; v=7-8 sincronizacion con backend) -->
+  <script src="frontend/js/core/store.js?v=10"></script>
+  <script src="frontend/js/core/api.js?v=9"></script>
+  <script src="frontend/js/core/i18n.js?v=14"></script>
+  <script src="frontend/js/auth/auth.js?v=7"></script>
   <script>
     /* HU-15: aplicar el idioma guardado a la pantalla de acceso */
     if (window.UniMap && UniMap.i18n) UniMap.i18n.iniciar();

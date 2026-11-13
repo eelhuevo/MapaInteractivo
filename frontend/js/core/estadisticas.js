@@ -23,15 +23,19 @@
     util.almacen.escribir(LLAVE, datos);
 
     /* Intento opcional de sincronizar con el backend Laravel
-       (silencioso: si no hay API disponible se ignora) */
-    if (UniMap.config && UniMap.config.activa) {
-      try {
-        fetch(UniMap.config.apiBase + '/estadisticas', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({ espacio: idEspacio, fecha: new Date().toISOString() })
-        }).catch(function () { /* sin backend */ });
-      } catch (e) { /* sin red */ }
+       (silencioso: si no hay API disponible se ignora). Solo se
+       envia si el espacio esta mapeado en el backend, porque el
+       endpoint exige un idEspacio numerico existente. */
+    if (UniMap.config && UniMap.config.activa && UniMap.api) {
+      var idBackend = UniMap.api.idDeBackend(idEspacio);
+      if (idBackend) {
+        try {
+          UniMap.api.solicitar('POST', '/eventos-consulta', {
+            idEspacio: idBackend,
+            tipoEvento: 'consulta'
+          });
+        } catch (e) { /* sin red */ }
+      }
     }
   }
 

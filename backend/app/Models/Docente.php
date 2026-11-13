@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Docente extends Model
 {
@@ -30,5 +31,14 @@ class Docente extends Model
     {
         return $this->belongsToMany(Materia::class, 'docenteMaterias', 'idDocente', 'idMateria', 'idDocente', 'idMateria')
             ->withPivot('semestreMateria');
+    }
+
+    /**
+     * Turnos de atencion (lunes a sabado) que muestra el panel de
+     * horarios de la web.
+     */
+    public function horarios(): HasMany
+    {
+        return $this->hasMany(HorarioDocente::class, 'idDocente', 'idDocente');
     }
 }

@@ -20,12 +20,14 @@
   };
 
   /* ── CONFIGURACION DEL BACKEND (opcional) ───────────
-     Si el servidor Laravel esta disponible, activa la
-     sincronizacion de avisos, estadisticas y espacios.
-     Con el servidor local (INICIAR.bat) queda inactiva y
-     todo funciona con localStorage. */
+     Si el servidor Laravel esta disponible (INICIAR-BACKEND.bat,
+     puerto 8000) se activa la sincronizacion de avisos,
+     estadisticas y de los cambios hechos en el panel de
+     administracion. Si el backend esta apagado todo sigue
+     funcionando con localStorage y los cambios quedan en
+     cola para reintentarlos. */
   UniMap.config = {
-    activa: false,
+    activa: true,
     apiBase: 'http://localhost:8000/api'
   };
 
@@ -55,9 +57,8 @@
 
     filtros: {
       tipos: ['aula', 'laboratorio', 'oficina', 'biblioteca', 'auditorio', 'comedor', 'deportivo', 'salon'],
-      /* HU-19: subtipos de laboratorio visibles */
-      laboratorios: ['informatica', 'electronica', 'fisica', 'quimica', 'mecanica',
-        'ia', 'robotica', 'iot', 'ciberseguridad', 'produccion'],
+      /* HU-19: subtipos de laboratorio visibles (catalogo del backend) */
+      laboratorios: ['quimica', 'redes', 'fisica', 'sistemas'],
       disponibilidad: ['activo', 'inactivo'],
       pisos: [0, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17],
       edificios: [1, 2]
@@ -105,6 +106,46 @@
       contenedor._timer = setTimeout(function () {
         contenedor.classList.add('hidden');
       }, duracion);
+    },
+
+    /* Aviso persistente creado por codigo (sin depender del HTML):
+       se usa para avisar que el backend esta apagado. Se muestra
+       arriba del todo y solo se quita con quitarAvisoPersistente. */
+    avisoPersistente: function (texto, id) {
+      var contenedor = util.el(id || 'aviso-persistente');
+      if (!contenedor) {
+        contenedor = document.createElement('div');
+        contenedor.id = id || 'aviso-persistente';
+        contenedor.setAttribute('role', 'status');
+        contenedor.style.position = 'fixed';
+        contenedor.style.top = '0';
+        contenedor.style.left = '0';
+        contenedor.style.right = '0';
+        contenedor.style.zIndex = '9999';
+        contenedor.style.padding = '10px 16px';
+        contenedor.style.textAlign = 'center';
+        contenedor.style.font = '600 14px/1.4 system-ui, sans-serif';
+        contenedor.style.background = '#b45309';
+        contenedor.style.color = '#fff';
+        document.body.appendChild(contenedor);
+      }
+      contenedor.textContent = texto;
+      contenedor.style.display = 'block';
+      return contenedor;
+    },
+
+    quitarAvisoPersistente: function (id) {
+      var contenedor = util.el(id || 'aviso-persistente');
+      if (contenedor) contenedor.style.display = 'none';
+    },
+
+    /* Texto en minusculas y sin tildes, para que "maria" encuentre
+       a "Maria Elena" en los buscadores (busqueda y horarios) */
+    normalizar: function (texto) {
+      var bruto = texto === null || texto === undefined ? '' : String(texto);
+      return bruto.toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
     },
 
     /* Acceso seguro a localStorage */

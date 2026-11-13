@@ -1,40 +1,41 @@
 # Ramas del proyecto
 
-Modelo de ramas (GitFlow) usado en **UniMap — Mapa Interactivo de Campus**.
+Modelo de ramas usado en **UniMap — Mapa Interactivo de Campus**.
 
 ## Ramas permanentes
 
 | Rama | Protegida | Para qué sirve |
 |------|-----------|----------------|
-| `main` | ✅ Sí | Producción. Solo se actualiza mediante *merge* de `release/*` o `hotfix/*`. |
-| `develop` | No | Integración. Acumula lo que entra en la próxima versión. Parte de `main`. |
+| `main` | ✅ Sí | Línea base del proyecto. Solo entra código revisado y verificado mediante Pull Request. |
+| `beta` | No | Rama de **entrega**: aquí se integra todo el trabajo del equipo para presentarlo. |
+| `Version2` | No | Segunda versión en curso (experimental). |
 
 ## Ramas temporales (se crean y se borran)
 
 | Prefijo | Se crea desde | Se fusiona en | Uso |
 |---------|---------------|---------------|-----|
-| `feature/<nombre>` | `develop` | `develop` | Nuevas funciones. |
-| `bugfix/<nombre>` | `develop` | `develop` | Arreglar bugs **no urgentes**. |
-| `hotfix/<nombre>` | `main` | `main` **y** `develop` | Arreglar bugs **urgentes en producción**. |
-| `release/<version>` | `develop` | `main` **y** `develop` | Preparar una versión (vX.Y.Z). |
+| `feature/<nombre>` | `main` | `main` | Nueva funcionalidad (una por issue). |
+| `fix/<nombre>` | `main` | `main` | Corrección de un error. |
+| `docs/<nombre>` | `main` | `main` | Cambios solo de documentación. |
 
 ## ¿Dónde van los bugs?
 
-No existe una rama fija de "bugs". Cada bug usa una rama temporal:
+Cada bug usa una rama temporal:
 
-- **Bug normal** → crea `bugfix/descripcion-del-bug` desde `develop`.
-- **Bug urgente en producción** → crea `hotfix/descripcion-del-bug` desde `main`.
+- **Bug normal** → crea `fix/descripcion-del-bug` desde `main`.
+- **Bug urgente en producción** → crea `fix/descripcion-del-bug` desde `main` y prioriza su revisión.
 
 ## Flujo resumido
 
-1. Crea una rama desde el punto correcto (`develop` o `main` según el caso).
+1. Crea una rama desde `main` (nunca trabajes directamente en `main`, `beta` ni `Version2`).
 2. Commits siguiendo la [convención del proyecto](../CONTRIBUTING.md).
-3. Abre un Pull Request hacia la rama de origen.
-4. Tras revisar y aprobar, fusiona y **borra la rama temporal**.
+3. Abre un Pull Request hacia `main` y escribe `Closes #NN` en la descripción.
+4. Un compañero revisa tu PR (aprobar, comentar o pedir cambios).
+5. Tras revisar y aprobar, fusiona en `main` y **borra la rama temporal**.
 
 ## Ejemplo de nombres
 
 - `feature/buscador-sin-acentos`
-- `bugfix/ficha-tooltip-cerrada`
-- `hotfix/login-correo-duplicado`
-- `release/v1.2.0`
+- `fix/ficha-tooltip-cerrada`
+- `fix/login-correo-duplicado`
+- `docs/manual-de-usuario`

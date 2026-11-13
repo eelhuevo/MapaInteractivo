@@ -1,6 +1,6 @@
 # 🗺️ Mapa Interactivo del Campus — Backend (API REST)
 
-API REST en **Laravel 13 + PostgreSQL (Supabase) + PostGIS** para el Mapa
+API REST en **Laravel 13 + Sanctum + PostgreSQL (Supabase) + PostGIS** para el Mapa
 Interactivo del campus de la Universidad Privada del Valle.
 
 - Autenticación por tokens con **Laravel Sanctum** (`Authorization: Bearer <token>`).
@@ -12,6 +12,9 @@ Interactivo del campus de la Universidad Privada del Valle.
 
 ## ⚙️ Instalación
 
+> Requisito: **PHP 8.3 o superior** con las extensiones de abajo.
+> En Windows, `INSTALAR.bat` (raíz del proyecto) prepara todo esto solo.
+
 ```bash
 composer install
 cp .env.example .env
@@ -19,14 +22,16 @@ php artisan key:generate
 ```
 
 Configura en `.env` la conexión de Supabase
-(*Project Settings → Database → Connection info*):
+(*Project Settings → Database → Connection info*) usando el
+**pooler IPv4** (el host directo `db.*` es IPv6-only y suele fallar
+en redes locales):
 
 ```env
 DB_CONNECTION=pgsql
-DB_HOST=db.<referencia>.supabase.co   # o el pooler aws-0-<region>.pooler.supabase.com
-DB_PORT=5432                          # 6543 si usas el pooler en modo sesión
+DB_HOST=aws-1-sa-east-1.pooler.supabase.com   # pooler IPv4
+DB_PORT=6543
 DB_DATABASE=postgres
-DB_USERNAME=postgres
+DB_USERNAME=postgres.<referencia>
 DB_PASSWORD=<tu contraseña>
 DB_SSLMODE=require
 ```
@@ -38,13 +43,24 @@ DB_SSLMODE=require
 Luego:
 
 ```bash
-php artisan migrate --seed
-php artisan serve
+php artisan migrate      # aplica migraciones (p. ej. las de nombres de usuario)
+php artisan db:seed      # siembra zonas, edificios, pisos, espacios y usuarios
+php artisan serve        # API en http://localhost:8000
 ```
+
+Comprueba que responde abriendo <http://localhost:8000/api/edificios>
+(debe salir JSON con los 4 edificios). La raíz `http://localhost:8000/api`
+da **404: es normal**, no hay ruta ahí.
+
+Las semillas son **idempotentes** (`firstOrCreate`): se pueden repetir sin
+duplicar datos. Los conteos finales (espacios, aulas, usuarios...) los
+imprime `CONFIGURAR.bat` al terminar, y se ven en Supabase:
+*Table Editor* → tabla `espacios`.
 
 ### Extensiones PHP requeridas
 
-`pdo_pgsql`, `pgsql`, `fileinfo`, `zip` (habilitarlas en `php.ini`).
+`pdo_pgsql`, `pgsql`, `fileinfo`, `zip`, `intl`, `mbstring`, `curl`,
+`openssl` (habilitarlas en `php.ini`).
 
 ### Usuarios de prueba (seeders)
 
@@ -54,6 +70,16 @@ php artisan serve
 | `gestion@univalle.edu.bo` | `Gestion12345` | personalAdministrativo |
 | `docente@univalle.edu.bo` | `Docente12345` | docente |
 | `estudiante@univalle.edu.bo` | `Estudiante12345` | estudiante |
+
+`php artisan db:seed` también crea **10 docentes** con su horario semanal
+(`DocenteSeeder`): `docente@univalle.edu.bo` más `docente2@…` hasta
+`docente10@…`, todos con contraseña `Docente12345`. Son los únicos datos
+falsos de docentes del proyecto: la web los consume desde `GET /api/docentes`
+(`frontend/js/data/docentes.js` está vacío a propósito).
+
+> Si la base ya existía de antes, aplica solo los cambios nuevos con
+> `php artisan migrate --seed` (o `php artisan db:seed --class=DocenteSeeder`
+> para repetir solo esta siembra; es idempotente).
 
 ---
 
@@ -80,6 +106,9 @@ php artisan serve
 | GET | `/api/catalogos/categorias-servicio` | HU-02 | Catálogo de categorías |
 | GET | `/api/catalogos/tipos-laboratorio` | HU-19 | Catálogo de tipos de laboratorio |
 | GET | `/api/catalogos/carreras` | HU-20 | Catálogo de carreras |
+| GET | `/api/docentes` | — | Docentes con nombre (3FN), departamento, oficina, materias y horario semanal. Alimenta el panel "Horarios" de la web (reemplaza a los docentes de `data/docentes.js`) |
+| GET | `/api/roles` | HU-17 | Catálogo de roles (id, nombre, descripción) para el selector del registro |
+| GET | `/api/materias?buscar=` | — | Materias con los docentes activos que las imparten (tablas `materias` + `docenteMaterias`); `buscar` filtra por nombre sin distinguir mayúsculas/tildes (`ilike`) |
 | POST | `/api/eventos-consulta` | HU-14 | Registrar evento (`consulta`, `busqueda`, `ruta`) |
 
 ### Autenticados (`Authorization: Bearer <token>`)
@@ -88,6 +117,7 @@ php artisan serve
 |---|---|---|---|
 | POST | `/api/auth/logout` | — | Cerrar sesión |
 | GET | `/api/auth/perfil` | — | Perfil del usuario |
+| GET | `/api/estudiantes?buscar=` | — | Estudiantes activos: nombre en 3FN (más `nombreCompleto`), correo, carrera y semestre. Requiere token porque hay datos personales |
 | PUT | `/api/perfil/idioma` | HU-15 | Cambiar idioma (`es` / `en`) |
 | GET | `/api/favoritos` | HU-12 | Listar favoritos del usuario |
 | POST | `/api/favoritos` | HU-12 | Marcar favorito `{idEspacio}` |
@@ -104,8 +134,18 @@ php artisan serve
 | POST | `/api/admin/espacios` | HU-06 | Crear oficina/servicio (con horarios y subtipo) |
 | PUT/PATCH | `/api/admin/espacios/{id}` | HU-06/13 | Editar; si cambia ubicación/horario/contacto notifica a interesados |
 | DELETE | `/api/admin/espacios/{id}` | HU-06 | Eliminar del mapa |
-| GET | `/api/admin/usuarios` | — | Listar usuarios |
-| POST | `/api/admin/usuarios` | HU-17 | Registrar usuario con cualquier rol |
+| GET | `/api/admin/usuarios` | — | Listar usuarios con su rol y los campos del rol (`idCarrera`, `semestreEstudiante`, `departamentoDocente`) para precargar el modal de edición |
+| POST | `/api/admin/usuarios` | HU-17 | Registrar usuario con cualquier rol. Crea también la fila de `estudiantes`/`docentes` (acepta `idCarrera`, `semestreEstudiante`, `departamentoDocente`, `idEspacioOficina` e `idMaterias`) |
+| PUT | `/api/admin/usuarios/{id}` | HU-17 | Editar usuario (datos personales, rol y campos del rol) |
+| PATCH | `/api/admin/usuarios/{id}/estado` | — | Activar/desactivar la cuenta en vez de borrarla (`{estaActivo: bool}`); al desactivar revoca los tokens |
+| GET | `/api/admin/estudiantes` | — | Listar estudiantes con usuario, carrera y semestre |
+| PUT | `/api/admin/estudiantes/{id}` | — | Editar estudiante (nombre, correo, carrera, semestre) |
+| GET | `/api/admin/docentes` | — | Listar docentes con usuario, departamento, oficina y materias |
+| PUT | `/api/admin/docentes/{id}` | — | Editar docente; sincroniza sus materias (`idMaterias`) |
+| GET | `/api/admin/materias` | — | Materias con `idDocentes` (todos, también inactivos) para el multi-select |
+| POST | `/api/admin/catalogos/{entidad}` | — | Alta en un catálogo simple: `roles`, `materias`, `carreras`, `tipos-espacio`, `categorias-servicio`, `tipos-laboratorio` |
+| PUT | `/api/admin/catalogos/{entidad}/{id}` | — | Editar el registro del catálogo (en `materias` acepta `idDocentes`) |
+| DELETE | `/api/admin/catalogos/{entidad}/{id}` | — | Borrar del catálogo. **409** si está en uso (p. ej. `roles` → usuarios, `carreras` → estudiantes, `tipos-espacio` → espacios) |
 | GET | `/api/admin/estadisticas/espacios-mas-consultados` | HU-14 | Ranking de espacios más consultados |
 
 ---

@@ -1,5 +1,13 @@
 /* =========================================================
    data/docentes.js — personal docente y horarios
+   (HU "Consulta de docentes" / "Consulta de horarios")
+
+   IMPORTANTE: los docentes NO se inventan aqui. La unica fuente de
+   datos es el backend (GET /api/docentes, sembrado por
+   DocenteSeeder con 10 docentes y su horario semanal), que se pide
+   en core/api.js (cargarDocentes) y se publica en
+   UniMap.datos.docentes. Si el backend esta apagado la lista queda
+   vacia y el panel de horarios no muestra nada (cero datos falsos).
    ========================================================= */
 (function () {
   'use strict';
@@ -7,22 +15,6 @@
   var UniMap = window.UniMap;
   UniMap.datos = UniMap.datos || {};
 
-  UniMap.datos.docentes = [
-    { id: 'f1', nombre: 'Dr. Carlos Mendez', departamento: 'Ciencias de la Computacion', correo: 'cmendez@uni.edu',
-      horario: { 0: ['08:00-10:00', '14:00-16:00'], 1: ['10:00-12:00'], 2: ['08:00-10:00'], 3: ['14:00-16:00'], 4: ['10:00-12:00'] }},
-    { id: 'f2', nombre: 'Dra. Laura Sanchez', departamento: 'Matematicas', correo: 'lsanchez@uni.edu',
-      horario: { 0: ['10:00-12:00'], 1: ['08:00-10:00', '16:00-18:00'], 2: ['10:00-12:00'], 3: ['08:00-10:00'], 4: ['14:00-16:00'] }},
-    { id: 'f3', nombre: 'Dr. Roberto Diaz', departamento: 'Fisica', correo: 'rdiaz@uni.edu',
-      horario: { 0: ['12:00-14:00'], 1: ['12:00-14:00'], 2: ['14:00-16:00'], 3: ['12:00-14:00'], 4: ['08:00-10:00'] }},
-    { id: 'f4', nombre: 'Dra. Maria Torres', departamento: 'Ingenieria Electrica', correo: 'mtorres@uni.edu',
-      horario: { 0: ['08:00-10:00', '14:00-16:00'], 1: ['08:00-10:00'], 2: ['10:00-12:00'], 3: ['14:00-16:00'], 4: ['10:00-12:00'] }},
-    { id: 'f5', nombre: 'Dr. Fernando Reyes', departamento: 'Quimica', correo: 'freyes@uni.edu',
-      horario: { 0: ['10:00-12:00'], 1: ['14:00-16:00'], 2: ['08:00-10:00'], 3: ['10:00-12:00'], 4: ['14:00-16:00'] }},
-    { id: 'f6', nombre: 'Dra. Ana Gutierrez', departamento: 'Ciencias Sociales', correo: 'agutierrez@uni.edu',
-      horario: { 0: ['08:00-10:00'], 1: ['10:00-12:00', '14:00-16:00'], 2: ['14:00-16:00'], 3: ['08:00-10:00'], 4: ['10:00-12:00'] }},
-    { id: 'f7', nombre: 'Dr. Javier Morales', departamento: 'Administracion', correo: 'jmorales@uni.edu',
-      horario: { 0: ['14:00-16:00'], 1: ['08:00-10:00'], 2: ['10:00-12:00'], 3: ['14:00-16:00'], 4: ['08:00-10:00'] }},
-    { id: 'f8', nombre: 'Dra. Patricia Luna', departamento: 'Derecho', correo: 'pluna@uni.edu',
-      horario: { 0: ['10:00-12:00'], 1: ['14:00-16:00'], 2: ['08:00-10:00'], 3: ['10:00-12:00'], 4: ['14:00-16:00'] }}
-  ];
+  /* Sin datos locales: solo lo que traiga el backend */
+  UniMap.datos.docentes = [];
 })();

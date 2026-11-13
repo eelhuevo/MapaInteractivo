@@ -33,7 +33,7 @@
     if (!contenedor) return;
 
     var campo = util.el('campo-busqueda-servicio');
-    var consulta = ((campo && campo.value) || '').trim().toLowerCase();
+    var consulta = util.normalizar(((campo && campo.value) || '')).trim();
 
     var lista = espaciosDeEdificio(edificioFiltro);
 
@@ -42,8 +42,8 @@
     var pisos = [];
     for (var i = 0; i < lista.length; i++) {
       var s = lista[i];
-      if (consulta && s.nombre.toLowerCase().indexOf(consulta) === -1 &&
-          s.tipo.toLowerCase().indexOf(consulta) === -1) continue;
+      if (consulta && util.normalizar(s.nombre).indexOf(consulta) === -1 &&
+          util.normalizar(s.tipo).indexOf(consulta) === -1) continue;
       if (!porPiso[s.piso]) { porPiso[s.piso] = []; pisos.push(s.piso); }
       porPiso[s.piso].push(s);
     }

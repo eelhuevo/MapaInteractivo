@@ -14,10 +14,13 @@ echo.
 
 :: Paso 1: liberar el puerto SOLO si el proceso es python
 echo Liberando puerto %PUERTO% si esta ocupado por un servidor previo...
-for /f "tokens=5" %%P in ('netstat -ano ^| findstr /r ":%PUERTO% .*LISTENING"') do (
+for /f "tokens=5" %%P in ('netstat -ano ^| findstr /r /c:":%PUERTO% .*LISTENING"') do (
     for /f "delims=" %%N in ('powershell -NoProfile -Command "(Get-Process -Id %%P -ErrorAction SilentlyContinue).ProcessName"') do (
         if /i "%%N"=="python" (
             echo   Cerrando servidor python previo (PID %%P^)...
+            taskkill /f /pid %%P >nul 2>&1
+        ) else if /i "%%N"=="php" (
+            echo   Cerrando servidor php previo (PID %%P^)...
             taskkill /f /pid %%P >nul 2>&1
         ) else (
             echo   AVISO: el puerto lo ocupa "%%N" (PID %%P^). No se cierra nada.
@@ -27,34 +30,58 @@ for /f "tokens=5" %%P in ('netstat -ano ^| findstr /r ":%PUERTO% .*LISTENING"') 
 )
 timeout /t 1 /nobreak >nul
 
-:: Paso 2: verificar Python
+:: Paso 2: verificar Python; si no hay, se usa el PHP portable
+set SERVIDOR=
+set PHPBIN=
+
 where python >nul 2>nul
 if %errorlevel%==0 (
-    set PYCMD=python
+    set SERVIDOR=python -m http.server %PUERTO%
     goto :arrancar
 )
 
 where py >nul 2>nul
 if %errorlevel%==0 (
-    set PYCMD=py
+    set SERVIDOR=py -m http.server %PUERTO%
+    goto :arrancar
+)
+
+if exist "%USERPROFILE%\php84\php.exe" (
+    set PHPBIN=%USERPROFILE%\php84\php.exe
+    goto :arrancar
+)
+
+where php >nul 2>nul
+if %errorlevel%==0 (
+    set PHPBIN=php
     goto :arrancar
 )
 
 echo.
-echo ERROR: No se encontro Python.
-echo Instala Python 3 desde https://www.python.org
-echo y marca la casilla "Add Python to PATH".
+echo ERROR: No se encontro Python ni PHP.
+echo Instala Python 3 desde https://www.python.org (y marca
+echo "Add Python to PATH") o ejecuta INSTALAR.bat una vez
+echo para preparar el entorno del backend.
 echo.
 pause
 exit /b 1
 
 :arrancar
-echo Python encontrado: %PYCMD%
-echo Iniciando servidor...
+if defined PHPBIN (
+    echo PHP encontrado: %PHPBIN%
+    echo Iniciando servidor con el motor de PHP...
+) else (
+    echo Python encontrado.
+    echo Iniciando servidor...
+)
 echo.
 
 :: Paso 3: arrancar el servidor en una ventana minimizada
-start "UniMap - servidor (no cerrar)" /min %PYCMD% -m http.server %PUERTO%
+if defined PHPBIN (
+    start "UniMap - servidor (no cerrar)" /min "%PHPBIN%" -S localhost:%PUERTO%
+) else (
+    start "UniMap - servidor (no cerrar)" /min %SERVIDOR%
+)
 
 :: Paso 4: esperar y abrir el navegador
 timeout /t 3 /nobreak >nul

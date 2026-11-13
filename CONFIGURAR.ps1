@@ -1,4 +1,4 @@
-# =============================================================
+﻿# =============================================================
 #  MapaInteractivo - configuracion automatica del backend
 #  -------------------------------------------------------------
 #  Uso: ejecutar CONFIGURAR.bat  (no doble clic sobre este archivo)
@@ -11,6 +11,8 @@
 #    5. Genera la APP_KEY
 #    6. Prueba la conexion con Supabase
 #    7. Aplica las migraciones pendientes
+#    8. Siembra los datos (pisos, espacios, usuarios) y muestra
+#       los conteos de las tablas para confirmar que entraron
 #
 #  El script es repetible: puedes ejecutarlo cuantas veces quieras.
 #  No modifica la pagina ni el codigo del proyecto.
@@ -72,6 +74,38 @@ function Aviso([string]$t) {
 }
 function Fallo([string]$t) {
     Write-Host "    [ERROR]  $t" -ForegroundColor Red
+}
+
+# Ejecuta un comando nativo (php, composer, ...) y devuelve su salida
+# completa (stdout + stderr) como texto plano, mas el codigo de salida.
+#
+# Motivo: en Windows PowerShell 5.1, con $ErrorActionPreference='Stop',
+# redirigir 2>&1 convierte cada linea de stderr en un error fatal
+# (NativeCommandError) que detiene el script. php artisan escribe avisos
+# y errores por stderr, asi que sin este auxiliar este script se rompe
+# en distintos pasos segun la maquina. Solo PowerShell 7 lo desactiva
+# con $PSNativeCommandUseErrorActionPreference (arriba).
+function Ejecutar {
+    param(
+        [Parameter(Mandatory = $true)][string]$Comando,
+        [string[]]$Argumentos = @()
+    )
+    $eapAnterior = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        $lineas = @(& $Comando @Argumentos 2>&1)
+        $codigo = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $eapAnterior
+    }
+    # Las lineas de stderr llegan como ErrorRecord: se pasan a texto simple
+    $salida = @($lineas | ForEach-Object { "$_" })
+    [pscustomobject]@{
+        Salida = $salida
+        Texto  = ($salida -join "`n")
+        Codigo = $codigo
+    }
 }
 
 
@@ -141,28 +175,35 @@ Titulo "MapaInteractivo - configuracion automatica"
 Write-Host "  Carpeta: $raiz"
 
 # ---- 1. PHP ------------------------------------------------------
-Paso "Paso 1/7 - Verificando PHP"
+Paso "Paso 1/8 - Verificando PHP"
 $phpCmd = Get-Command php -ErrorAction SilentlyContinue
-if (-not $phpCmd) {
-    Fallo "No se encontro PHP en el PATH."
-    Write-Host "        Instala PHP 8.1 o superior desde"
-    Write-Host "        https://windows.php.net/download/"
-    Write-Host "        y marca 'Add PHP to PATH' al instalar."
+$portablePhp = Join-Path $env:USERPROFILE 'php84\php.exe'
+if ($phpCmd) {
+    $PHP = 'php'
+}
+elseif (Test-Path $portablePhp) {
+    # Instalacion portable que crea INSTALAR.bat (no toca el sistema)
+    $PHP = $portablePhp
+}
+else {
+    Fallo "No se encontro PHP en el PATH ni en $portablePhp"
+    Write-Host "        Ejecuta INSTALAR.bat en la raiz del proyecto: descarga"
+    Write-Host "        PHP portable y Composer sin tocar XAMPP ni el sistema."
     exit 1
 }
-$phpVersion = & php -r "echo PHP_VERSION;"
-Ok "PHP $phpVersion"
+$phpVersion = & $PHP -r "echo PHP_VERSION;"
+Ok "PHP $phpVersion ($PHP)"
 
 # ---- 2. Extensiones ---------------------------------------------
-Paso "Paso 2/7 - Verificando extensiones de PHP"
-$iniRuta = & php -r "echo php_ini_loaded_file();"
+Paso "Paso 2/8 - Verificando extensiones de PHP"
+$iniRuta = & $PHP -r "echo php_ini_loaded_file();"
 if (-not $iniRuta -or -not (Test-Path $iniRuta)) {
     Fallo "No se encontro el archivo php.ini."
     exit 1
 }
 Ok "php.ini: $iniRuta"
 
-$cargadas  = @(& php -m)
+$cargadas  = (Ejecutar $PHP @('-m')).Salida
 $faltan    = @($EXTENSIONES | Where-Object { $cargadas -notcontains $_ })
 
 if ($faltan.Count -eq 0) {
@@ -174,7 +215,7 @@ else {
     foreach ($r in $resultado) { Write-Host "         -> $r" }
 
     # Se re-verifica con un proceso nuevo para recargar php.ini
-    $cargadas2 = @(& php -m)
+    $cargadas2 = (Ejecutar $PHP @('-m')).Salida
     $todavia   = @($EXTENSIONES | Where-Object { $cargadas2 -notcontains $_ })
     if ($todavia.Count -eq 0) {
         Ok "Todas las extensiones quedaron activas"
@@ -187,7 +228,7 @@ else {
 }
 
 # ---- 3. Archivo .env --------------------------------------------
-Paso "Paso 3/7 - Configurando archivo .env"
+Paso "Paso 3/8 - Configurando archivo .env"
 if (-not (Test-Path $envEjemplo)) {
     Fallo "No se encontro .env.example en $backend"
     exit 1
@@ -234,21 +275,35 @@ else {
 }
 
 # ---- 4. Dependencias de Composer ---------------------------------
-Paso "Paso 4/7 - Verificando dependencias"
+Paso "Paso 4/8 - Verificando dependencias"
 $autoload = Join-Path $backend 'vendor\autoload.php'
 if (Test-Path $autoload) {
     Ok "vendor/ ya instalado"
 }
 else {
     $composerCmd = Get-Command composer -ErrorAction SilentlyContinue
-    if (-not $composerCmd) {
+    $portableComposer = Join-Path $env:USERPROFILE 'php84\composer.phar'
+    if ($composerCmd) {
+        $COMPOSER = 'composer'
+    }
+    elseif (Test-Path $portableComposer) {
+        # Composer descargado por INSTALAR.bat, se ejecuta con el PHP portable
+        $COMPOSER = $portableComposer
+    }
+    else {
         Fallo "Falta vendor/ y Composer no esta instalado."
-        Write-Host "        Instala Composer desde https://getcomposer.org/download/"
+        Write-Host "        Ejecuta INSTALAR.bat en la raiz del proyecto: descarga"
+        Write-Host "        Composer junto al PHP portable y continua solo."
         exit 1
     }
     Aviso "Instalando dependencias (puede tardar un poco)..."
     Push-Location $backend
-    & composer install --no-interaction --prefer-dist
+    if ($COMPOSER -eq 'composer') {
+        & composer install --no-interaction --prefer-dist
+    }
+    else {
+        & $PHP $COMPOSER install --no-interaction --prefer-dist
+    }
     Pop-Location
 
     if (Test-Path $autoload) {
@@ -261,14 +316,14 @@ else {
 }
 
 # ---- 5. APP_KEY --------------------------------------------------
-Paso "Paso 5/7 - Clave de aplicacion"
+Paso "Paso 5/8 - Clave de aplicacion"
 $envContenido = Get-Content $envArchivo -Raw
 if ($envContenido -match '(?m)^APP_KEY=base64:.+') {
     Ok "APP_KEY ya configurada"
 }
 else {
     Push-Location $backend
-    & php artisan key:generate --force | Out-Null
+    & $PHP artisan key:generate --force | Out-Null
     Pop-Location
 
     $envContenido = Get-Content $envArchivo -Raw
@@ -282,10 +337,11 @@ else {
 }
 
 # ---- 6. Conexion con Supabase ------------------------------------
-Paso "Paso 6/7 - Probando conexion con Supabase"
+Paso "Paso 6/8 - Probando conexion con Supabase"
 Push-Location $backend
-$salida   = (& php artisan migrate:status 2>&1 | Out-String)
-$exitCode = $LASTEXITCODE
+$estadoMig = Ejecutar $PHP @('artisan', 'migrate:status')
+$salida    = $estadoMig.Texto
+$exitCode  = $estadoMig.Codigo
 Pop-Location
 
 if ($exitCode -ne 0) {
@@ -305,32 +361,105 @@ Write-Host "         Migraciones: $ejecutadas ejecutadas, $pendientes pendientes
 
 # ---- 7. Migraciones ---------------------------------------------
 if ($pendientes -gt 0) {
-    Paso "Paso 7/7 - Aplicando migraciones pendientes"
+    Paso "Paso 7/8 - Aplicando migraciones pendientes"
     Push-Location $backend
-    & php artisan migrate --force
+    & $PHP artisan migrate --force
     Pop-Location
     Ok "Migraciones aplicadas"
 }
 else {
-    Paso "Paso 7/7 - Migraciones"
+    Paso "Paso 7/8 - Migraciones"
     Ok "Nada pendiente, la base de datos esta al dia"
+}
+
+# ---- 8. Semillas (datos de ejemplo) -------------------------------
+# Idempotente: todos los seeders usan firstOrCreate, asi que en una BD
+# ya poblada solo agregan lo que falte (p. ej. los pisos reales 4..17
+# de la Torre Antigua). Incluye el usuario admin@univalle.edu.bo.
+#
+# La siembra completa hace ~1500 consultas y cada consulta viaja
+# ~200 ms hasta Supabase (Brasil), o sea ~6 minutos. Por eso aqui se
+# comprueba primero si la BD ya esta poblada: si lo esta, se omite y
+# solo se muestran los conteos (~2 segundos). Con la BD vacia siembra
+# normal. Para volver a sembrar a mano:
+#     cd backend  ->  php artisan db:seed --force
+Paso "Paso 8/8 - Datos de ejemplo (pisos, espacios, usuarios)"
+
+$scriptConteos = "echo '     edificios  = ' . App\Models\Edificio::count() . PHP_EOL; echo '     pisos      = ' . App\Models\Piso::count() . PHP_EOL; echo '     espacios   = ' . App\Models\Espacio::count() . PHP_EOL; echo '     aulas      = ' . App\Models\Aula::count() . PHP_EOL; echo '     laboratorios = ' . App\Models\Laboratorio::count() . PHP_EOL; echo '     usuarios   = ' . App\Models\Usuario::count() . PHP_EOL; echo '     zonas      = ' . App\Models\Zona::count() . PHP_EOL;"
+
+Push-Location $backend
+$recuento = Ejecutar $PHP @('artisan', 'tinker', '--execute', $scriptConteos)
+Pop-Location
+
+# La BD se da por poblada si estas 4 tablas clave tienen filas
+$faltanDatos = $false
+foreach ($tabla in @('edificios', 'pisos', 'espacios', 'usuarios')) {
+    if ($recuento.Texto -notmatch "(?m)^\s*$tabla\s*=\s*[1-9]\d*") { $faltanDatos = $true }
+}
+$yaHayDatos = ($recuento.Codigo -eq 0 -and -not $faltanDatos)
+
+if ($yaHayDatos) {
+    Ok "Datos de ejemplo ya presentes: siembra omitida (se ahorra ~6 min)"
+    Write-Host "         Para sembrar de nuevo a mano: cd backend -> php artisan db:seed --force"
+    $conteos = $recuento.Texto
+}
+else {
+    Aviso "Base de datos vacia o incompleta: sembrando (puede tardar ~6 min)..."
+    Push-Location $backend
+    $resultadoSeed = Ejecutar $PHP @('artisan', 'db:seed', '--force')
+    Pop-Location
+
+    if ($resultadoSeed.Codigo -eq 0) {
+        Ok "Datos de ejemplo listos"
+        Push-Location $backend
+        $recuento = Ejecutar $PHP @('artisan', 'tinker', '--execute', $scriptConteos)
+        Pop-Location
+        $conteos = $recuento.Texto
+    }
+    else {
+        Aviso "Las semillas no terminaron bien (la BD puede estar ya poblada):"
+        Write-Host $resultadoSeed.Texto
+        $conteos = ''
+    }
+}
+
+# Conteos visibles: asi se ve enseguida si la BD quedo poblada
+if ($conteos -match 'espacios') {
+    Write-Host ""
+    Write-Host "    Conteos en Supabase (tabla -> filas):"
+    # tinker (psysh) devuelve " edificios = 4" con un solo espacio
+    # inicial, asi que el filtro acepta cualquier sangria y solo pide
+    # "nombre = numero" para no imprimir ruido de psysh
+    ($conteos -split "`r?`n") | Where-Object { $_ -match '^\s*\w+\s*=\s*\d+\s*$' } | ForEach-Object { Write-Host ("      " + $_.Trim()) }
+}
+elseif ($conteos) {
+    Aviso "No se pudieron leer los conteos."
+    Write-Host $conteos
 }
 
 # ---- Resumen ------------------------------------------------------
 Titulo "CONFIGURACION COMPLETADA"
 Write-Host "  El backend quedo conectado a Supabase."
 Write-Host ""
-Write-Host "  Para arrancar el proyecto:"
+Write-Host "  Como arrancar a diario (estilo XAMPP):"
 Write-Host ""
-Write-Host "    Backend  (API)  :  cd backend"
-Write-Host "                       php artisan serve"
-Write-Host "                       -> http://localhost:8000"
+Write-Host "    1. Doble clic a  INICIAR-BACKEND.bat   (API en http://localhost:8000)"
+Write-Host "       - o en VS Code:  cd backend  ->  php artisan serve"
+Write-Host "    2. Doble clic a  INICIAR.bat           (pagina en http://localhost:8080)"
 Write-Host ""
-Write-Host "    Frontend (pagina): doble clic en INICIAR.bat"
-Write-Host "                       -> http://localhost:8080"
+Write-Host "  Comprueba que el backend responde abriendo en el navegador:"
 Write-Host ""
-Write-Host "  Nota: la pagina hoy funciona con datos locales y no"
-Write-Host "  necesita el backend para mostrarse."
+Write-Host "       http://localhost:8000/api/edificios"
+Write-Host ""
+Write-Host "       (debe salir JSON con los 4 edificios. Entrar a la raiz"
+Write-Host "        http://localhost:8000/api  da error 404: es normal, no"
+Write-Host "        hay ruta en la raiz.)"
+Write-Host ""
+Write-Host "  La pagina toma los espacios del backend. Si el backend esta"
+Write-Host "  apagado, el mapa sale vacio con un aviso (no usa datos locales)."
+Write-Host ""
+Write-Host "  Para ver los datos en Supabase: Dashboard -> Table Editor ->"
+Write-Host "  tabla espacios (y usuarios, pisos, aulas...)."
 
 if (-not $SinPreguntar) {
     Write-Host ""
@@ -340,7 +469,8 @@ if (-not $SinPreguntar) {
         Write-Host "  Arrancando el servidor... (cierra esta ventana para detenerlo)"
         Write-Host ""
         Push-Location $backend
-        & php artisan serve
+        & $PHP artisan serve
         Pop-Location
     }
 }
+

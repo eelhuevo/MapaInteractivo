@@ -14,14 +14,14 @@
     var campo = util.el('campo-busqueda-horario');
     if (!contenedor) return;
 
-    var consulta = ((campo && campo.value) || '').trim().toLowerCase();
+    var consulta = util.normalizar((campo && campo.value) || '').trim();
     var filtrados = [];
 
     for (var d = 0; d < datos.docentes.length; d++) {
       var doc = datos.docentes[d];
       if (!consulta ||
-          doc.nombre.toLowerCase().indexOf(consulta) !== -1 ||
-          doc.departamento.toLowerCase().indexOf(consulta) !== -1) {
+          util.normalizar(doc.nombre).indexOf(consulta) !== -1 ||
+          util.normalizar(doc.departamento).indexOf(consulta) !== -1) {
         filtrados.push(doc);
       }
     }

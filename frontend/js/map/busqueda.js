@@ -25,14 +25,14 @@
       /* La infraestructura de la planta (pasillo, jardin...) no tiene ficha */
       if (UniMap.filtros && UniMap.filtros.esInfraestructura(s)) continue;
 
-      var coincide = s.nombre.toLowerCase().indexOf(consulta) !== -1 ||
-        s.tipo.toLowerCase().indexOf(consulta) !== -1;
+      var coincide = util.normalizar(s.nombre).indexOf(consulta) !== -1 ||
+        util.normalizar(s.tipo).indexOf(consulta) !== -1;
 
       if (!coincide && s.docente) {
         for (var d = 0; d < datos.docentes.length; d++) {
           if (datos.docentes[d].id === s.docente) {
-            if (datos.docentes[d].nombre.toLowerCase().indexOf(consulta) !== -1 ||
-                datos.docentes[d].departamento.toLowerCase().indexOf(consulta) !== -1) {
+            if (util.normalizar(datos.docentes[d].nombre).indexOf(consulta) !== -1 ||
+                util.normalizar(datos.docentes[d].departamento).indexOf(consulta) !== -1) {
               coincide = true;
             }
             break;
@@ -48,7 +48,7 @@
   function pintarResultados() {
     if (!campoBusqueda || !resultadosBusqueda) return;
 
-    var consulta = campoBusqueda.value.trim().toLowerCase();
+    var consulta = util.normalizar(campoBusqueda.value).trim();
     if (consulta.length < 2) {
       resultadosBusqueda.classList.add('hidden');
       return;

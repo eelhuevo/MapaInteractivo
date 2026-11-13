@@ -38,11 +38,17 @@ class EspacioController extends Controller
             'idPiso' => ['nullable', 'integer', 'exists:pisos,idPiso'],
             'idEdificio' => ['nullable', 'integer', 'exists:edificios,idEdificio'],
             'disponible' => ['nullable', 'boolean'],
+            'incluirInactivos' => ['nullable', 'boolean'],
             'buscar' => ['nullable', 'string', 'max:150'],
         ]);
 
         $consultaEspacios = Espacio::query()
-            ->activos()
+            // La web del mapa usa incluirInactivos=1 para conocer tambien
+            // los espacios dados de baja (los muestra marcados como inactivos)
+            ->when(
+                ! $request->boolean('incluirInactivos'),
+                fn ($consulta) => $consulta->activos()
+            )
             ->conLatitudLongitud('coordenadasEspacio')
             ->with(self::RELACIONES_MAPA);
 

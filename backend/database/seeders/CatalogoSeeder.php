@@ -20,6 +20,7 @@ class CatalogoSeeder extends Seeder
             ['nombreRol' => 'docente', 'descripcionRol' => 'Consulta aulas, materias y horarios.'],
             ['nombreRol' => 'administrador', 'descripcionRol' => 'Administra el sistema y consulta estadísticas.'],
             ['nombreRol' => 'personalAdministrativo', 'descripcionRol' => 'Administra oficinas y servicios del mapa.'],
+            ['nombreRol' => 'personal', 'descripcionRol' => 'Usuario registrado por cuenta propia; rol por defecto al crear cuenta.'],
         ];
 
         foreach ($rolesSistema as $datosRol) {
@@ -59,7 +60,8 @@ class CatalogoSeeder extends Seeder
         }
 
         // Tipos de espacio
-        $nombresTiposEspacio = ['aula', 'laboratorio', 'oficina', 'biblioteca', 'areaDeportiva', 'estacionamiento'];
+        // (incluye los tipos del panel web: auditorio, comedor y salon)
+        $nombresTiposEspacio = ['aula', 'laboratorio', 'oficina', 'biblioteca', 'areaDeportiva', 'estacionamiento', 'auditorio', 'comedor', 'salon'];
 
         foreach ($nombresTiposEspacio as $nombreTipoEspacio) {
             TipoEspacio::firstOrCreate(['nombreTipoEspacio' => $nombreTipoEspacio]);

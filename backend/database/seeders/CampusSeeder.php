@@ -19,9 +19,34 @@ use Illuminate\Database\Seeder;
 /**
  * Datos de ejemplo del campus (coordenadas de referencia en la zona
  * de Calacoto, La Paz — ajustar con las coordenadas reales de QGIS).
+ *
+ * Los espacios se colocan en un plano logico de 800x600 con dos
+ * columnas (x=170 y x=400) y cinco filas (y=70,150,230,310,390).
+ * La posicion se traduce a lat/lng con la formula inversa que usa el
+ * frontend (core/api.js) para que cada cuadro caiga en su lugar.
+ * La columna x=600 queda libre para los espacios que crea el
+ * administrador desde el panel web.
  */
 class CampusSeeder extends Seeder
 {
+    /* Escala del plano (igual que ESCALA_PLANO en core/api.js) */
+    private const ESCALA_PLANO = 0.000003;
+
+    /* Coordenadas base de cada edificio (misma tabla que el frontend) */
+    private const COORDENADAS_EDIFICIO = [
+        'A' => ['latitud' => -16.54100, 'longitud' => -68.08500],
+        'B' => ['latitud' => -16.54080, 'longitud' => -68.08470],
+        'C' => ['latitud' => -16.54130, 'longitud' => -68.08460],
+        'BIB' => ['latitud' => -16.54115, 'longitud' => -68.08490],
+    ];
+
+    /* Filas del plano segun el tipo de contenido */
+    private const FILA_AULAS = 70;
+    private const FILA_LABS = 150;
+    private const FILA_OFICINAS = 230;
+    private const FILA_SERVICIOS = 310;
+    private const FILA_ESPECIALES = 390;
+
     public function run(): void
     {
         /*
@@ -61,6 +86,14 @@ class CampusSeeder extends Seeder
         $mapaEdificios = [];
         $mapaPisos = [];
 
+        // Pisos con la numeracion real del frontend (el panel web
+        // sincroniza cada espacio al numero de piso de su torre):
+        //   A = Torre Antigua (4..17), B = Torre Innovacion (0,4,6..11)
+        $pisosFrontend = [
+            'A' => [4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17],
+            'B' => [0, 4, 6, 7, 8, 9, 10, 11],
+        ];
+
         foreach ($edificiosCampus as $datosEdificio) {
             $edificioCreado = Edificio::firstOrNew(['codigoEdificio' => $datosEdificio['codigoEdificio']]);
             $edificioCreado->nombreEdificio = $datosEdificio['nombreEdificio'];
@@ -69,10 +102,16 @@ class CampusSeeder extends Seeder
             $edificioCreado->save();
             $mapaEdificios[$datosEdificio['codigoEdificio']] = $edificioCreado;
 
-            for ($numeroPiso = 1; $numeroPiso <= $datosEdificio['pisos']; $numeroPiso++) {
+            // Pisos 1..N de demostracion + los pisos reales del plano
+            $listaPisos = array_merge(
+                range(1, $datosEdificio['pisos']),
+                $pisosFrontend[$datosEdificio['codigoEdificio']] ?? []
+            );
+
+            foreach (array_unique($listaPisos) as $numeroPiso) {
                 $pisoCreado = Piso::firstOrCreate(
                     ['idEdificio' => $edificioCreado->idEdificio, 'numeroPiso' => $numeroPiso],
-                    ['nombrePiso' => 'Piso '.$numeroPiso]
+                    ['nombrePiso' => $numeroPiso === 0 ? 'Planta Baja' : 'Piso '.$numeroPiso]
                 );
                 $mapaPisos[$datosEdificio['codigoEdificio']][$numeroPiso] = $pisoCreado;
             }
@@ -96,16 +135,24 @@ class CampusSeeder extends Seeder
         $mapaCategorias = CategoriaServicio::pluck('idCategoriaServicio', 'nombreCategoriaServicio');
         $mapaTiposLaboratorio = TipoLaboratorio::pluck('idTipoLaboratorio', 'nombreTipoLaboratorio');
 
-        // Aulas del Edificio A (HU-18)
+        // Slots ya ocupados en el plano: "A|4|70|170" => true.
+        // La reubicacion de los espacios legacy va primero; la
+        // generacion por piso solo usa los slots que quedaron libres.
+        $ocupados = [];
+
+        // Aulas del Edificio A (HU-18): se reubican en pisos reales
+        // del plano conservando su nombre (los referencian los tests y
+        // SugerenciaSeeder). Solo estas 5 crean fila en la tabla aulas.
         $aulasEdificioA = [
-            ['numeroAula' => 'A-101', 'capacidadAula' => 45, 'piso' => 1, 'latitud' => -16.54098, 'longitud' => -68.08502],
-            ['numeroAula' => 'A-102', 'capacidadAula' => 40, 'piso' => 1, 'latitud' => -16.54102, 'longitud' => -68.08498],
-            ['numeroAula' => 'A-201', 'capacidadAula' => 45, 'piso' => 2, 'latitud' => -16.54099, 'longitud' => -68.08503],
-            ['numeroAula' => 'A-301', 'capacidadAula' => 35, 'piso' => 3, 'latitud' => -16.54101, 'longitud' => -68.08497],
-            ['numeroAula' => 'A-401', 'capacidadAula' => 50, 'piso' => 4, 'latitud' => -16.54100, 'longitud' => -68.08501],
+            ['numeroAula' => 'A-101', 'capacidadAula' => 45, 'piso' => 4, 'x' => 170, 'y' => self::FILA_AULAS],
+            ['numeroAula' => 'A-102', 'capacidadAula' => 40, 'piso' => 4, 'x' => 400, 'y' => self::FILA_AULAS],
+            ['numeroAula' => 'A-201', 'capacidadAula' => 45, 'piso' => 5, 'x' => 170, 'y' => self::FILA_AULAS],
+            ['numeroAula' => 'A-301', 'capacidadAula' => 35, 'piso' => 5, 'x' => 400, 'y' => self::FILA_AULAS],
+            ['numeroAula' => 'A-401', 'capacidadAula' => 50, 'piso' => 6, 'x' => 170, 'y' => self::FILA_AULAS],
         ];
 
         foreach ($aulasEdificioA as $datosAula) {
+            $punto = $this->puntoDeSlot('A', $datosAula['x'], $datosAula['y']);
             $espacioAula = $this->crearEspacio([
                 'idEdificio' => $mapaEdificios['A']->idEdificio,
                 'idPiso' => $mapaPisos['A'][$datosAula['piso']]->idPiso,
@@ -114,25 +161,29 @@ class CampusSeeder extends Seeder
                 'nombreEspacio' => 'Aula '.$datosAula['numeroAula'],
                 'descripcionEspacio' => 'Aula de clases con capacidad para '.$datosAula['capacidadAula'].' estudiantes.',
                 'contactoEspacio' => 'aulas@univalle.edu.bo',
-                'latitud' => $datosAula['latitud'],
-                'longitud' => $datosAula['longitud'],
+                'latitud' => $punto['latitud'],
+                'longitud' => $punto['longitud'],
             ], 'semana');
 
             Aula::firstOrCreate(
                 ['idEspacio' => $espacioAula->idEspacio],
                 ['numeroAula' => $datosAula['numeroAula'], 'capacidadAula' => $datosAula['capacidadAula']]
             );
+
+            $ocupados['A|'.$datosAula['piso'].'|'.self::FILA_AULAS.'|'.$datosAula['x']] = true;
         }
 
-        // Laboratorios del Edificio B (HU-19)
+        // Laboratorios del Edificio B (HU-19): reubicados en pisos
+        // reales conservando nombre y tipo de laboratorio
         $laboratoriosEdificioB = [
-            ['numeroLaboratorio' => 'B-101', 'tipoLaboratorio' => 'sistemas', 'piso' => 1, 'latitud' => -16.54078, 'longitud' => -68.08472],
-            ['numeroLaboratorio' => 'B-102', 'tipoLaboratorio' => 'redes', 'piso' => 1, 'latitud' => -16.54082, 'longitud' => -68.08468],
-            ['numeroLaboratorio' => 'B-201', 'tipoLaboratorio' => 'física', 'piso' => 2, 'latitud' => -16.54079, 'longitud' => -68.08473],
-            ['numeroLaboratorio' => 'B-301', 'tipoLaboratorio' => 'química', 'piso' => 3, 'latitud' => -16.54081, 'longitud' => -68.08467],
+            ['numeroLaboratorio' => 'B-101', 'tipoLaboratorio' => 'sistemas', 'piso' => 4, 'x' => 170, 'y' => self::FILA_LABS],
+            ['numeroLaboratorio' => 'B-102', 'tipoLaboratorio' => 'redes', 'piso' => 4, 'x' => 400, 'y' => self::FILA_LABS],
+            ['numeroLaboratorio' => 'B-201', 'tipoLaboratorio' => 'física', 'piso' => 6, 'x' => 170, 'y' => self::FILA_LABS],
+            ['numeroLaboratorio' => 'B-301', 'tipoLaboratorio' => 'química', 'piso' => 6, 'x' => 400, 'y' => self::FILA_LABS],
         ];
 
         foreach ($laboratoriosEdificioB as $datosLaboratorio) {
+            $punto = $this->puntoDeSlot('B', $datosLaboratorio['x'], $datosLaboratorio['y']);
             $espacioLaboratorio = $this->crearEspacio([
                 'idEdificio' => $mapaEdificios['B']->idEdificio,
                 'idPiso' => $mapaPisos['B'][$datosLaboratorio['piso']]->idPiso,
@@ -141,8 +192,8 @@ class CampusSeeder extends Seeder
                 'nombreEspacio' => 'Laboratorio de '.ucfirst($datosLaboratorio['tipoLaboratorio']).' '.$datosLaboratorio['numeroLaboratorio'],
                 'descripcionEspacio' => 'Laboratorio de '.$datosLaboratorio['tipoLaboratorio'].' del Edificio B.',
                 'contactoEspacio' => 'lab'.strtolower($datosLaboratorio['tipoLaboratorio']).'@univalle.edu.bo',
-                'latitud' => $datosLaboratorio['latitud'],
-                'longitud' => $datosLaboratorio['longitud'],
+                'latitud' => $punto['latitud'],
+                'longitud' => $punto['longitud'],
             ], 'semana');
 
             Laboratorio::firstOrCreate(
@@ -152,6 +203,227 @@ class CampusSeeder extends Seeder
                     'numeroLaboratorio' => $datosLaboratorio['numeroLaboratorio'],
                 ]
             );
+
+            $ocupados['B|'.$datosLaboratorio['piso'].'|'.self::FILA_LABS.'|'.$datosLaboratorio['x']] = true;
+        }
+
+        // Cafetería (Edificio A, piso 4)
+        $puntoCafeteria = $this->puntoDeSlot('A', 170, self::FILA_OFICINAS);
+        $this->crearEspacio([
+            'idEdificio' => $mapaEdificios['A']->idEdificio,
+            'idPiso' => $mapaPisos['A'][4]->idPiso,
+            'idTipoEspacio' => $mapaTiposEspacio['oficina'],
+            'idCategoriaServicio' => $mapaCategorias['cafetería'],
+            'nombreEspacio' => 'Cafetería Central',
+            'descripcionEspacio' => 'Servicio de alimentos y bebidas.',
+            'contactoEspacio' => 'cafeteria@univalle.edu.bo',
+            'latitud' => $puntoCafeteria['latitud'],
+            'longitud' => $puntoCafeteria['longitud'],
+        ], 'oficina');
+        $ocupados['A|4|'.self::FILA_OFICINAS.'|170'] = true;
+
+        /*
+        |--------------------------------------------------------------
+        | Planta Baja del Edificio B: 10 tarjetas especiales
+        |--------------------------------------------------------------
+        */
+        $plantaBajaB = [
+            ['nombre' => 'Aula 501 · Introduccion', 'tipo' => 'aula', 'categoria' => 'aulas', 'x' => 170, 'y' => self::FILA_AULAS, 'horario' => 'semana', 'contacto' => 'Ext. 501'],
+            ['nombre' => 'Aula 502 · Metodologia', 'tipo' => 'aula', 'categoria' => 'aulas', 'x' => 400, 'y' => self::FILA_AULAS, 'horario' => 'semana', 'contacto' => 'Ext. 502'],
+            ['nombre' => 'Lab. Sistemas · B P0', 'tipo' => 'laboratorio', 'categoria' => 'laboratorio', 'lab' => 'sistemas', 'x' => 170, 'y' => self::FILA_LABS, 'horario' => 'semana', 'contacto' => 'lab.sistemas@univalle.edu.bo'],
+            ['nombre' => 'Recepcion', 'tipo' => 'oficina', 'x' => 400, 'y' => self::FILA_LABS, 'horario' => 'oficina', 'contacto' => 'Ext. 500'],
+            ['nombre' => 'Direccion', 'tipo' => 'oficina', 'x' => 170, 'y' => self::FILA_OFICINAS, 'horario' => 'oficina', 'contacto' => 'Ext. 503'],
+            ['nombre' => 'Secretaria', 'tipo' => 'oficina', 'x' => 400, 'y' => self::FILA_OFICINAS, 'horario' => 'oficina', 'contacto' => 'Ext. 504'],
+            ['nombre' => 'Area de Exposiciones', 'tipo' => 'salon', 'x' => 170, 'y' => self::FILA_SERVICIOS, 'horario' => 'oficina', 'contacto' => 'Ext. 505'],
+            ['nombre' => 'Coworking', 'tipo' => 'salon', 'x' => 400, 'y' => self::FILA_SERVICIOS, 'horario' => 'oficina', 'contacto' => 'Ext. 506'],
+            ['nombre' => 'Cafe Innovation', 'tipo' => 'comedor', 'categoria' => 'cafetería', 'x' => 170, 'y' => self::FILA_ESPECIALES, 'horario' => 'oficina', 'contacto' => 'Ext. 507'],
+            ['nombre' => 'Estacionamiento Principal', 'tipo' => 'estacionamiento', 'x' => 400, 'y' => self::FILA_ESPECIALES, 'horario' => 'oficina', 'contacto' => 'Ext. 508'],
+        ];
+
+        foreach ($plantaBajaB as $tarjeta) {
+            $punto = $this->puntoDeSlot('B', $tarjeta['x'], $tarjeta['y']);
+            $espacioPb = $this->crearEspacio([
+                'idEdificio' => $mapaEdificios['B']->idEdificio,
+                'idPiso' => $mapaPisos['B'][0]->idPiso,
+                'idTipoEspacio' => $mapaTiposEspacio[$tarjeta['tipo']],
+                'idCategoriaServicio' => isset($tarjeta['categoria']) ? $mapaCategorias[$tarjeta['categoria']] : null,
+                'nombreEspacio' => $tarjeta['nombre'],
+                'descripcionEspacio' => 'Servicio de planta baja del Edificio B.',
+                'contactoEspacio' => $tarjeta['contacto'],
+                'latitud' => $punto['latitud'],
+                'longitud' => $punto['longitud'],
+            ], $tarjeta['horario']);
+
+            if (isset($tarjeta['lab'])) {
+                Laboratorio::firstOrCreate(
+                    ['idEspacio' => $espacioPb->idEspacio],
+                    [
+                        'idTipoLaboratorio' => $mapaTiposLaboratorio[$tarjeta['lab']],
+                        'numeroLaboratorio' => 'B-PB-1',
+                    ]
+                );
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------
+        | Contenido generado de cada piso real de las dos torres:
+        |   fila 70  -> 2 aulas        fila 150 -> 2 laboratorios
+        |   fila 230 -> 2 oficinas     fila 310 -> salon (+ biblioteca
+        |                                              si piso % 3 == 0)
+        |   fila 390 -> solo el top floor: conferencias y auditorio
+        | Los slots ya ocupados por los espacios legacy se saltan.
+        |--------------------------------------------------------------
+        */
+        $torres = [
+            'A' => [
+                'pisos' => [4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17],
+                'top' => 17,
+                'baseAula' => 100,   // Aula 141, 142 ... (100 + piso*10 + i)
+                'asignaturas' => ['Algebra', 'Calculo', 'Fisica', 'Quimica', 'Programacion',
+                    'Bases de Datos', 'Sistemas Operativos', 'Redes', 'Estructuras', 'Probabilidad'],
+                'departamentos' => ['Ciencias', 'Ingenieria', 'Matematicas', 'Sala de Profesores', 'Coordinacion'],
+            ],
+            'B' => [
+                'pisos' => [4, 6, 7, 8, 9, 10, 11],
+                'top' => 11,
+                'baseAula' => 500,   // Aula 541, 542 ... (500 + piso*10 + i)
+                'asignaturas' => ['Inteligencia Artificial', 'Robotica', 'IoT', 'Big Data',
+                    'Ciberseguridad', 'Machine Learning', 'Cloud Computing', 'DevOps'],
+                'departamentos' => ['Innovacion', 'Investigacion', 'Vinculacion', 'Laboratorio de Ideas', 'Startup Hub'],
+            ],
+        ];
+
+        // Solo los 4 tipos de laboratorio del catalogo (HU-19)
+        $cicloTiposLab = ['sistemas', 'redes', 'física', 'química'];
+
+        foreach ($torres as $cod => $torre) {
+            foreach ($torre['pisos'] as $piso) {
+                $idPiso = $mapaPisos[$cod][$piso]->idPiso;
+
+                // Aulas (fila 70)
+                foreach ([170, 400] as $i => $x) {
+                    if (isset($ocupados[$cod.'|'.$piso.'|'.self::FILA_AULAS.'|'.$x])) {
+                        continue;
+                    }
+                    $numero = $torre['baseAula'] + $piso * 10 + ($i + 1);
+                    $asignatura = $torre['asignaturas'][($piso + $i) % count($torre['asignaturas'])];
+                    $punto = $this->puntoDeSlot($cod, $x, self::FILA_AULAS);
+                    $this->crearEspacio([
+                        'idEdificio' => $mapaEdificios[$cod]->idEdificio,
+                        'idPiso' => $idPiso,
+                        'idTipoEspacio' => $mapaTiposEspacio['aula'],
+                        'idCategoriaServicio' => $mapaCategorias['aulas'],
+                        'nombreEspacio' => 'Aula '.$numero.' · '.$asignatura,
+                        'descripcionEspacio' => 'Aula de '.$asignatura.'.',
+                        'contactoEspacio' => 'aulas@univalle.edu.bo',
+                        'latitud' => $punto['latitud'],
+                        'longitud' => $punto['longitud'],
+                    ], 'semana');
+                }
+
+                // Laboratorios (fila 150)
+                foreach ([170, 400] as $i => $x) {
+                    if (isset($ocupados[$cod.'|'.$piso.'|'.self::FILA_LABS.'|'.$x])) {
+                        continue;
+                    }
+                    $tipoLab = $cicloTiposLab[($piso + $i) % count($cicloTiposLab)];
+                    $punto = $this->puntoDeSlot($cod, $x, self::FILA_LABS);
+                    $espacioLab = $this->crearEspacio([
+                        'idEdificio' => $mapaEdificios[$cod]->idEdificio,
+                        'idPiso' => $idPiso,
+                        'idTipoEspacio' => $mapaTiposEspacio['laboratorio'],
+                        'idCategoriaServicio' => $mapaCategorias['laboratorio'],
+                        'nombreEspacio' => 'Lab. '.ucfirst($tipoLab).' · '.$cod.' P'.$piso,
+                        'descripcionEspacio' => 'Laboratorio de '.$tipoLab.'.',
+                        'contactoEspacio' => 'lab'.strtolower($tipoLab).'@univalle.edu.bo',
+                        'latitud' => $punto['latitud'],
+                        'longitud' => $punto['longitud'],
+                    ], 'semana');
+
+                    Laboratorio::firstOrCreate(
+                        ['idEspacio' => $espacioLab->idEspacio],
+                        [
+                            'idTipoLaboratorio' => $mapaTiposLaboratorio[$tipoLab],
+                            'numeroLaboratorio' => $cod.'-P'.$piso.'-'.($i + 1),
+                        ]
+                    );
+                }
+
+                // Oficinas (fila 230)
+                foreach ([170, 400] as $i => $x) {
+                    if (isset($ocupados[$cod.'|'.$piso.'|'.self::FILA_OFICINAS.'|'.$x])) {
+                        continue;
+                    }
+                    $nombreDept = $torre['departamentos'][($piso + $i) % count($torre['departamentos'])];
+                    $punto = $this->puntoDeSlot($cod, $x, self::FILA_OFICINAS);
+                    $this->crearEspacio([
+                        'idEdificio' => $mapaEdificios[$cod]->idEdificio,
+                        'idPiso' => $idPiso,
+                        'idTipoEspacio' => $mapaTiposEspacio['oficina'],
+                        'nombreEspacio' => 'Dept. '.$nombreDept.' · '.$cod.' P'.$piso,
+                        'descripcionEspacio' => 'Oficina del departamento de '.$nombreDept.'.',
+                        'contactoEspacio' => 'Ext. '.($piso * 10 + $i + 5),
+                        'latitud' => $punto['latitud'],
+                        'longitud' => $punto['longitud'],
+                    ], 'oficina');
+                }
+
+                // Servicios (fila 310): salon siempre; biblioteca si piso % 3 == 0
+                $puntoSalon = $this->puntoDeSlot($cod, 170, self::FILA_SERVICIOS);
+                $this->crearEspacio([
+                    'idEdificio' => $mapaEdificios[$cod]->idEdificio,
+                    'idPiso' => $idPiso,
+                    'idTipoEspacio' => $mapaTiposEspacio['salon'],
+                    'nombreEspacio' => 'Salon Multiuso · '.$cod.' P'.$piso,
+                    'descripcionEspacio' => 'Salon multiuso para eventos del piso '.$piso.'.',
+                    'contactoEspacio' => 'Ext. '.($piso * 10 + 7),
+                    'latitud' => $puntoSalon['latitud'],
+                    'longitud' => $puntoSalon['longitud'],
+                ], 'oficina');
+
+                if ($piso % 3 === 0) {
+                    $puntoBib = $this->puntoDeSlot($cod, 400, self::FILA_SERVICIOS);
+                    $this->crearEspacio([
+                        'idEdificio' => $mapaEdificios[$cod]->idEdificio,
+                        'idPiso' => $idPiso,
+                        'idTipoEspacio' => $mapaTiposEspacio['biblioteca'],
+                        'idCategoriaServicio' => $mapaCategorias['biblioteca'],
+                        'nombreEspacio' => 'Sala de Estudio · '.$cod.' P'.$piso,
+                        'descripcionEspacio' => 'Sala de estudio del piso '.$piso.'.',
+                        'contactoEspacio' => 'Ext. '.($piso * 10 + 6),
+                        'latitud' => $puntoBib['latitud'],
+                        'longitud' => $puntoBib['longitud'],
+                    ], 'biblioteca');
+                }
+
+                // Top floor (fila 390): conferencias y auditorio
+                if ($piso === $torre['top']) {
+                    $puntoConf = $this->puntoDeSlot($cod, 170, self::FILA_ESPECIALES);
+                    $this->crearEspacio([
+                        'idEdificio' => $mapaEdificios[$cod]->idEdificio,
+                        'idPiso' => $idPiso,
+                        'idTipoEspacio' => $mapaTiposEspacio['salon'],
+                        'nombreEspacio' => 'Sala de Conferencias · '.$cod.' P'.$piso,
+                        'descripcionEspacio' => 'Sala de conferencias y charlas academicas.',
+                        'contactoEspacio' => 'Ext. '.($piso * 10 + 8),
+                        'latitud' => $puntoConf['latitud'],
+                        'longitud' => $puntoConf['longitud'],
+                    ], 'oficina');
+
+                    $puntoAud = $this->puntoDeSlot($cod, 400, self::FILA_ESPECIALES);
+                    $this->crearEspacio([
+                        'idEdificio' => $mapaEdificios[$cod]->idEdificio,
+                        'idPiso' => $idPiso,
+                        'idTipoEspacio' => $mapaTiposEspacio['auditorio'],
+                        'nombreEspacio' => 'Auditorio · '.$cod.' P'.$piso,
+                        'descripcionEspacio' => 'Auditorio para actos academicos.',
+                        'contactoEspacio' => 'Ext. '.($piso * 10 + 9),
+                        'latitud' => $puntoAud['latitud'],
+                        'longitud' => $puntoAud['longitud'],
+                    ], 'oficina');
+                }
+            }
         }
 
         // Oficinas y servicios del Edificio C (HU-02, HU-03)
@@ -198,19 +470,22 @@ class CampusSeeder extends Seeder
             ['idEspacio' => $espacioBiblioteca->idEspacio],
             ['nombreOficina' => 'Biblioteca Central', 'responsableOficina' => 'Lic. Ana Torrez']
         );
+    }
 
-        // Cafetería (Edificio A, piso 1)
-        $this->crearEspacio([
-            'idEdificio' => $mapaEdificios['A']->idEdificio,
-            'idPiso' => $mapaPisos['A'][1]->idPiso,
-            'idTipoEspacio' => $mapaTiposEspacio['oficina'],
-            'idCategoriaServicio' => $mapaCategorias['cafetería'],
-            'nombreEspacio' => 'Cafetería Central',
-            'descripcionEspacio' => 'Servicio de alimentos y bebidas.',
-            'contactoEspacio' => 'cafeteria@univalle.edu.bo',
-            'latitud' => -16.54103,
-            'longitud' => -68.08499,
-        ], 'oficina');
+    /**
+     * Posicion del plano logico (800x600) -> lat/lng, con la formula
+     * inversa de la que usa el frontend en core/api.js:
+     *   lat = latEdificio + (300 - y) * ESCALA
+     *   lng = lngEdificio + (x - 400) * ESCALA
+     */
+    private function puntoDeSlot(string $codEdificio, int $x, int $y): array
+    {
+        $base = self::COORDENADAS_EDIFICIO[$codEdificio] ?? self::COORDENADAS_EDIFICIO['A'];
+
+        return [
+            'latitud' => round($base['latitud'] + (300 - $y) * self::ESCALA_PLANO, 6),
+            'longitud' => round($base['longitud'] + ($x - 400) * self::ESCALA_PLANO, 6),
+        ];
     }
 
     /**
