@@ -1,0 +1,2295 @@
+/* =========================================================
+   responsive.css — UniMap Premium Shell (limpio)
+   Desktop: islas flotantes
+   Móvil ≤768: top mínimo + bottom nav
+   ========================================================= */
+
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.map-screen,
+.top-bar,
+.map-wrapper {
+  max-width: 100vw;
+}
+
+/* ── Top bar premium (islas) ─────────────────────────── */
+.top-bar.top-bar-premium {
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: flex !important;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px !important;
+  height: auto !important;
+  min-height: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  pointer-events: none;
+}
+
+.top-bar-premium .island,
+.top-bar-premium .chip,
+.top-bar-premium .btn-icon,
+.top-bar-premium .toggle-vista,
+.top-bar-premium .user-menu-trigger {
+  pointer-events: auto;
+}
+
+.island {
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 16px;
+  box-shadow: 0 10px 28px rgba(2, 6, 23, 0.45);
+}
+
+[data-theme="light"] .island {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(15, 23, 42, 0.1);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1);
+  color: #0f172a;
+}
+
+.island-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  max-width: min(460px, 48vw);
+}
+
+.island-search-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.island-search-row .logo-small {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #2563eb;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.island-search-row .app-name {
+  font-weight: 700;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.island-search-row .search-container {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+
+.island-search-row #campo-busqueda {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(2, 6, 23, 0.45);
+  color: inherit;
+  padding: 8px 36px 8px 12px;
+  font-size: 13px;
+}
+
+[data-theme="light"] .island-search-row #campo-busqueda {
+  background: rgba(241, 245, 249, 0.9);
+}
+
+.chip-row {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+
+.chip-row::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(30, 41, 59, 0.65);
+  color: #e2e8f0;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chip:hover {
+  background: rgba(37, 99, 235, 0.28);
+  border-color: rgba(59, 130, 246, 0.45);
+}
+
+[data-theme="light"] .chip {
+  background: rgba(241, 245, 249, 0.95);
+  color: #0f172a;
+}
+
+.island-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+}
+
+.btn-pill {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px !important;
+  border-radius: 10px !important;
+  height: auto !important;
+}
+
+.btn-label-sm {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.hidden-bar {
+  display: none !important;
+}
+
+/* User menu */
+.user-menu-wrap {
+  position: relative;
+}
+
+.user-menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(30, 41, 59, 0.7);
+  color: inherit;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.user-menu-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 220px;
+  padding: 8px;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.96);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 220;
+}
+
+.user-menu-panel.abierto {
+  display: flex;
+}
+
+.user-menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #e2e8f0;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.user-menu-item:hover {
+  background: rgba(37, 99, 235, 0.25);
+  color: #fff;
+}
+
+.user-menu-danger {
+  color: #f87171 !important;
+}
+
+body.modo-invitado .user-menu-admin {
+  display: none !important;
+}
+
+/* Banner edición */
+.banner-edicion {
+  position: absolute;
+  top: 88px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(245, 158, 11, 0.95);
+  color: #0f172a;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.banner-edicion.hidden {
+  display: none !important;
+}
+
+.banner-edicion-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #0f172a;
+  animation: unimap-ping 1.2s infinite;
+}
+
+@keyframes unimap-ping {
+  0% { transform: scale(1); opacity: 1; }
+  75% { transform: scale(1.8); opacity: 0; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+.banner-edicion-btn {
+  margin-left: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 0;
+  background: #0f172a;
+  color: #fbbf24;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Controles flotantes desktop */
+.zoom-controls {
+  right: 16px !important;
+  bottom: 16px !important;
+  z-index: 40;
+}
+
+.map-info {
+  right: 72px !important;
+  bottom: 18px !important;
+  z-index: 35;
+}
+
+/* Bottom nav oculto en desktop */
+.bottom-nav,
+.sheet-mas {
+  display: none;
+}
+
+/* Invitado */
+body.modo-invitado #boton-admin,
+body.modo-invitado #boton-editar-posiciones,
+body.modo-invitado #boton-guardar-posiciones,
+body.modo-invitado #boton-favoritos {
+  display: none !important;
+}
+
+/* Torres visibles también en 3D */
+body.vista-3d .selector-torre {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  bottom: 24px;
+  left: 24px;
+  z-index: 81;
+}
+
+/* ════════════════════════════════════════════════════
+   MÓVIL ≤ 768px
+   ════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .top-bar-premium {
+    padding: 8px 10px !important;
+  }
+
+  .island-left {
+    max-width: none;
+    width: 100%;
+    flex: 1;
+  }
+
+  .island-search-row .app-name {
+    display: none;
+  }
+
+  .chip-row {
+    display: none !important;
+  }
+
+  .island-right {
+    padding: 4px;
+    gap: 4px;
+  }
+
+  .btn-pill .btn-label-sm,
+  .top-bar-premium #boton-avisos,
+  .top-bar-premium #boton-escanear-qr {
+    display: none !important;
+  }
+
+  .user-name-short {
+    display: none;
+  }
+
+  .map-screen {
+    padding-bottom: 72px;
+  }
+
+  .floor-selector {
+    left: 8px;
+    bottom: 96px;
+    top: auto;
+    transform: none;
+    max-height: 40vh;
+    width: 52px;
+    max-width: 52px;
+    padding: 6px 4px;
+  }
+
+  .boton-piso,
+  .boton-ojo-pisos {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+    font-size: 11px;
+  }
+
+  .selector-torre {
+    left: 8px;
+    bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+    right: auto;
+    display: flex !important;
+    gap: 4px;
+  }
+
+  body.vista-3d .selector-torre {
+    bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+    left: 8px;
+  }
+
+  .torre-nombre {
+    display: none;
+  }
+
+  .boton-torre {
+    min-width: 48px;
+    height: 40px;
+  }
+
+  .legend {
+    display: none;
+  }
+
+  .zoom-controls {
+    right: 10px !important;
+    bottom: calc(88px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  .map-info {
+    display: none;
+  }
+
+  .filter-panel,
+  .schedule-panel,
+  .favorites-panel,
+  .panel-servicios,
+  .panel-avisos,
+  .panel-sugerencias {
+    width: min(100vw - 16px, 320px);
+    top: 64px;
+    height: calc(100dvh - 64px - 72px);
+  }
+
+  /* Bottom nav */
+  .bottom-nav {
+    display: flex !important;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+    height: calc(64px + env(safe-area-inset-bottom, 0px));
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
+    background: rgba(11, 17, 32, 0.96);
+    border-top: 1px solid rgba(148, 163, 184, 0.15);
+    backdrop-filter: blur(12px);
+    justify-content: space-around;
+    align-items: flex-end;
+  }
+
+  .bn-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    border: 0;
+    background: transparent;
+    color: #94a3b8;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 4px 2px;
+    cursor: pointer;
+  }
+
+  .bn-item.active {
+    color: #60a5fa;
+  }
+
+  .bn-center {
+    position: relative;
+    top: -18px;
+  }
+
+  .bn-fab {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #2563eb, #06b6d4);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px rgba(37, 99, 235, 0.55);
+  }
+
+  /* Sheet Más */
+  .sheet-mas {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+  }
+
+  .sheet-mas.hidden {
+    display: none !important;
+  }
+
+  .sheet-mas-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+  }
+
+  .sheet-mas-panel {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    max-height: 70vh;
+    overflow-y: auto;
+    background: #0f172a;
+    border-radius: 20px 20px 0 0;
+    padding: 12px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid rgba(148, 163, 184, 0.2);
+  }
+
+  .sheet-mas-handle {
+    width: 40px;
+    height: 4px;
+    border-radius: 4px;
+    background: #475569;
+    margin: 0 auto 12px;
+  }
+
+  .sheet-mas-panel h3 {
+    margin: 0 0 10px;
+    font-size: 15px;
+  }
+
+  .sheet-mas-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 12px 10px;
+    border: 0;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+    background: transparent;
+    color: #e2e8f0;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .sheet-danger {
+    color: #f87171 !important;
+  }
+
+  body.modo-invitado .sheet-admin {
+    display: none !important;
+  }
+
+  /*
+    NO ocultar .uni-chat con display:none.
+    En móvil solo lo empujamos fuera de la vista visual del FAB
+    y el bottom nav abre el panel con clase .uni-abierto.
+  */
+
+  /* Ocultar solo el botón flotante del chat, no el contenedor completo */
+  
+}
+
+@media (min-width: 769px) {
+  .bottom-nav,
+  .sheet-mas {
+    display: none !important;
+  }
+}
+
+@media (pointer: coarse) {
+  .boton-piso,
+  .boton-ojo-pisos,
+  .btn-zoom {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+/* =========================================================
+   FIX v14 — Admin responsive + pisos centrados + 3D + chat
+   Pegar al FINAL de responsive.css
+   ========================================================= */
+
+/* ── Isla derecha: admin no debe romper el layout ─────── */
+.island-right {
+  flex-wrap: nowrap;
+  max-width: min(420px, 52vw);
+}
+
+.user-menu-trigger {
+  max-width: 160px;
+}
+
+.user-name-short,
+#nombre-usuario {
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.badge-rol {
+  flex-shrink: 0;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+/* ── Selector de pisos: nunca debajo de la isla superior ─ */
+.floor-selector {
+  z-index: 45;
+}
+
+/* Desktop / tablet ancha: centrado vertical, con margen de islas */
+@media (min-width: 769px) {
+  .floor-selector {
+    top: 50% !important;
+    bottom: auto !important;
+    transform: translateY(-50%) !important;
+    left: 16px;
+    max-height: min(62vh, 520px);
+  }
+}
+
+/* ════════════════════════════════════════════════════════
+   MÓVIL ≤ 768px
+   ════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* Top bar admin: más compacta */
+  .top-bar-premium {
+    padding: 6px 8px !important;
+  }
+
+  .island-right {
+    max-width: none;
+    padding: 4px 6px !important;
+    gap: 4px !important;
+  }
+
+  .user-menu-trigger {
+    max-width: 120px;
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+  }
+
+  .user-name-short,
+  #nombre-usuario {
+    display: none !important; /* en móvil solo badge + flecha */
+  }
+
+  .badge-rol {
+    font-size: 9px;
+    padding: 2px 5px;
+  }
+
+  /* Chips / botones de isla: no empujar */
+  .btn-pill .btn-label-sm {
+    display: none !important;
+  }
+
+  /* ── PISOS: centrados en el eje vertical del mapa ───── */
+  .floor-selector {
+    left: 8px !important;
+    right: auto !important;
+    top: 50% !important;
+    bottom: auto !important;
+    transform: translateY(-50%) !important;
+
+    /* No chocar con top bar ni bottom nav */
+    max-height: calc(100vh - 160px - env(safe-area-inset-bottom, 0px)) !important;
+    max-height: calc(100dvh - 160px - env(safe-area-inset-bottom, 0px)) !important;
+    width: 48px !important;
+    max-width: 48px !important;
+    padding: 6px 4px !important;
+    z-index: 45 !important;
+  }
+
+  .boton-piso,
+  .boton-ojo-pisos {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    min-height: 38px !important;
+    font-size: 10px !important;
+  }
+
+  /* ── Torres: encima del bottom nav, siempre visibles ── */
+  .selector-torre {
+    left: 8px !important;
+    right: auto !important;
+    bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
+    top: auto !important;
+    display: flex !important;
+    z-index: 46 !important;
+    gap: 4px !important;
+  }
+
+  body.vista-3d .selector-torre {
+    display: flex !important;
+    bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
+    left: 8px !important;
+  }
+
+  .boton-torre {
+    min-width: 44px !important;
+    height: 36px !important;
+  }
+
+  .torre-nombre {
+    display: none !important;
+  }
+
+  /* Zoom y controles 3D: no tapar bottom nav ni chat */
+  .zoom-controls,
+  .controles-3d {
+    right: 10px !important;
+    bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
+    z-index: 40 !important;
+  }
+
+  .map-info {
+    display: none !important;
+  }
+
+  /* Panel del chat: no invadir bottom nav (refuerzo) */
+  .uni-chat.uni-abierto .uni-panel,
+  .uni-abierto .uni-panel {
+    bottom: calc(78px + env(safe-area-inset-bottom, 0px)) !important;
+    max-height: min(52vh, 420px) !important;
+  }
+}
+
+/* Móviles muy estrechos (Pixel / iPhone SE-ish) */
+@media (max-width: 400px) {
+  .island-search-row .search-container {
+    min-width: 0;
+  }
+
+  .toggle-opcion {
+    min-width: 28px !important;
+    padding: 0 5px !important;
+    font-size: 11px !important;
+  }
+
+  .user-menu-trigger {
+    max-width: 100px;
+  }
+
+  .floor-selector {
+    width: 44px !important;
+    max-width: 44px !important;
+  }
+
+  .boton-piso,
+  .boton-ojo-pisos {
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    min-height: 34px !important;
+    font-size: 9px !important;
+  }
+}
+
+/* ── Desktop: chat y zoom separados ───────────────────── */
+@media (min-width: 769px) {
+  .uni-chat {
+    right: 20px !important;
+    bottom: 120px !important; /* sube el FAB; prueba 100–140 */
+  }
+
+  .zoom-controls {
+    right: 16px !important;
+    bottom: 16px !important;
+  }
+
+  .map-info {
+    right: 72px !important;
+    bottom: 18px !important;
+  }
+
+  /* Pisos centrados y fuera de la isla superior */
+  .floor-selector {
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    left: 16px !important;
+    max-height: min(60vh, 500px) !important;
+  }
+}
+/* =========================================================
+   FIX v16 — Buscador móvil a ancho completo
+   Archivo: frontend/css/responsive.css (al final)
+   ========================================================= */
+
+.btn-lupa-movil {
+  display: none;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 12px;
+  background: rgba(30, 41, 59, 0.9);
+  color: #e2e8f0;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.btn-lupa-movil.activo {
+  background: rgba(37, 99, 235, 0.55);
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  .btn-lupa-movil {
+    display: inline-flex !important;
+  }
+
+  /* Por defecto el input NO va en la isla */
+  .island-search-row .search-container {
+    display: none !important;
+  }
+
+  /*
+    Panel de búsqueda FIXED a casi todo el ancho.
+    Así no hereda el ancho de la isla (que es lo que lo hacía estrecho).
+  */
+  .island-left.busqueda-abierta .search-container {
+    display: block !important;
+    position: fixed !important;
+    left: 10px !important;
+    right: 10px !important;
+    top: 62px !important; /* debajo de la top bar */
+    width: auto !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    z-index: 120 !important;
+    padding: 12px !important;
+    border-radius: 16px !important;
+    background: rgba(15, 23, 42, 0.98) !important;
+    border: 1px solid rgba(148, 163, 184, 0.25) !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55) !important;
+    backdrop-filter: blur(14px);
+  }
+
+  .island-left.busqueda-abierta #campo-busqueda {
+    display: block !important;
+    width: 100% !important;
+    height: 48px !important;
+    font-size: 16px !important; /* evita zoom raro en iOS */
+    padding: 0 48px 0 14px !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(148, 163, 184, 0.3) !important;
+    background: rgba(2, 6, 23, 0.65) !important;
+    color: #f8fafc !important;
+    box-sizing: border-box !important;
+  }
+
+  .island-left.busqueda-abierta #boton-busqueda {
+    position: absolute !important;
+    right: 20px !important;
+    top: 20px !important;
+    transform: none !important;
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  /* Resultados: lista legible, no columna de 40px */
+  .island-left.busqueda-abierta #resultados-busqueda,
+  .island-left.busqueda-abierta .search-results {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    max-height: min(50vh, 360px) !important;
+    margin-top: 10px !important;
+    overflow-y: auto !important;
+    border-radius: 12px !important;
+    background: rgba(30, 41, 59, 0.95) !important;
+  }
+
+  .island-left.busqueda-abierta #resultados-busqueda button,
+  .island-left.busqueda-abierta .search-results button,
+  .island-left.busqueda-abierta .search-results div,
+  .island-left.busqueda-abierta .search-results li {
+    width: 100% !important;
+    max-width: none !important;
+    white-space: normal !important;
+    text-align: left !important;
+    padding: 12px 14px !important;
+    font-size: 14px !important;
+    line-height: 1.35 !important;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+    box-sizing: border-box !important;
+  }
+}
+/* =========================================================
+   FIX v16 — Isla derecha más limpia y menos estrecha
+   ========================================================= */
+
+.island-right {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;          /* más separación entre 2D/3D, AR, badge */
+  padding: 8px 12px !important;
+  max-width: min(520px, 52vw) !important;
+  flex-shrink: 0 !important;
+}
+
+.toggle-vista {
+  display: inline-flex !important;
+  gap: 2px !important;
+  padding: 3px !important;
+  margin-right: 2px;
+}
+
+.toggle-opcion {
+  min-width: 40px !important;
+  padding: 6px 10px !important;
+  font-size: 12px !important;
+}
+
+.island-right .btn-icon,
+.island-right .btn-pill {
+  margin: 0 2px;
+}
+
+.user-menu-trigger {
+  max-width: 210px !important;
+  padding: 6px 12px !important;
+  gap: 8px !important;
+  margin-left: 4px;
+}
+
+#nombre-usuario,
+.user-name-short {
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.badge-rol {
+  flex-shrink: 0;
+  font-size: 10px;
+  padding: 3px 8px;
+  letter-spacing: 0.02em;
+}
+
+/* Móvil: un poco más de aire sin romper la barra */
+@media (max-width: 768px) {
+  .island-right {
+    gap: 6px !important;
+    padding: 4px 8px !important;
+    max-width: none !important;
+  }
+
+  .toggle-opcion {
+    min-width: 34px !important;
+    padding: 5px 8px !important;
+  }
+
+  .user-menu-trigger {
+    max-width: 130px !important;
+    padding: 5px 8px !important;
+  }
+
+  #nombre-usuario,
+  .user-name-short {
+    display: none !important; /* solo badge ADMINISTRADOR */
+  }
+}
+
+@media (min-width: 769px) {
+  #nombre-usuario,
+  .user-name-short {
+    max-width: 150px; /* más nombre en PC */
+  }
+}
+/* =========================================================
+   FIX v17 — Buscador móvil FULL WIDTH (gana a map.css)
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+  /* Lupa visible */
+  .btn-lupa-movil {
+    display: inline-flex !important;
+  }
+
+  /* Input embebido oculto hasta abrir */
+  .island-search-row .search-container {
+    display: none !important;
+  }
+
+  /*
+    IMPORTANTE: fixed + width en vw
+    No uses width:auto del padre (isla estrecha).
+  */
+  .island-left.busqueda-abierta .search-container,
+  body .island-left.busqueda-abierta .search-container {
+    display: block !important;
+    position: fixed !important;
+    left: 12px !important;
+    right: 12px !important;
+    top: 58px !important;
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    min-width: calc(100vw - 24px) !important;
+    z-index: 200 !important;
+    padding: 12px !important;
+    margin: 0 !important;
+    border-radius: 16px !important;
+    background: rgba(15, 23, 42, 0.98) !important;
+    border: 1px solid rgba(148, 163, 184, 0.28) !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55) !important;
+    box-sizing: border-box !important;
+  }
+
+  .island-left.busqueda-abierta #campo-busqueda {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 48px !important;
+    font-size: 16px !important;
+    line-height: 1.3 !important;
+    padding: 0 48px 0 14px !important;
+    border-radius: 12px !important;
+    box-sizing: border-box !important;
+    white-space: nowrap !important;
+  }
+
+  .island-left.busqueda-abierta #boton-busqueda {
+    position: absolute !important;
+    right: 18px !important;
+    top: 18px !important;
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  /* Resultados: mismo ancho del panel, texto normal */
+  .island-left.busqueda-abierta #resultados-busqueda,
+  .island-left.busqueda-abierta .search-results,
+  body .island-left.busqueda-abierta #resultados-busqueda {
+    position: relative !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin-top: 10px !important;
+    max-height: min(48vh, 340px) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    box-sizing: border-box !important;
+  }
+
+  .island-left.busqueda-abierta #resultados-busqueda *,
+  .island-left.busqueda-abierta .search-results * {
+    max-width: 100% !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .island-left.busqueda-abierta #resultados-busqueda button,
+  .island-left.busqueda-abierta .search-results button,
+  .island-left.busqueda-abierta .search-results .resultado,
+  .island-left.busqueda-abierta .search-results li {
+    display: block !important;
+    width: 100% !important;
+    text-align: left !important;
+    padding: 12px 14px !important;
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+    box-sizing: border-box !important;
+  }
+}
+/* TA+TI: dos columnas (desktop y móvil) */
+.floor-selector[data-edificio="0"] {
+  width: auto !important;
+  max-width: 130px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 4px !important;
+}
+
+.floor-selector[data-edificio="0"] .floor-cols {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 4px !important;
+  align-items: flex-start !important;
+}
+
+.floor-selector[data-edificio="0"] .floor-col {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  align-items: center !important;
+}
+
+.floor-selector[data-edificio="0"] .floor-col-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #93c5fd;
+  letter-spacing: 0.04em;
+  padding: 2px 0;
+}
+
+@media (max-width: 768px) {
+  .floor-selector[data-edificio="0"] {
+    left: 6px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: auto !important;
+    min-width: 92px !important;
+    max-width: 120px !important;
+    max-height: calc(100dvh - 170px) !important;
+    overflow-y: auto !important;
+  }
+
+  /* Anula el width:48px genérico del selector simple */
+  .floor-selector[data-edificio="0"] .boton-piso {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    font-size: 10px !important;
+  }
+}
+/* =========================================================
+   FIX v17 — Chips completos + isla derecha con aire
+   ========================================================= */
+
+.island-left {
+  max-width: min(560px, 58vw) !important;
+}
+
+.chip-row {
+  overflow-x: auto !important;
+  flex-wrap: nowrap !important;
+}
+
+.chip-row .chip {
+  flex-shrink: 0 !important;
+  white-space: nowrap !important;
+}
+
+.island-right {
+  gap: 10px !important;
+  padding: 8px 12px !important;
+  max-width: min(520px, 50vw) !important;
+}
+
+.toggle-vista {
+  gap: 2px;
+  padding: 3px;
+}
+
+.toggle-opcion {
+  min-width: 42px !important;
+  padding: 6px 12px !important;
+}
+
+.user-menu-trigger {
+  max-width: 200px !important;
+  gap: 8px !important;
+  padding: 6px 12px !important;
+}
+
+@media (min-width: 769px) {
+  #nombre-usuario,
+  .user-name-short {
+    max-width: 140px !important;
+  }
+}
+/* iPhone Pro Max / móviles anchos: no ocultar de más */
+@media (max-width: 768px) and (min-width: 414px) {
+  .island-right {
+    gap: 6px !important;
+  }
+
+  .toggle-opcion {
+    min-width: 36px !important;
+    padding: 6px 10px !important;
+    font-size: 12px !important;
+  }
+
+  .user-menu-trigger {
+    max-width: 140px !important;
+  }
+
+  /* Badge visible; nombre sigue oculto para no romper */
+  .badge-rol {
+    display: inline-flex !important;
+    font-size: 10px !important;
+  }
+}
+/* =========================================================
+   FIX v18 — Estabilizador responsive (móvil)
+   NO toca desktop. NO rompe TA+TI ni buscador.
+   Pegar AL FINAL de frontend/css/responsive.css
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+  /* ── Top bar: dos islas, sin desbordar ─────────────── */
+  .top-bar.top-bar-premium {
+    padding: 8px !important;
+    gap: 8px !important;
+    align-items: flex-start !important;
+  }
+
+  .island-left {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    max-width: none !important;
+    padding: 6px !important;
+  }
+
+  .island-search-row {
+    gap: 6px !important;
+  }
+
+  .island-search-row .logo-small {
+    width: 34px !important;
+    height: 34px !important;
+  }
+
+  .island-search-row .app-name {
+    display: none !important;
+  }
+
+  .chip-row {
+    display: none !important;
+  }
+
+  /* Isla derecha: que quepa 2D/3D + AR + ADMIN */
+  .island-right {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    gap: 4px !important;
+    padding: 4px 6px !important;
+    overflow: hidden !important;
+  }
+
+  .toggle-vista {
+    flex-shrink: 0 !important;
+  }
+
+  .toggle-opcion {
+    min-width: 32px !important;
+    padding: 5px 7px !important;
+    font-size: 11px !important;
+  }
+
+  .island-right .btn-pill,
+  .island-right #boton-escanear-qr {
+    display: none !important; /* AR/QR va en bottom nav / Más */
+  }
+
+  .user-menu-wrap {
+    min-width: 0 !important;
+    flex-shrink: 1 !important;
+  }
+
+  .user-menu-trigger {
+    max-width: 110px !important;
+    padding: 4px 8px !important;
+    gap: 4px !important;
+    font-size: 10px !important;
+  }
+
+  #nombre-usuario,
+  .user-name-short {
+    display: none !important;
+  }
+
+  .badge-rol {
+    display: inline-flex !important;
+    font-size: 9px !important;
+    padding: 2px 5px !important;
+    max-width: 72px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* ── Espacio para bottom nav ───────────────────────── */
+  .map-screen {
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  /* ── Selector de pisos: centrado, sin tapar top/bottom ─ */
+  .floor-selector {
+    left: 8px !important;
+    right: auto !important;
+    top: 50% !important;
+    bottom: auto !important;
+    transform: translateY(-50%) !important;
+    z-index: 45 !important;
+    padding: 6px 4px !important;
+    max-height: calc(100dvh - 170px) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Una sola torre: columna estrecha */
+  .floor-selector:not([data-edificio="0"]) {
+    width: 48px !important;
+    max-width: 48px !important;
+  }
+
+  /* TA+TI: dos columnas (no forzar 48px) */
+  .floor-selector[data-edificio="0"] {
+    width: auto !important;
+    min-width: 96px !important;
+    max-width: 118px !important;
+  }
+
+  .floor-selector[data-edificio="0"] .floor-cols {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 4px !important;
+  }
+
+  .boton-piso,
+  .boton-ojo-pisos {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    font-size: 10px !important;
+  }
+
+  .floor-selector[data-edificio="0"] .boton-piso {
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    min-height: 34px !important;
+  }
+
+  /* ── Torres: SIEMPRE visibles encima del bottom nav ── */
+  .selector-torre {
+    left: 8px !important;
+    right: auto !important;
+    bottom: calc(78px + env(safe-area-inset-bottom, 0px)) !important;
+    top: auto !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 4px !important;
+    z-index: 55 !important;
+    max-width: calc(100vw - 90px) !important;
+  }
+
+  body.vista-3d .selector-torre {
+    display: flex !important;
+    bottom: calc(78px + env(safe-area-inset-bottom, 0px)) !important;
+    left: 8px !important;
+  }
+
+  .boton-torre {
+    min-width: 44px !important;
+    height: 36px !important;
+    padding: 0 8px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .torre-nombre {
+    display: none !important;
+  }
+
+  /* Zoom: esquina inferior derecha, encima del bottom nav */
+  .zoom-controls,
+  .controles-3d {
+    right: 10px !important;
+    bottom: calc(78px + env(safe-area-inset-bottom, 0px)) !important;
+    z-index: 40 !important;
+  }
+
+  .map-info,
+  .legend {
+    display: none !important;
+  }
+
+  /* Bottom nav fijo */
+  .bottom-nav {
+    display: flex !important;
+    z-index: 100 !important;
+  }
+}
+
+/* Móviles muy estrechos (SE 375, etc.) */
+@media (max-width: 390px) {
+  .island-right {
+    gap: 3px !important;
+    padding: 3px 5px !important;
+  }
+
+  .toggle-opcion {
+    min-width: 30px !important;
+    padding: 4px 6px !important;
+    font-size: 10px !important;
+  }
+
+  .user-menu-trigger {
+    max-width: 88px !important;
+    padding: 3px 6px !important;
+  }
+
+  .badge-rol {
+    max-width: 56px;
+    font-size: 8px !important;
+  }
+
+  .floor-selector[data-edificio="0"] {
+    max-width: 108px !important;
+  }
+
+  .boton-torre {
+    min-width: 40px !important;
+    height: 34px !important;
+  }
+}
+
+/* Desktop: no tocar (refuerzo por si alguna regla móvil se filtra) */
+@media (min-width: 769px) {
+  .bottom-nav,
+  .sheet-mas {
+    display: none !important;
+  }
+
+  .btn-lupa-movil {
+    display: none !important;
+  }
+
+  .island-search-row .search-container {
+    display: block !important;
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    width: auto !important;
+    max-width: none !important;
+    min-width: 0 !important;
+  }
+}
+/* =========================================================
+   FIX v19 — Marca Univalle en shell responsive
+   Quita azules residuales (#2563eb, #60a5fa, etc.)
+   ========================================================= */
+
+/* Logo isla (antes #2563eb) */
+.island-search-row .logo-small {
+  background: linear-gradient(135deg, #940036, #b1033b) !important;
+  color: #fff !important;
+  box-shadow: 0 2px 10px rgba(148, 0, 54, 0.4) !important;
+}
+
+/* Chips hover */
+.chip:hover {
+  background: rgba(148, 0, 54, 0.22) !important;
+  border-color: rgba(177, 3, 59, 0.5) !important;
+  color: inherit !important;
+}
+
+[data-theme="light"] .chip:hover {
+  background: rgba(148, 0, 54, 0.1) !important;
+  color: #940036 !important;
+}
+
+/* Menú usuario hover */
+.user-menu-item:hover {
+  background: rgba(148, 0, 54, 0.28) !important;
+  color: #fff !important;
+}
+
+/* Lupa móvil activa */
+.btn-lupa-movil.activo {
+  background: rgba(148, 0, 54, 0.55) !important;
+  color: #fff !important;
+}
+
+/* Bottom nav activo + FAB */
+.bn-item.active {
+  color: #fb7185 !important;
+}
+
+.bn-fab {
+  background: linear-gradient(145deg, #940036, #b1033b) !important;
+  color: #fff !important;
+  box-shadow: 0 8px 24px rgba(148, 0, 54, 0.5) !important;
+}
+
+/* Etiquetas TA+TI */
+.floor-selector[data-edificio="0"] .floor-col-label {
+  color: #fb7185 !important;
+}
+
+/* Toggle 2D activo (refuerzo) */
+.toggle-opcion.active {
+  background: linear-gradient(135deg, #940036, #b1033b) !important;
+  color: #fff !important;
+  box-shadow: 0 2px 10px rgba(148, 0, 54, 0.4) !important;
+}
+
+/* Badge rol */
+.badge-rol {
+  background: rgba(148, 0, 54, 0.18) !important;
+  color: #fb7185 !important;
+  font-weight: 800 !important;
+}
+
+[data-theme="light"] .badge-rol {
+  background: rgba(148, 0, 54, 0.12) !important;
+  color: #940036 !important;
+}
+/* =========================================================
+   FIX v20 — Shell mapa = lenguaje visual del index/auth
+   ========================================================= */
+
+/* Islas = glass Univalle (como auth-container) */
+.island {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 16px !important;
+  box-shadow: var(--shadow-md) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  color: var(--text-1) !important;
+}
+
+[data-theme="light"] .island {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="dark"] .island {
+  background: rgba(18, 20, 24, 0.9) !important;
+  border-color: rgba(148, 163, 184, 0.16) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* Logo UM — mismo carmesí del login */
+.island-search-row .logo-small,
+.logo-small {
+  background: linear-gradient(135deg, #940036, #b1033b) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 14px rgba(148, 0, 54, 0.35) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Buscador dentro de isla */
+.island-search-row #campo-busqueda {
+  background: var(--bg-surface-2) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-1) !important;
+  border-radius: 12px !important;
+}
+
+.island-search-row #campo-busqueda:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px var(--primary-light) !important;
+}
+
+/* Chips */
+.chip {
+  background: var(--bg-surface-2) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-2) !important;
+  border-radius: 999px !important;
+  font-weight: 600 !important;
+}
+
+.chip:hover {
+  background: var(--primary-light) !important;
+  border-color: rgba(var(--uv-core-rgb), 0.35) !important;
+  color: var(--primary) !important;
+}
+
+/* Toggle 2D/3D + torres + pisos activos */
+.toggle-opcion.active,
+.boton-torre.active,
+.boton-piso.active {
+  background: linear-gradient(135deg, #940036, #b1033b) !important;
+  color: #fff !important;
+  border-color: transparent !important;
+  box-shadow: 0 4px 14px rgba(148, 0, 54, 0.4) !important;
+}
+
+/* User menu */
+.user-menu-trigger {
+  background: var(--bg-surface-2) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-1) !important;
+  border-radius: 12px !important;
+}
+
+.user-menu-panel {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.user-menu-item {
+  color: var(--text-1) !important;
+}
+
+.user-menu-item:hover {
+  background: var(--primary-light) !important;
+  color: var(--primary) !important;
+}
+
+.badge-rol {
+  background: var(--primary-light) !important;
+  color: var(--primary) !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.04em !important;
+}
+
+/* Bottom nav + FAB */
+.bottom-nav {
+  background: var(--glass-bg) !important;
+  border-top: 1px solid var(--border) !important;
+  backdrop-filter: blur(14px) !important;
+}
+
+.bn-item {
+  color: var(--text-3) !important;
+}
+
+.bn-item.active {
+  color: var(--primary) !important;
+}
+
+.bn-fab {
+  background: linear-gradient(145deg, #940036, #b1033b) !important;
+  color: #fff !important;
+  box-shadow: 0 8px 24px rgba(148, 0, 54, 0.5) !important;
+}
+
+/* ── Modo invitado: limpio, sin “plomo sucio” ───────── */
+body.modo-invitado .user-menu-admin,
+body.modo-invitado .sheet-admin,
+body.modo-invitado #boton-admin,
+body.modo-invitado #boton-editar-posiciones,
+body.modo-invitado #boton-guardar-posiciones,
+body.modo-invitado #boton-favoritos {
+  display: none !important;
+}
+
+body.modo-invitado .island {
+  /* misma glass que usuario logueado; no gris extra */
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+body.modo-invitado .badge-rol {
+  background: rgba(148, 0, 54, 0.12) !important;
+  color: #940036 !important;
+}
+
+[data-theme="dark"] body.modo-invitado .badge-rol {
+  background: rgba(177, 3, 59, 0.22) !important;
+  color: #fb7185 !important;
+}
+
+/* Torres / zoom / leyenda sobre el mismo fondo de página */
+.boton-torre,
+.btn-zoom,
+.legend,
+.map-info,
+.floor-selector {
+  background: var(--bg-surface) !important;
+  border-color: var(--border) !important;
+  color: var(--text-1) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+.boton-torre:not(.active),
+.boton-piso:not(.active) {
+  color: var(--text-2) !important;
+}
+/* =========================================================
+   FIX v21 — Bottom nav sin cuadrados rojos + top móvil limpio
+   ========================================================= */
+
+/* ── Bottom navigation: estados correctos ─────────────── */
+@media (max-width: 768px) {
+  .bottom-nav {
+    display: flex !important;
+    align-items: flex-end !important;
+    justify-content: space-around !important;
+    gap: 0 !important;
+    height: calc(64px + env(safe-area-inset-bottom, 0px)) !important;
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px)) !important;
+    background: rgba(12, 14, 18, 0.96) !important;
+    border-top: 1px solid rgba(148, 163, 184, 0.14) !important;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    z-index: 100 !important;
+  }
+
+  [data-theme="light"] .bottom-nav {
+    background: rgba(255, 255, 255, 0.96) !important;
+    border-top-color: rgba(15, 23, 42, 0.1) !important;
+  }
+
+  .bn-item {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: auto !important;
+    min-height: 48px !important;
+    margin: 0 !important;
+    padding: 4px 2px !important;
+    border: 0 !important;
+    border-radius: 12px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: #94a3b8 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 2px !important;
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    line-height: 1.1 !important;
+    overflow: visible !important;
+  }
+
+  .bn-item svg {
+    width: 20px !important;
+    height: 20px !important;
+    flex-shrink: 0 !important;
+    display: block !important;
+    stroke: currentColor !important;
+    fill: none !important;
+  }
+
+  .bn-item span {
+    display: block !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    color: inherit !important;
+    background: none !important;
+  }
+
+  /* Activo: SOLO color de texto/icono, NUNCA bloque sólido */
+  .bn-item.active {
+    background: transparent !important;
+    background-image: none !important;
+    color: #fb7185 !important;
+    box-shadow: none !important;
+  }
+
+  .bn-item.active svg {
+    stroke: #fb7185 !important;
+  }
+
+  [data-theme="light"] .bn-item {
+    color: #64748b !important;
+  }
+
+  [data-theme="light"] .bn-item.active {
+    color: #940036 !important;
+    background: transparent !important;
+  }
+
+  [data-theme="light"] .bn-item.active svg {
+    stroke: #940036 !important;
+  }
+
+  /* Centro: FAB redondo (único con fondo carmesí) */
+  .bn-item.bn-center {
+    position: relative !important;
+    top: -16px !important;
+    background: transparent !important;
+    overflow: visible !important;
+  }
+
+  .bn-item.bn-center.active {
+    background: transparent !important;
+    color: #fb7185 !important;
+  }
+
+  .bn-fab {
+    width: 52px !important;
+    height: 52px !important;
+    min-width: 52px !important;
+    min-height: 52px !important;
+    border-radius: 50% !important;
+    background: linear-gradient(145deg, #940036, #b1033b) !important;
+    color: #fff !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 8px 22px rgba(148, 0, 54, 0.5) !important;
+    overflow: hidden !important;
+  }
+
+  .bn-fab svg {
+    width: 22px !important;
+    height: 22px !important;
+    stroke: #fff !important;
+  }
+
+  /* Evitar que paneles o estados pinten la barra de rojo */
+  .bottom-nav .bn-item::before,
+  .bottom-nav .bn-item::after {
+    display: none !important;
+    content: none !important;
+  }
+}
+
+/* ── Top bar móvil: limpio y legible ─────────────────── */
+@media (max-width: 768px) {
+  .top-bar.top-bar-premium {
+    padding: 8px !important;
+    gap: 8px !important;
+    align-items: center !important;
+  }
+
+  .island-left {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    max-width: none !important;
+    padding: 6px !important;
+  }
+
+  .island-search-row {
+    gap: 6px !important;
+  }
+
+  .island-search-row .app-name {
+    display: none !important;
+  }
+
+  .island-search-row .logo-small {
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 10px !important;
+  }
+
+  .btn-lupa-movil {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 10px !important;
+    background: var(--bg-surface-2, rgba(30, 41, 59, 0.85)) !important;
+    color: var(--text-1, #e2e8f0) !important;
+  }
+
+  .chip-row {
+    display: none !important;
+  }
+
+  .island-right {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 6px !important;
+    padding: 5px 6px !important;
+    overflow: hidden !important;
+  }
+
+  .toggle-vista {
+    flex-shrink: 0 !important;
+  }
+
+  .toggle-opcion {
+    min-width: 34px !important;
+    padding: 6px 8px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+  }
+
+  /* AR en top: solo icono o oculto (ya está en bottom/Más) */
+  .island-right #boton-escanear-qr .btn-label-sm,
+  .island-right .btn-pill .btn-label-sm {
+    display: none !important;
+  }
+
+  .island-right #boton-avisos {
+    display: none !important;
+  }
+
+  .user-menu-trigger {
+    max-width: 108px !important;
+    padding: 5px 8px !important;
+    gap: 4px !important;
+    font-size: 10px !important;
+  }
+
+  #nombre-usuario,
+  .user-name-short {
+    display: none !important;
+  }
+
+  .badge-rol {
+    display: inline-flex !important;
+    font-size: 9px !important;
+    padding: 2px 6px !important;
+    max-width: 78px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* Muy estrecho (SE 375) */
+@media (max-width: 390px) {
+  .island-right {
+    gap: 4px !important;
+    padding: 4px 5px !important;
+  }
+
+  .toggle-opcion {
+    min-width: 30px !important;
+    padding: 5px 6px !important;
+    font-size: 10px !important;
+  }
+
+  .user-menu-trigger {
+    max-width: 92px !important;
+  }
+
+  .badge-rol {
+    max-width: 64px;
+    font-size: 8px !important;
+  }
+
+  /* Si AR sigue apretando, ocúltalo del top en SE */
+  .island-right #boton-escanear-qr {
+    display: none !important;
+  }
+}
+/* =========================================================
+   FIX v22 — FAB Agente visible + top móvil premium
+   ========================================================= */
+
+/* ════════════════════════════════════════════════════════
+   BOTTOM NAV — FAB siempre visible y legible
+   ════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  .bottom-nav {
+    display: flex !important;
+    align-items: flex-end !important;
+    justify-content: space-around !important;
+    z-index: 120 !important;
+    height: calc(64px + env(safe-area-inset-bottom, 0px)) !important;
+    padding: 6px 4px calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+    background: rgba(12, 14, 18, 0.97) !important;
+    border-top: 1px solid rgba(148, 163, 184, 0.14) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  [data-theme="light"] .bottom-nav {
+    background: rgba(255, 255, 255, 0.97) !important;
+    border-top-color: rgba(15, 23, 42, 0.1) !important;
+  }
+
+  .bn-item {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    color: #94a3b8 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    padding: 4px 2px !important;
+    font-size: 10px !important;
+    font-weight: 600 !important;
+  }
+
+  .bn-item.active {
+    background: transparent !important;
+    color: #fb7185 !important;
+  }
+
+  [data-theme="light"] .bn-item {
+    color: #64748b !important;
+  }
+
+  [data-theme="light"] .bn-item.active {
+    color: #940036 !important;
+  }
+
+  /* —— Centro: FAB del Agente (el que “desaparece”) —— */
+  .bn-item.bn-center,
+  #bn-agente {
+    position: relative !important;
+    top: -18px !important;
+    overflow: visible !important;
+    background: transparent !important;
+    z-index: 121 !important;
+  }
+
+  .bn-fab,
+  #bn-agente .bn-fab,
+  .bn-item.bn-center .bn-fab {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 56px !important;
+    height: 56px !important;
+    min-width: 56px !important;
+    min-height: 56px !important;
+    max-width: 56px !important;
+    max-height: 56px !important;
+    border-radius: 50% !important;
+    border: 3px solid rgba(255, 255, 255, 0.2) !important;
+    background: linear-gradient(145deg, #940036 0%, #b1033b 100%) !important;
+    background-image: linear-gradient(145deg, #940036 0%, #b1033b 100%) !important;
+    color: #fff !important;
+    box-shadow:
+      0 8px 24px rgba(148, 0, 54, 0.55),
+      0 0 0 4px rgba(148, 0, 54, 0.15) !important;
+    overflow: hidden !important;
+    transform: none !important;
+    animation: none !important;
+  }
+
+  [data-theme="light"] .bn-fab,
+  [data-theme="light"] #bn-agente .bn-fab {
+    border-color: rgba(255, 255, 255, 0.9) !important;
+    box-shadow:
+      0 8px 24px rgba(148, 0, 54, 0.4),
+      0 0 0 3px rgba(148, 0, 54, 0.12) !important;
+  }
+
+  /* Icono dentro del FAB: siempre blanco y visible */
+  .bn-fab svg,
+  #bn-agente .bn-fab svg,
+  .bn-item.bn-center .bn-fab svg {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    min-height: 24px !important;
+    stroke: #ffffff !important;
+    fill: none !important;
+    color: #fff !important;
+  }
+
+  /* Si el JS mete un spinner, que no deje el FAB vacío */
+  .bn-fab .spinner,
+  .bn-fab .loading,
+  #bn-agente .spinner {
+    border-color: rgba(255, 255, 255, 0.35) !important;
+    border-top-color: #fff !important;
+  }
+
+  .bn-item.bn-center > span:not(.bn-fab) {
+    color: inherit !important;
+    font-size: 10px !important;
+    margin-top: 2px;
+  }
+
+  /* Torres / zoom no tapan el FAB */
+  .selector-torre {
+    z-index: 55 !important;
+    bottom: calc(84px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  .zoom-controls,
+  .controles-3d {
+    z-index: 50 !important;
+    bottom: calc(84px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
+/* ════════════════════════════════════════════════════════
+   TOP MÓVIL — una sola barra limpia (estilo Univalle)
+   ════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  .top-bar.top-bar-premium {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    padding: 10px 10px 0 !important;
+    pointer-events: none;
+  }
+
+  .top-bar-premium .island {
+    pointer-events: auto;
+  }
+
+  /* Izquierda: solo UM + lupa (compacto) */
+  .island-left {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 0 !important;
+    padding: 4px !important;
+    width: auto !important;
+    max-width: none !important;
+    border-radius: 14px !important;
+  }
+
+  .island-search-row {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+  }
+
+  .island-search-row .app-name {
+    display: none !important;
+  }
+
+  .island-search-row .logo-small {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 11px !important;
+    font-size: 12px !important;
+  }
+
+  .btn-lupa-movil {
+    display: inline-flex !important;
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 11px !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: inherit !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .chip-row {
+    display: none !important;
+  }
+
+  /* Por defecto el search va oculto hasta abrir lupa */
+  .island-search-row .search-container {
+    display: none !important;
+  }
+
+  /* Derecha: 2D/3D + usuario (AR opcional) */
+  .island-right {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 4px 6px 4px 4px !important;
+    border-radius: 14px !important;
+    flex: 0 1 auto !important;
+    min-width: 0 !important;
+    max-width: calc(100vw - 110px) !important;
+  }
+
+  .toggle-vista {
+    padding: 2px !important;
+    gap: 0 !important;
+    border-radius: 10px !important;
+    background: rgba(0, 0, 0, 0.2) !important;
+    flex-shrink: 0 !important;
+  }
+
+  [data-theme="light"] .toggle-vista {
+    background: rgba(15, 23, 42, 0.06) !important;
+  }
+
+  .toggle-opcion {
+    min-width: 36px !important;
+    height: 30px !important;
+    padding: 0 10px !important;
+    font-size: 12px !important;
+    font-weight: 800 !important;
+    border-radius: 8px !important;
+  }
+
+  .toggle-opcion.active {
+    background: linear-gradient(135deg, #940036, #b1033b) !important;
+    color: #fff !important;
+    box-shadow: 0 2px 8px rgba(148, 0, 54, 0.35) !important;
+  }
+
+  /* AR: solo icono, sin texto */
+  .island-right #boton-escanear-qr {
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    padding: 0 !important;
+    border-radius: 10px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .island-right #boton-escanear-qr .btn-label-sm {
+    display: none !important;
+  }
+
+  .island-right #boton-avisos {
+    display: none !important;
+  }
+
+  .user-menu-trigger {
+    max-width: 100px !important;
+    height: 34px !important;
+    padding: 0 8px !important;
+    gap: 4px !important;
+    border-radius: 10px !important;
+    font-size: 10px !important;
+  }
+
+  #nombre-usuario,
+  .user-name-short {
+    display: none !important;
+  }
+
+  .badge-rol {
+    display: inline-flex !important;
+    font-size: 9px !important;
+    font-weight: 800 !important;
+    padding: 2px 6px !important;
+    border-radius: 6px !important;
+    max-width: 72px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    background: rgba(148, 0, 54, 0.15) !important;
+    color: #fb7185 !important;
+  }
+
+  [data-theme="light"] .badge-rol {
+    background: rgba(148, 0, 54, 0.12) !important;
+    color: #940036 !important;
+  }
+}
+
+/* iPhone SE / 375px: aún más compacto */
+@media (max-width: 390px) {
+  .island-right #boton-escanear-qr {
+    display: none !important; /* AR queda en Rutas/AR del bottom nav */
+  }
+
+  .toggle-opcion {
+    min-width: 32px !important;
+    padding: 0 8px !important;
+    font-size: 11px !important;
+  }
+
+  .user-menu-trigger {
+    max-width: 84px !important;
+  }
+
+  .badge-rol {
+    max-width: 58px;
+    font-size: 8px !important;
+  }
+
+  .bn-fab,
+  #bn-agente .bn-fab {
+    width: 52px !important;
+    height: 52px !important;
+    min-width: 52px !important;
+    min-height: 52px !important;
+  }
+}
+
+/* El chat flotante en móvil sigue oculto (el trigger es el FAB del nav) */
+@media (max-width: 768px) {
+  .uni-chat .uni-boton,
+  .uni-chat .uni-badge {
+    display: none !important;
+  }
+}

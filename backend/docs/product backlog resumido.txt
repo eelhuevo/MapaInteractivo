@@ -1,0 +1,530 @@
+1 PRODUCT BACKLOG
+
+Orden  ID     Historia de Usuario                              Prioridad  Puntos
+-----  -----  -----------------------------------------------  ---------  ------
+1      HU-01  Visualizar mapa interactivo                      Muy alta       13
+2      HU-02  Filtrar ubicaciones por categoría                Alta            8
+3      HU-03  Consultar información de oficina o servicio      Alta            5
+4      HU-04  Acceder al mapa desde dispositivos móviles       Alta            8
+5      HU-16  Iniciar sesión en el sistema                     Alta            5
+6      HU-05  Buscar ubicación en el mapa                      Alta            5
+7      HU-06  Administrar oficinas o servicios                 Alta            8
+8      HU-17  Registrar usuario                                Alta            5
+9      HU-07  Consultar servicios disponibles por edificio     Media           5
+10     HU-08  Visualizar entrada principal y estacionamientos  Media           3
+11     HU-09  Consultar estado de atención (abierto/cerrado)   Media           3
+12     HU-10  Visualizar ruta hacia una ubicación              Media           8
+13     HU-11  Escanear código QR para abrir ficha de edificio  Media           5
+14     HU-18  Consultar ubicación de aulas                     Media           5
+15     HU-19  Filtrar por tipo de laboratorio                  Media           3
+16     HU-12  Marcar oficinas o servicios como favoritos       Baja            3
+17     HU-13  Recibir notificaciones de cambios de ubicación   Baja            5
+18     HU-14  Consultar estadísticas de uso de oficinas        Baja            5
+19     HU-15  Cambiar el idioma del sistema                    Baja            3
+20     HU-20  Recibir sugerencias según carrera y semestre     Baja            5
+
+Total de Story Points: 105
+
+2 HISTORIAS DE USUARIO COMPLETAS DEL SISTEMA
+HU-01 — Visualizar mapa interactivo
+• Como estudiante, docente o visitante, quiero ver un
+mapa interactivo del campus con las principales oficinas y
+servicios, para orientarme fácilmente y no perder tiempo
+buscando edificios.
+• Prioridad: Muy alta
+• Story Points: 13
+Criterios de aceptación
+• El mapa debe mostrar correctamente las ubicaciones
+principales.
+• Debe permitir zoom y desplazamiento fluido.
+• Los marcadores deben ser visibles y diferenciados.
+• Debe funcionar en navegadores modernos.
+• La carga del mapa no debe superar los 3 segundos.
+Tareas
+• Diseñar el layout del mapa.
+• Integrar librería de mapas
+(Leaflet/Mapbox).
+• Cargar marcadores de
+oficinas y servicios.
+• Implementar zoom y
+desplazamiento.
+• Crear pruebas de
+visualización.
+• Realizar revisión del código.
+
+HU-02 — Filtrar ubicaciones por categoría
+• Como estudiante que necesita realizar un trámite,
+quiero filtrar el mapa por tipo de servicio (caja, bienestar,
+secretaría, laboratorio, etc.), para encontrar rápidamente
+la oficina que necesito.
+• Prioridad: Alta
+• Story Points: 8
+c
+Tareas
+• Diseñar componente de filtros.
+• Crear categorías de servicios.
+• Implementar lógica de filtrado.
+• Actualizar marcadores según
+filtro.
+• Crear pruebas unitarias.
+• Realizar revisión del código.
+
+HU-03 — Consultar información de oficina o servicio
+• Como estudiante, quiero hacer clic en un punto del
+mapa y ver la información de esa oficina (nombre,
+edificio, piso, horario y contacto), para saber
+exactamente a dónde ir y en qué horario está disponible.
+• Prioridad: Alta
+• Story Points: 5
+Criterios de aceptación
+• Al hacer clic se debe abrir la ficha de información.
+• Debe mostrar nombre, edificio, piso, horario y contacto.
+• La ficha debe poder cerrarse fácilmente.
+Tareas
+• Diseñar ficha/popup de
+información.
+• Crear modelo de datos de
+oficina.
+• Conectar clic del marcador con
+la ficha.
+• Crear pruebas.
+• Realizar revisión del código.
+
+HU-04 — Acceder al mapa desde dispositivos móviles
+• Como usuario del campus, quiero acceder al mapa
+desde mi celular de forma sencilla y clara, para poder
+consultarlo mientras me desplazo por la universidad.
+• Prioridad: Alta
+• Story Points: 8
+Criterios de aceptación
+• El mapa debe verse correctamente en pantallas de
+celular.
+• Los botones y filtros deben ser fáciles de usar con el
+dedo.
+• Debe funcionar en Android e iOS.
+Tareas
+• Implementar diseño responsive.
+• Ajustar controles para móvil.
+• Probar en diferentes
+resoluciones.
+• Crear pruebas de usabilidad
+móvil.
+• Realizar revisión del código.
+
+HU-05 — Buscar ubicación en el mapa
+• Como estudiante o docente, quiero buscar una oficina
+o servicio por su nombre, para localizarla de forma
+rápida sin tener que recorrer todo el mapa.
+• Prioridad: Alta
+• Story Points: 5
+Criterios de aceptación
+• Debe permitir escribir el nombre.
+• Debe mostrar resultados mientras se escribe.
+• Al seleccionar un resultado el mapa debe centrarse en
+esa ubicación.
+Tareas
+• Diseñar barra de búsqueda.
+• Implementar búsqueda por
+nombre.
+• Centrar el mapa en el resultado.
+• Crear pruebas.
+• Realizar revisión del código.
+
+HU-06 — Administrar oficinas o servicios
+• Como personal administrativo, quiero agregar,
+modificar o eliminar la información de las oficinas y
+servicios del mapa, para mantener actualizados sus
+datos de ubicación, horarios, contactos y descripción.
+• Prioridad: Alta
+• Story Points: 8
+Criterios de aceptación
+• Solo usuarios autorizados pueden acceder al panel de
+administración.
+• Debe permitir crear, editar y eliminar oficinas/servicios.
+• Los cambios deben reflejarse inmediatamente en el
+mapa.
+Tareas
+• Diseñar panel de administración.
+• Crear formularios de alta y
+edición.
+• Implementar operaciones
+CRUD.
+• Validar permisos de usuario.
+• Crear pruebas.
+• Realizar revisión del código.
+
+HU-07 — Consultar servicios disponibles por edificio
+• Como estudiante o docente, quiero seleccionar un
+edificio y ver las oficinas, laboratorios y servicios que
+contiene, para conocer qué puedo encontrar en ese
+lugar.
+• Prioridad: Media
+• Story Points: 5
+Criterios de aceptación
+• Al seleccionar un edificio se debe mostrar la lista de
+servicios asociados.
+• La información debe incluir nombre y tipo de servicio.
+Tareas
+• Relacionar oficinas con edificios.
+• Diseñar vista de detalle por
+edificio.
+• Implementar selección de
+edificio.
+• Crear pruebas.
+• Realizar revisión del código.
+
+HU-08 — Visualizar entrada principal y estacionamientos
+• Como persona externa que visita la universidad por
+primera vez, quiero ver en el mapa la entrada principal y
+los estacionamientos autorizados, para saber por dónde
+ingresar y dónde estacionarme.
+• Prioridad: Media
+• Story Points: 3
+Criterios de aceptación
+• La entrada principal debe estar claramente marcada.
+• Los estacionamientos deben aparecer con un ícono
+diferenciado.
+Tareas
+• Agregar marcadores especiales.
+• Diseñar íconos diferenciados.
+• Cargar datos de estas
+ubicaciones.
+• Crear pruebas.
+• Realizar revisión del código.
+
+HU-09 — Consultar estado de atención (abierto/cerrado)
+• Como usuario del campus, quiero ver si una oficina
+está abierta o cerrada en este momento, para evitar
+dirigirme a un servicio que no se encuentra disponible.
+• Prioridad: Media
+• Story Points: 3
+Criterios de aceptación
+• Debe mostrarse el estado (Abierto/Cerrado) en la ficha.
+• El estado debe basarse en el horario registrado.
+Tareas
+• Agregar lógica de estado según
+horario.
+• Mostrar indicador visual.
+• Crear pruebas.
+• Realizar revisión del código.
+
+HU-10 — Visualizar ruta hacia una ubicación
+• Como estudiante nuevo, quiero ver una ruta desde mi
+ubicación hasta una oficina o servicio seleccionado, para
+saber cómo llegar sin perderme dentro del campus.
+• Prioridad: Media
+• Story Points: 8
+Criterios de aceptación
+• Debe calcular y mostrar una ruta peatonal.
+• La ruta debe dibujarse claramente sobre el mapa.
+Tareas
+• Integrar servicio de rutas.
+• Obtener ubicación del usuario.
+• Dibujar la ruta en el mapa.
+• Crear pruebas.
+• Realizar revisión del código.
+
+HU-11 — Escanear código QR para abrir ficha de edificio
+• Como estudiante, quiero escanear un código QR
+ubicado en la entrada de un edificio para abrir
+directamente su ficha informativa, para conocer los
+servicios de ese lugar sin buscar manualmente.
+• Prioridad: Media
+• Story Points: 5
+Criterios de aceptación
+• El sistema debe leer el código QR correctamente.
+• Debe abrir automáticamente la ficha del edificio
+correspondiente.
+Tareas
+• Generar códigos QR por edificio.
+• Implementar lector de QR.
+• Vincular QR con la ficha.
+• Crear pruebas.
+• Realizar revisión del código.
+
+HU-12 — Marcar oficinas o servicios como favoritos
+• Como estudiante, quiero guardar oficinas o servicios
+como favoritos, para acceder rápidamente a los lugares
+que visito con mayor frecuencia.
+• Prioridad: Baja
+• Story Points: 3
+Criterios de aceptación
+• Debe existir un botón para marcar/desmarcar como
+favorito.
+• Los favoritos deben guardarse por usuario.
+Tareas
+• Agregar funcionalidad de
+favoritos.
+• Guardar preferencias del
+usuario.
+• Crear vista de favoritos.
+• Crear pruebas.
+• Realizar revisión del código.
+
+HU-13 — Recibir notificaciones de cambios de ubicación
+• Como usuario recurrente de la universidad, quiero
+recibir notificaciones cuando una oficina cambie de
+ubicación o de horario, para evitar acudir a un lugar
+incorrecto o cerrado.
+• Prioridad: Baja
+• Story Points: 5
+Criterios de aceptación
+• El sistema debe detectar cambios en la información de
+oficinas.
+• Debe enviar notificación a los usuarios interesados.
+Tareas
+• Implementar sistema de
+notificaciones.
+• Detectar cambios en los datos.
+• Enviar avisos a los usuarios.
+• Crear pruebas.
+• Realizar revisión del código.
+
+HU-14 — Consultar estadísticas de uso de oficinas
+• Como administrador del sistema, quiero ver
+estadísticas de las oficinas y servicios más consultados,
+para identificar qué áreas generan más dudas y mejorar
+la atención.
+• Prioridad: Baja
+• Story Points: 5
+Criterios de aceptación
+• Debe mostrar un ranking de las oficinas más visitadas.
+• Solo usuarios administradores pueden acceder.
+Tareas
+• Registrar eventos de consulta.
+• Crear panel de estadísticas.
+• Validar permisos de acceso.
+• Crear pruebas.
+• Realizar revisión del código.
+
+HU-15 — Cambiar el idioma del sistema
+• Como visitante extranjero o estudiante de intercambio,
+quiero cambiar el idioma del sistema, para comprender
+mejor la información y orientarme sin barreras
+idiomáticas.
+• Prioridad: Baja
+• Story Points: 3
+Criterios de aceptación
+• Debe permitir al menos español e inglés.
+• El cambio de idioma debe aplicarse a toda la interfaz.
+Tareas
+• Implementar sistema de
+internacionalización (i18n).
+• Traducir textos principales.
+• Crear selector de idioma.
+• Crear pruebas.
+• Realizar revisión del código.
+
+HU-16 — Iniciar sesión en el sistema
+• Como usuario del sistema, quiero iniciar sesión con mi
+correo y contraseña, para acceder a las funcionalidades
+personalizadas del mapa interactivo.
+• Prioridad: Alta
+• Story Points: 5
+Criterios de aceptación
+• Debe solicitar correo y contraseña.
+• Solo usuarios registrados pueden ingresar.
+• Debe mostrar mensaje de error si los datos son
+incorrectos.
+Tareas
+• Diseñar formulario de inicio de
+sesión.
+• Implementar autenticación.
+• Validar credenciales.
+• Crear pruebas.
+• Realizar revisión del código.
+
+HU-17 — Registrar usuario
+• Como administrador del sistema, quiero registrar
+nuevos usuarios, para que puedan acceder al mapa con
+sus respectivos permisos.
+• Prioridad: Alta
+• Story Points: 5
+Criterios de aceptación
+• Debe permitir ingresar nombre, correo, contraseña y
+rol.
+• El correo no debe estar previamente registrado.
+• Debe mostrar confirmación de registro exitoso.
+Tareas
+• Diseñar formulario de registro.
+• Validar datos y correo único.
+• Guardar usuario en la base de
+datos.
+• Crear pruebas.
+• Realizar revisión del código.
+
+HU-18 — Consultar ubicación de aulas
+• Como estudiante o docente, quiero buscar y visualizar
+la ubicación de las aulas del campus en el mapa, para
+encontrar fácilmente el lugar donde debo asistir a
+clases.
+• Prioridad: Media
+• Story Points: 5
+Criterios de aceptación
+• Debe permitir buscar aulas por nombre o número.
+• Al seleccionar un aula, el mapa debe centrarse en su
+ubicación.
+Tareas
+• Agregar aulas como tipo de
+ubicación.
+• Implementar búsqueda de aulas.
+• Mostrar marcadores de aulas.
+• Crear pruebas.
+• Realizar revisión del código.
+
+HU-19 — Filtrar por tipo de laboratorio
+• Como estudiante de un semestre avanzado, quiero
+filtrar el mapa por tipo de laboratorio (química, redes,
+física, sistemas, etc.), para encontrar rápidamente el
+laboratorio correcto.
+• Prioridad: Media
+• Story Points: 3
+Criterios de aceptación
+• Debe existir un filtro específico por tipo de laboratorio.
+• Al aplicar el filtro solo se deben mostrar los laboratorios
+de esa categoría.
+Tareas
+• Crear subcategorías de
+laboratorios.
+• Implementar filtro específico.
+• Actualizar marcadores según el
+filtro.
+• Crear pruebas.
+• Realizar revisión del código.
+
+HU-20 — Recibir sugerencias según carrera y semestre
+• Como estudiante de una carrera específica, quiero
+recibir sugerencias de oficinas, laboratorios y servicios
+relevantes para mi carrera y semestre, para acceder con
+mayor rapidez a lo que necesito.
+• Prioridad: Baja
+• Story Points: 5
+Criterios de aceptación
+• El sistema debe mostrar sugerencias según la carrera
+y semestre del usuario.
+• Las sugerencias deben aparecer de forma destacada.
+Tareas
+• Relacionar oficinas con carreras
+y semestres.
+• Crear lógica de
+recomendaciones.
+• Diseñar panel de sugerencias.
+• Crear pruebas.
+• Realizar revisión del código.
+
+3 CONTEXTO DEL PROYECTO
+La Universidad Privada del Valle actualmente presenta dificultades para organizar, actualizar
+y consultar la información relacionada con la distribución de los diferentes espacios y servicios
+de su campus. La ubicación de oficinas administrativas, aulas, laboratorios y otros servicios
+no se encuentra centralizada en un único medio de consulta, lo que genera dificultades para
+estudiantes, docentes y visitantes al momento de desplazarse y localizar una dependencia.
+Entre las principales situaciones identificadas se encuentran:
+•
+Dificultad para localizar espacios: estudiantes, docentes y visitantes pueden tener
+problemas para identificar rápidamente dónde se encuentran aulas, oficinas,
+laboratorios y otros ambientes.
+•
+Desconocimiento de la distribución del campus: la falta de una referencia clara sobre
+la organización de los espacios dificulta la orientación y el desplazamiento dentro de
+las instalaciones.
+•
+Información dispersa: los datos relacionados con las diferentes dependencias pueden
+encontrarse en distintos medios, dificultando su consulta y actualización.
+•
+Información desactualizada: los cambios de oficinas, aulas, horarios, servicios o datos
+de contacto pueden provocar que la información disponible no coincida con la
+situación actual del campus.
+•
+Dificultad para conocer los servicios disponibles: estudiantes y visitantes pueden
+desconocer qué servicios existen en determinadas áreas del campus y dónde
+encontrarlos.
+
+•
+Pérdida de tiempo en los desplazamientos: cuando una persona desconoce la
+ubicación exacta de una dependencia, puede necesitar preguntar a otras personas o
+recorrer diferentes áreas hasta encontrarla.
+•
+Falta de información contextual: además de conocer dónde se encuentra un espacio,
+puede ser necesario conocer información complementaria como horarios de atención,
+responsables, servicios disponibles y datos de contacto.
+•
+Limitada orientación dentro del campus: la ausencia de información organizada sobre
+la distribución de los ambientes dificulta que los usuarios puedan planificar de manera
+adecuada sus recorridos.
+3.1
+PROBLEMA
+La Universidad Privada del Valle presenta dificultades en la localización, consulta y
+actualización de información relacionada con los espacios y servicios de su campus, debido a
+que los datos sobre aulas, laboratorios, oficinas administrativas y demás dependencias se
+encuentran dispersos y no siempre están disponibles de manera clara y actualizada.
+Esta situación provoca que estudiantes, docentes y visitantes tengan dificultades para
+identificar dónde se encuentran determinadas dependencias, conocer los servicios
+disponibles, verificar horarios o datos de contacto y orientarse durante sus desplazamientos
+dentro del campus. Como consecuencia, se generan confusiones, pérdida de tiempo,
+desplazamientos innecesarios y dependencia de otras personas para obtener información.
+4 Usuarios y Funcionalidades principales
+4.1
+Usuarios
+•
+Estudiantes
+•
+Docentes
+•
+Personal administrativo
+•
+Visitantes
+4.2
+Funcionalidades principales
+•
+Registro
+•
+Entrar como invitado
+•
+Inicio de sesión
+•
+Visualización del mapa interactivo
+•
+Zoom
+•
+Ubicación actual
+•
+Consulta de pisos
+•
+Consulta de aulas
+•
+Consulta de laboratorios
+•
+Consulta de biblioteca
+•
+Consulta de personal administrativo
+•
+Consulta de áreas deportivas
+•
+Filtro por tipo de espacio
+•
+Filtro por disponibilidad
+•
+Filtro por piso
+•
+Buscador
+•
+Consulta de docentes
+•
+Consulta de horarios
+•
+Consulta de materias
+•
+Estado de aulas
+•
+Estado de laboratorios
+•
+Estado de biblioteca
+•
+Estado de personal administrativo
+•
+Estado de áreas deportivas
+•
+Información
+•
+Cerrar sesión
+

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>UniMap - Acceso al Campus</title>
+
+  <!-- Tema antes del primer pintado -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('unimap_tema');
+        if (t !== 'claro' && t !== 'oscuro') {
+          t = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+            ? 'oscuro' : 'claro';
+        }
+        document.documentElement.setAttribute('data-theme', t === 'oscuro' ? 'dark' : 'light');
+      } catch (e) { /* sin localStorage */ }
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="frontend/css/base.css?v=5">
+  <link rel="stylesheet" href="frontend/css/auth.css?v=12">
+  <link rel="stylesheet" href="frontend/css/responsive.css?v=20">
+  <link rel="stylesheet" href="frontend/css/hus.css?v=4">
+</head>
+<body class="auth-body">
+
+  <!-- VIDEO DE FONDO -->
+  <div class="auth-video-wrap" aria-hidden="true">
+    <video
+      id="auth-drone-video"
+      class="auth-video"
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="metadata"
+      poster=""
+    >
+      <source src="frontend/assets/video/DRON-SEDES-3.mp4" type="video/mp4">
+    </video>
+    <div class="auth-video-overlay"></div>
+    <div class="auth-video-grid"></div>
+  </div>
+
+  <!-- Controles flotantes: idioma + tema -->
+  <div class="auth-top-controls">
+    <div class="auth-brand-mini">
+      <div class="logo-icon auth-logo-sm">UM</div>
+      <div class="auth-brand-text">
+        <strong>UniMap</strong>
+        <span>Univalle Bolivia</span>
+      </div>
+    </div>
+    <div class="auth-top-actions">
+      <button id="boton-tema" class="auth-chip-btn" type="button" title="Cambiar tema" aria-label="Cambiar tema" data-i18n-title="top.tema">
+        <svg class="icono-tema-claro" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="icono-tema-oscuro" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+        <span class="auth-chip-label" data-i18n="top.tema">Tema</span>
+      </button>
+      <button id="boton-idioma" class="auth-chip-btn boton-idioma" type="button" title="Idioma" aria-label="Idioma" data-i18n-title="top.idioma">
+        <span id="idioma-actual">ES</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- AUTH -->
+  <div id="pantalla-autenticacion" class="auth-screen">
+
+    <!-- Hero solo móvil / tablet -->
+    <div class="auth-mobile-hero">
+      <span class="auth-pill">Univalle lo tiene todo</span>
+      <h1>Bienvenido a <span>UniMap</span></h1>
+      <p data-i18n="auth.tagline">Navegación interactiva 2D/3D de tu campus universitario.</p>
+    </div>
+
+    <!-- Panel glass -->
+    <div class="auth-right">
+      <div class="auth-container">
+
+        <!-- Tabs -->
+        <div class="auth-tabs" role="tablist">
+          <button type="button" class="auth-tab active" id="tab-login" data-tab="login" data-i18n="auth.login">Iniciar Sesión</button>
+          <button type="button" class="auth-tab" id="tab-register" data-tab="register" data-i18n="auth.registro">Crear Cuenta</button>
+        </div>
+
+        <!-- Login -->
+        <form id="formulario-login" class="auth-form active" autocomplete="on">
+          <div class="form-group">
+            <label for="correo-login" data-i18n="auth.correo">Correo electrónico</label>
+            <input type="email" id="correo-login" placeholder="ejemplo@universidad.edu" data-i18n-placeholder="auth.phCorreo" autocomplete="email">
+            <span class="error-msg" id="correo-login-error"></span>
+          </div>
+          <div class="form-group">
+            <label for="contrasena-login" data-i18n="auth.contrasena">Contraseña</label>
+            <div class="pass-wrapper">
+              <input type="password" id="contrasena-login" placeholder="Tu contraseña" data-i18n-placeholder="auth.phPass" autocomplete="current-password">
+              <button type="button" class="boton-mostrar-pass" data-target="contrasena-login" data-i18n="auth.mostrar">Mostrar</button>
+            </div>
+            <span class="error-msg" id="contrasena-login-error"></span>
+          </div>
+          <button type="submit" class="btn-primary" data-i18n="auth.entrar">Entrar al mapa</button>
+          <div class="auth-switch">
+            <span data-i18n="auth.noCuenta">¿No tienes cuenta?</span>
+            <a href="#" id="mostrar-registro" data-i18n="auth.registrate">Regístrate aquí</a>
+          </div>
+        </form>
+
+        <!-- Registro -->
+        <form id="formulario-registro" class="auth-form" autocomplete="on">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="nombre-registro" data-i18n="auth.nombre">Nombre</label>
+              <input type="text" id="nombre-registro" placeholder="Juan" data-i18n-placeholder="auth.phNombre" autocomplete="given-name">
+              <span class="error-msg" id="nombre-registro-error"></span>
+            </div>
+            <div class="form-group">
+              <label for="apellido-registro" data-i18n="auth.apellido">Apellido paterno</label>
+              <input type="text" id="apellido-registro" placeholder="Pérez" data-i18n-placeholder="auth.phApellido" autocomplete="family-name">
+              <span class="error-msg" id="apellido-registro-error"></span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="apellidoMaterno-registro" data-i18n="auth.apellidoMaterno">Apellido materno (opcional)</label>
+            <input type="text" id="apellidoMaterno-registro" placeholder="Ticona" data-i18n-placeholder="auth.phApellidoMaterno" autocomplete="additional-name">
+            <span class="error-msg" id="apellidoMaterno-registro-error"></span>
+          </div>
+          <div class="form-group">
+            <label for="correo-registro" data-i18n="auth.correo">Correo electrónico</label>
+            <input type="email" id="correo-registro" placeholder="ejemplo@universidad.edu" data-i18n-placeholder="auth.phCorreo" autocomplete="email">
+            <span class="error-msg" id="correo-registro-error"></span>
+          </div>
+          <div class="form-group">
+            <label for="contrasena-registro" data-i18n="auth.contrasena">Contraseña</label>
+            <div class="pass-wrapper">
+              <input type="password" id="contrasena-registro" placeholder="Mínimo 6 caracteres" data-i18n-placeholder="auth.phPassNuevo" autocomplete="new-password">
+              <button type="button" class="boton-mostrar-pass" data-target="contrasena-registro" data-i18n="auth.mostrar">Mostrar</button>
+            </div>
+            <span class="error-msg" id="contrasena-registro-error"></span>
+            <div class="pass-strength" id="fortaleza-contrasena"></div>
+          </div>
+          <div class="form-group">
+            <label for="contrasena2-registro" data-i18n="auth.confirmaPass">Confirmar contraseña</label>
+            <input type="password" id="contrasena2-registro" placeholder="Repite tu contraseña" data-i18n-placeholder="auth.phPassConfirmar" autocomplete="new-password">
+            <span class="error-msg" id="contrasena2-registro-error"></span>
+          </div>
+          <button type="submit" class="btn-primary" data-i18n="auth.crearCuenta">Crear cuenta y entrar</button>
+          <div class="auth-switch">
+            <span data-i18n="auth.tienesCuenta">¿Ya tienes cuenta?</span>
+            <a href="#" id="mostrar-login" data-i18n="auth.iniciaSesion">Inicia sesión</a>
+          </div>
+        </form>
+
+        <div class="auth-divider"><span data-i18n="auth.o">o</span></div>
+
+        <!-- Solo invitado (sin botón admin demo) -->
+        <button id="boton-invitado" type="button" class="btn-guest" data-i18n="auth.invitado">
+          Entrar como invitado
+        </button>
+
+        <p class="auth-demo">
+          <span data-i18n="auth.demo">Admin (requiere backend):</span>
+          <strong>admin@univalle.edu.bo</strong> / <strong>Admin12345</strong>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="frontend/js/core/store.js?v=10"></script>
+  <script src="frontend/js/core/api.js?v=9"></script>
+  <script src="frontend/js/core/i18n.js?v=14"></script>
+  <script src="frontend/js/auth/auth.js?v=7"></script>
+  <script>
+    if (window.UniMap && UniMap.i18n) UniMap.i18n.iniciar();
+
+    /* Tema */
+    (function () {
+      var btn = document.getElementById('boton-tema');
+      if (!btn) return;
+      btn.addEventListener('click', function () {
+        var oscuro = document.documentElement.getAttribute('data-theme') === 'dark';
+        var nuevo = oscuro ? 'claro' : 'oscuro';
+        try { localStorage.setItem('unimap_tema', nuevo); } catch (e) {}
+        document.documentElement.setAttribute('data-theme', nuevo === 'oscuro' ? 'dark' : 'light');
+      });
+    })();
+
+    /* Tabs login / registro (además de los enlaces que ya usa auth.js) */
+    (function () {
+      var tabLogin = document.getElementById('tab-login');
+      var tabReg = document.getElementById('tab-register');
+      var formLogin = document.getElementById('formulario-login');
+      var formReg = document.getElementById('formulario-registro');
+      if (!tabLogin || !tabReg || !formLogin || !formReg) return;
+
+      function showLogin() {
+        formLogin.classList.add('active');
+        formReg.classList.remove('active');
+        tabLogin.classList.add('active');
+        tabReg.classList.remove('active');
+      }
+      function showReg() {
+        formReg.classList.add('active');
+        formLogin.classList.remove('active');
+        tabReg.classList.add('active');
+        tabLogin.classList.remove('active');
+      }
+
+      tabLogin.addEventListener('click', showLogin);
+      tabReg.addEventListener('click', showReg);
+
+      var aReg = document.getElementById('mostrar-registro');
+      var aLog = document.getElementById('mostrar-login');
+      if (aReg) aReg.addEventListener('click', function () { setTimeout(showReg, 0); });
+      if (aLog) aLog.addEventListener('click', function () { setTimeout(showLogin, 0); });
+    })();
+
+    /* Intentar reproducir el video (políticas de autoplay) */
+    (function () {
+      var v = document.getElementById('auth-drone-video');
+      if (!v) return;
+      var p = v.play();
+      if (p && typeof p.catch === 'function') p.catch(function () { /* autoplay bloqueado: queda el overlay */ });
+    })();
+  </script>
+</body>
+</html>

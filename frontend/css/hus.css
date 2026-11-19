@@ -1,0 +1,469 @@
+/* =========================================================
+   hus.css — componentes de las historias de usuario:
+   HU-07 servicios, HU-10 ruta/ubicacion, HU-11 QR,
+   HU-13 avisos, HU-15 idioma, HU-20 sugerencias,
+   ficha mejorada (HU-03 / HU-09) y accesibilidad (HU-12)
+   ========================================================= */
+
+/* ── ACCESIBILIDAD (HU-12): foco visible ───────────── */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--primary);
+  color: #fff;
+  padding: 10px 16px;
+  z-index: 1000;
+  border-radius: 0 0 8px 0;
+}
+.skip-link:focus { left: 0; }
+
+/* ── BARRA SUPERIOR: botones nuevos ────────────────── */
+#boton-avisos { position: relative; }
+
+#contador-avisos {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--bg-surface);
+  box-shadow: 0 1px 3px rgba(0,0,0,.3);
+}
+
+.boton-idioma {
+  width: auto;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .5px;
+  color: var(--gray-600);
+}
+
+/* Variante fuera del mapa (index.html / pantalla de acceso):
+   el estilo base .btn-icon solo existe en map.css */
+.auth-idioma {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  height: 34px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 9px;
+  background: var(--bg-surface);
+  color: var(--gray-600);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .5px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,.10);
+  transition: background .15s ease, border-color .15s ease;
+}
+
+.auth-idioma:hover {
+  background: var(--gray-50, #f9fafb);
+  border-color: var(--primary, #1a56db);
+  color: var(--primary, #1a56db);
+}
+
+/* Botón de tema junto al de idioma en la pantalla de acceso */
+.auth-tema { right: 76px; }
+
+.btn-admin-top {
+  width: auto;
+  padding: 0 10px;
+  font-size: 16px;
+}
+
+/* ── PANELES LATERALES NUEVOS (HU-07 / HU-13 / HU-20) */
+.panel-servicios,
+.panel-avisos,
+.panel-sugerencias {
+  position: fixed;
+  top: 60px;
+  right: 0;
+  width: 320px;
+  height: calc(100vh - 60px);
+  background: var(--bg-surface);
+  border-left: 1px solid var(--gray-200);
+  box-shadow: -4px 0 20px rgba(0,0,0,0.08);
+  z-index: 95;
+  overflow-y: auto;
+  animation: slideInRight .25s ease;
+}
+
+.panel-servicios .serv-torres,
+.panel-servicios .schedule-search,
+.panel-sugerencias .perfil-barra {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.serv-torres {
+  display: flex;
+  gap: 8px;
+}
+
+.serv-torre-btn {
+  flex: 1;
+  padding: 9px 8px;
+  border: 1.5px solid var(--gray-200);
+  background: var(--bg-surface);
+  border-radius: 9px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--gray-600);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.serv-torre-btn:hover { border-color: var(--primary); color: var(--primary); }
+.serv-torre-btn.active {
+  background: var(--primary-solid);
+  border-color: var(--primary-solid);
+  color: var(--primary-on);
+}
+
+.panel-servicios .schedule-search input,
+.panel-sugerencias input,
+.panel-sugerencias select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 10px;
+  font-size: 14px;
+}
+.panel-servicios .schedule-search input:focus,
+.panel-sugerencias input:focus,
+.panel-sugerencias select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px var(--primary-light);
+}
+
+.serv-piso {
+  padding: 10px 20px 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .7px;
+  color: var(--gray-400);
+  font-weight: 700;
+  background: var(--gray-50);
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.serv-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--gray-100);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+.serv-item:hover, .serv-item:focus { background: var(--primary-light); }
+
+.serv-item-main { flex: 1; min-width: 0; }
+.serv-nombre { display: block; font-weight: 600; font-size: 13.5px; color: var(--gray-800); }
+.serv-tipo { display: block; font-size: 11.5px; color: var(--gray-400); margin-top: 2px; }
+
+.serv-estado {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--success); flex-shrink: 0;
+}
+.serv-estado.inactivo { background: var(--danger); }
+
+.serv-ir {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--primary-light);
+  padding: 4px 9px;
+  border-radius: 7px;
+}
+
+/* ── AVISOS / NOTIFICACIONES (HU-13) ───────────────── */
+.aviso-item {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--gray-100);
+  cursor: pointer;
+  transition: background var(--transition);
+  border-left: 3px solid transparent;
+}
+.aviso-item:hover { background: var(--gray-50); }
+.aviso-item.no-leido {
+  background: var(--primary-light);
+  border-left-color: var(--primary);
+}
+.aviso-texto { font-size: 13.5px; color: var(--gray-700); line-height: 1.45; }
+.aviso-fecha { font-size: 11px; color: var(--gray-400); margin-top: 4px; }
+
+.panel-avisos .panel-acciones {
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--gray-100);
+}
+
+/* ── SUGERENCIAS (HU-20) ───────────────────────────── */
+.perfil-barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+#perfil-badge {
+  font-size: 12px;
+  color: var(--gray-500);
+  line-height: 1.35;
+}
+
+.btn-perfil {
+  padding: 7px 13px;
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  border: 1.5px solid var(--primary-light);
+  border-radius: 9px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition);
+}
+.btn-perfil:hover { background: var(--primary-solid); color: var(--primary-on); border-color: var(--primary-solid); }
+
+.sugerencia-item:hover, .sugerencia-item:focus { background: var(--warning-bg); }
+.sugerencia-item .fav-item-nombre { color: #92400e; }
+[data-theme="dark"] .sugerencia-item .fav-item-nombre { color: #FCD34D; }
+
+.modal-perfil .form-group { margin-bottom: 14px; }
+.modal-perfil label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-700);
+  margin-bottom: 6px;
+}
+.modal-perfil select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 9px;
+  font-size: 14px;
+  background: var(--bg-surface);
+}
+
+/* ── FICHA MEJORADA (HU-03 / HU-09) ────────────────── */
+.tooltip-acciones {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.btn-accion {
+  flex: 1;
+  padding: 8px 10px;
+  background: var(--bg-surface);
+  border: 1.5px solid var(--gray-200);
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gray-600);
+  cursor: pointer;
+  transition: all var(--transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+.btn-accion:hover {
+  background: var(--primary-light);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.tooltip-status.abierto { background: var(--success-bg); color: var(--success); }
+.tooltip-status.cerrado { background: var(--danger-bg); color: var(--danger); }
+
+.tooltip-cierra {
+  display: block;
+  font-size: 11px;
+  color: var(--gray-400);
+  margin-top: 3px;
+  font-weight: 500;
+}
+
+/* ── MODAL QR (HU-11) ──────────────────────────────── */
+.modal-qr-cuerpo {
+  padding: 24px 26px 26px;
+  text-align: center;
+}
+
+#qr-nombre-espacio {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--gray-800);
+  margin-bottom: 4px;
+}
+
+.qr-info {
+  font-size: 12.5px;
+  color: var(--gray-500);
+  margin-bottom: 14px;
+}
+
+#lienzo-qr {
+  width: 224px;
+  height: 224px;
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  image-rendering: pixelated;
+}
+
+#qr-enlace {
+  width: 100%;
+  margin-top: 14px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 9px;
+  font-size: 12px;
+  background: var(--gray-50);
+  color: var(--gray-600);
+}
+
+.qr-acciones {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+.qr-acciones button { flex: 1; margin-top: 0; }
+
+/* Escanear QR */
+.modal-escanear-cuerpo { padding: 22px 26px 26px; }
+
+#video-escanear {
+  width: 100%;
+  max-height: 300px;
+  background: #000;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+#escanear-aviso {
+  font-size: 13px;
+  color: var(--gray-500);
+  text-align: center;
+  margin: 12px 0;
+}
+
+.escanear-alternativa {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.escanear-alternativa input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 9px;
+  font-size: 13px;
+}
+.escanear-alternativa button {
+  width: auto;
+  padding: 10px 18px;
+  margin-top: 0;
+}
+
+/* ── RUTA (HU-10): aviso flotante de distancia ─────── */
+.ruta-badge {
+  position: absolute;
+  bottom: 96px;
+  left: 20px;
+  background: var(--bg-surface);
+  border: 1.5px solid var(--primary);
+  color: var(--primary-dark);
+  padding: 9px 15px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: var(--shadow-md);
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ruta-badge button {
+  background: none;
+  border: none;
+  color: var(--danger);
+  font-size: 15px;
+  cursor: pointer;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* ── LEYENDA: iconos especiales (HU-08) ────────────── */
+.legend-icono {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+  color: #fff;
+  margin-right: 4px;
+}
+.legend-icono.entrada { background: #b45309; }
+.legend-icono.estaciona { background: #6b7280; }
+
+/* ── ACCESIBILIDAD: reglas genericas ───────────────── */
+.btn-icon[aria-label] { position: relative; }
+
+.search-result-item[tabindex] { outline-offset: -2px; }
+
+/* ── RESPONSIVE de los nuevos componentes ──────────── */
+@media (max-width: 1240px) {
+  .btn-icon { width: 34px; height: 34px; }
+  .top-bar { gap: 10px; }
+}
+
+@media (max-width: 1080px) {
+  #boton-servicios, #boton-sugerencias { display: none; }
+}
+
+@media (max-width: 768px) {
+  .panel-servicios, .panel-avisos, .panel-sugerencias { width: 280px; }
+  #boton-ruta, #boton-ubicacion { display: none; }
+  .qr-acciones { flex-direction: column; }
+}
+
+@media (max-width: 640px) {
+  #boton-escanear-qr { display: none; }
+  .ruta-badge { left: 12px; bottom: 88px; font-size: 12px; }
+}

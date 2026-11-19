@@ -1,0 +1,497 @@
+/* =========================================================
+   chat.css — UniAsistente (ventana delimitada + FAB controlado)
+   ========================================================= */
+
+/* Contenedor raíz: no debe ocupar todo el viewport */
+.uni-chat {
+  position: fixed !important;
+  right: 20px !important;
+  bottom: 170px !important;
+  z-index: 95 !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: none !important;
+  max-height: none !important;
+  display: block !important;
+  pointer-events: none; /* solo hijos interactúan */
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+.uni-chat * {
+  box-sizing: border-box;
+}
+
+/* ── FAB (botón flotante) ─────────────────────────────── */
+.uni-chat .uni-boton {
+  pointer-events: auto;
+  position: relative;
+  width: 56px !important;
+  height: 56px !important;
+  min-width: 56px !important;
+  min-height: 56px !important;
+  max-width: 56px !important;
+  max-height: 56px !important;
+  border: none;
+  border-radius: 50%;
+  padding: 0;
+  margin: 0;
+  background: linear-gradient(145deg, #2563eb, #1d4ed8);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.45);
+  cursor: pointer;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  transform: none !important;
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.uni-chat .uni-boton:hover {
+  box-shadow: 0 10px 28px rgba(37, 99, 235, 0.6);
+  transform: scale(1.05) !important;
+}
+
+.uni-chat .uni-boton:active {
+  transform: scale(0.97) !important;
+}
+
+/* SVG del FAB: tamaño FIJO (evita el robot gigante) */
+.uni-chat .uni-boton svg {
+  width: 34px !important;
+  height: 34px !important;
+  max-width: 34px !important;
+  max-height: 34px !important;
+  display: block;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+/* Badge "Pregúntame" */
+.uni-chat .uni-badge {
+  position: absolute;
+  right: 62px;
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  background: rgba(15, 23, 42, 0.92);
+  color: #e2e8f0;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.uni-chat .uni-badge.uni-oculto {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* ── PANEL (ventana real del chat) ────────────────────── */
+.uni-chat .uni-panel {
+  pointer-events: auto;
+  position: absolute !important;
+  right: 0 !important;
+  bottom: 70px !important;
+  left: auto !important;
+  top: auto !important;
+
+  width: 360px !important;
+  max-width: min(360px, calc(100vw - 24px)) !important;
+  height: 480px !important;
+  max-height: min(480px, calc(100vh - 160px)) !important;
+
+  display: none; /* cerrado por defecto */
+  flex-direction: column;
+  overflow: hidden;
+
+  background: #0f172a !important;
+  color: #e2e8f0;
+  border: 1px solid rgba(148, 163, 184, 0.22) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55) !important;
+
+  animation: uniPanelIn 0.2s ease;
+}
+
+@keyframes uniPanelIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Abierto */
+.uni-chat.uni-abierto .uni-panel {
+  display: flex !important;
+}
+
+/* Cabecera */
+.uni-chat .uni-cab {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+  flex-shrink: 0;
+  background: rgba(30, 41, 59, 0.6);
+}
+
+.uni-chat .uni-av {
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.uni-chat .uni-av svg {
+  width: 40px !important;
+  height: 40px !important;
+  display: block;
+}
+
+.uni-chat .uni-tit {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.uni-chat .uni-tit strong {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.uni-chat .uni-tit span {
+  font-size: 11px;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.uni-chat .uni-cerrar {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.uni-chat .uni-cerrar:hover {
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+}
+
+/* Lista de mensajes */
+.uni-chat .uni-lista {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+  background: #0b1220;
+}
+
+.uni-chat .uni-fila {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  max-width: 100%;
+}
+
+.uni-chat .uni-fila.uni-user {
+  flex-direction: row-reverse;
+}
+
+.uni-chat .uni-mini {
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.uni-chat .uni-mini svg {
+  width: 28px !important;
+  height: 28px !important;
+  display: block;
+}
+
+.uni-chat .uni-burbuja {
+  max-width: 78%;
+  padding: 10px 12px;
+  border-radius: 14px;
+  font-size: 13px;
+  line-height: 1.45;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+
+.uni-chat .uni-bot .uni-burbuja {
+  background: #1e293b;
+  color: #e2e8f0;
+  border-bottom-left-radius: 4px;
+}
+
+.uni-chat .uni-user .uni-burbuja {
+  background: #2563eb;
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.uni-chat .uni-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.uni-chat .uni-accion,
+.uni-chat .uni-chip {
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(30, 41, 59, 0.9);
+  color: #e2e8f0;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.uni-chat .uni-accion:hover,
+.uni-chat .uni-chip:hover {
+  background: rgba(37, 99, 235, 0.35);
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+/* Formulario */
+.uni-chat .uni-form {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  border-top: 1px solid rgba(148, 163, 184, 0.15);
+  flex-shrink: 0;
+  background: rgba(15, 23, 42, 0.95);
+}
+
+.uni-chat .uni-campo {
+  flex: 1;
+  min-width: 0;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: #1e293b;
+  color: #f1f5f9;
+  padding: 0 12px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+}
+
+.uni-chat .uni-campo:focus {
+  border-color: #3b82f6;
+}
+
+.uni-chat .uni-enviar {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 10px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.uni-chat .uni-enviar:hover {
+  background: #1d4ed8;
+}
+
+/* Puntos "escribiendo" */
+.uni-chat .uni-puntos {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  min-width: 48px;
+  padding: 12px 14px !important;
+}
+
+.uni-chat .uni-puntos i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #94a3b8;
+  display: block;
+  animation: uniDot 1s infinite ease-in-out;
+}
+
+.uni-chat .uni-puntos i:nth-child(2) { animation-delay: 0.15s; }
+.uni-chat .uni-puntos i:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes uniDot {
+  0%, 80%, 100% { opacity: 0.35; transform: scale(0.85); }
+  40% { opacity: 1; transform: scale(1); }
+}
+
+/* Tema claro */
+[data-theme="light"] .uni-chat .uni-panel {
+  background: #ffffff !important;
+  color: #0f172a;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+}
+
+[data-theme="light"] .uni-chat .uni-cab {
+  background: #f8fafc;
+  border-bottom-color: rgba(15, 23, 42, 0.08);
+}
+
+[data-theme="light"] .uni-chat .uni-tit strong { color: #0f172a; }
+[data-theme="light"] .uni-chat .uni-tit span { color: #64748b; }
+
+[data-theme="light"] .uni-chat .uni-lista {
+  background: #f1f5f9;
+}
+
+[data-theme="light"] .uni-chat .uni-bot .uni-burbuja {
+  background: #ffffff;
+  color: #0f172a;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+[data-theme="light"] .uni-chat .uni-form {
+  background: #ffffff;
+  border-top-color: rgba(15, 23, 42, 0.08);
+}
+
+[data-theme="light"] .uni-chat .uni-campo {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+[data-theme="light"] .uni-chat .uni-accion,
+[data-theme="light"] .uni-chat .uni-chip {
+  background: #f1f5f9;
+  color: #0f172a; /* cambiare a negro */
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+/* ════════════════════════════════════════════════════════
+   MÓVIL ≤ 768px
+   - FAB nativo oculto (usa bottom nav)
+   - Panel a ancho casi completo, encima del bottom nav
+   ════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .uni-chat {
+    right: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 0 !important; /* no ocupa espacio; solo ancla el panel */
+    overflow: visible !important;
+  }
+
+  /* Ocultar FAB y badge nativos: el centro del bottom nav es el trigger */
+  .uni-chat .uni-boton,
+  .uni-chat .uni-badge {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  .uni-chat .uni-panel {
+    position: fixed !important;
+    left: 8px !important;
+    right: 8px !important;
+    bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+    top: auto !important;
+    width: auto !important;
+    max-width: none !important;
+    height: min(58vh, 460px) !important;
+    max-height: min(58vh, 460px) !important;
+    border-radius: 16px !important;
+  }
+
+  .uni-chat.uni-abierto .uni-panel {
+    display: flex !important;
+  }
+}
+
+/* Desktop: un solo FAB a la derecha */
+@media (min-width: 769px) {
+  .uni-chat .uni-boton {
+    display: flex !important;
+  }
+}
+/* =========================================================
+   chat.css — Univalle (v7)
+   ========================================================= */
+
+.uni-chat .uni-boton {
+  background: linear-gradient(145deg, #940036, #b1033b) !important;
+  box-shadow: 0 8px 24px rgba(148, 0, 54, 0.45) !important;
+}
+
+.uni-chat .uni-boton:hover {
+  box-shadow: 0 10px 28px rgba(148, 0, 54, 0.6) !important;
+}
+
+.uni-chat .uni-user .uni-burbuja {
+  background: #940036 !important;
+  color: #fff !important;
+}
+
+.uni-chat .uni-enviar {
+  background: #940036 !important;
+}
+
+.uni-chat .uni-enviar:hover {
+  background: #b1033b !important;
+}
+
+.uni-chat .uni-campo:focus {
+  border-color: #b1033b !important;
+}
+
+.uni-chat .uni-accion:hover,
+.uni-chat .uni-chip:hover {
+  background: rgba(148, 0, 54, 0.35) !important;
+  border-color: rgba(177, 3, 59, 0.55) !important;
+}
+
+/* Cabecera del panel al estilo prototipo */
+.uni-chat .uni-cab {
+  background: linear-gradient(135deg, #7f0632, #940036) !important;
+  border-bottom: none !important;
+}
+
+.uni-chat .uni-tit strong,
+.uni-chat .uni-tit span,
+.uni-chat .uni-cerrar {
+  color: #fff !important;
+}
+
+.uni-chat .uni-cerrar:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #fff !important;
+}
