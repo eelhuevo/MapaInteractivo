@@ -243,11 +243,12 @@
       var torre = torres[t];
       var pisoPlano = estado.pisoActual;
       /* En modo ambas torres, la torre 2 usa su piso equivalente */
-      if (estado.edificioActual === 0 && torre === 2) {
-        var pisoEq = UniMap.datos.pisoEquivalenteTAaTI
-          ? UniMap.datos.pisoEquivalenteTAaTI(estado.pisoActual)
-          : null;
-        if (pisoEq !== null) pisoPlano = pisoEq;
+      if (estado.edificioActual === 0) {
+        if (torre === 1 && UniMap.datos.obtenerPisoTA) {
+          pisoPlano = UniMap.datos.obtenerPisoTA();
+        } else if (torre === 2 && UniMap.datos.obtenerPisoTI) {
+          pisoPlano = UniMap.datos.obtenerPisoTI();
+        }
       }
       UniMap.modelos.pedirPlano(torre, pisoPlano, function () { /* repaint automatico */ });
     }
@@ -286,11 +287,12 @@
       var torre = torresPlanta[tp];
       /* Cada torre solo dibuja si tiene ese piso */
       var pisoParaTorre = estado.pisoActual;
-      if (estado.edificioActual === 0 && torre === 2) {
-        var pisoEq = UniMap.datos.pisoEquivalenteTAaTI
-          ? UniMap.datos.pisoEquivalenteTAaTI(estado.pisoActual)
-          : null;
-        if (pisoEq !== null) pisoParaTorre = pisoEq;
+      if (estado.edificioActual === 0) {
+        if (torre === 1 && UniMap.datos.obtenerPisoTA) {
+          pisoParaTorre = UniMap.datos.obtenerPisoTA();
+        } else if (torre === 2 && UniMap.datos.obtenerPisoTI) {
+          pisoParaTorre = UniMap.datos.obtenerPisoTI();
+        }
       }
       if (torre !== 0 && datos.tienePiso && !datos.tienePiso(torre, pisoParaTorre)) continue;
       var plano = (UniMap.modelos && UniMap.modelos.planoListo)
@@ -326,16 +328,18 @@
     /* Nombre de la torre en la esquina superior */
     contexto.fillStyle = colores.nombreTorre;
     contexto.font = 'bold 12px sans-serif';
-    contexto.textAlign = 'left';
     contexto.textBaseline = 'top';
-    var nombreTorre = estado.edificioActual === 0
-      ? (UniMap.i18n ? UniMap.i18n.t('torre.ambos') : 'Ambas torres')
-      : (datos.nombreEdificio ? datos.nombreEdificio(estado.edificioActual) : '');
-    contexto.fillText(nombreTorre, 50, 46);
+
     if (estado.edificioActual === 0) {
+      var titulo = UniMap.i18n ? UniMap.i18n.t('torre.ambos') : 'Ambas torres';
+      var anchoDual = 800 + offsetTorre2;
+      contexto.textAlign = 'center';
+      contexto.fillText(titulo, anchoDual / 2, 46);
+    } else {
+      contexto.textAlign = 'left';
       contexto.fillText(
-        datos.nombreEdificio ? datos.nombreEdificio(2) : 'Torre Innovacion',
-        50 + offsetTorre2, 46
+        datos.nombreEdificio ? datos.nombreEdificio(estado.edificioActual) : '',
+        50, 46
       );
     }
 
@@ -360,16 +364,26 @@
 
     /* Etiqueta de piso (en la franja libre bajo la planta,
        con margen para que no la corte el borde del lienzo) */
+    /* Etiqueta de piso centrada (modo dual: centro del plano ancho) */
+    var textoPiso = obtenerEtiquetaPiso();
+    contexto.font = 'bold 13px sans-serif';
+    var tw = contexto.measureText(textoPiso).width + 28;
+    var chipW = Math.max(180, tw);
+    var centroX = (estado.edificioActual === 0)
+      ? (800 + offsetTorre2) / 2
+      : 600;
+    var chipX = centroX - chipW / 2;
+    var chipY = 520;
+
     contexto.fillStyle = colores.fondoEtiqueta;
-    contexto.fillRect(520, 520, 160, 30);
+    contexto.fillRect(chipX, chipY, chipW, 30);
     contexto.strokeStyle = colores.bordeEtiqueta;
     contexto.lineWidth = 1;
-    contexto.strokeRect(520, 520, 160, 30);
+    contexto.strokeRect(chipX, chipY, chipW, 30);
     contexto.fillStyle = colores.textoEtiqueta;
-    contexto.font = 'bold 13px sans-serif';
     contexto.textAlign = 'center';
     contexto.textBaseline = 'middle';
-    contexto.fillText(obtenerEtiquetaPiso(), 600, 535);
+    contexto.fillText(textoPiso, centroX, chipY + 15);
 
     contexto.restore();
 
