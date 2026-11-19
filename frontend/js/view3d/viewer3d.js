@@ -310,9 +310,9 @@
     grupoPlanta = null;
   }
 
-    /* Centro lógico = mismo sistema que el mapa 2D.
-     2D dibuja la planta centrada en (400, 300).
-     Torre 2 en modo "ambas" se desplaza con OFFSET_TORRE_2. */
+  /* Centro lógico = mismo sistema que el mapa 2D.
+   2D dibuja la planta centrada en (400, 300).
+   Torre 2 en modo "ambas" se desplaza con OFFSET_TORRE_2. */
   function centroTorre(torre, edificioId) {
     var offset = (torre === 2 && edificioId === 0)
       ? (UniMap.datos.OFFSET_TORRE_2 || 0)
@@ -345,11 +345,15 @@
     var cargas = [];
     for (var t = 0; t < torres.length; t++) {
       var torre = torres[t];
-      /* Solo si la torre tiene ese piso (cada una con su lista) */
-      if (!UniMap.datos.tienePiso(torre, piso)) continue;
-      var definicion = UniMap.datos.modeloDePiso(torre, piso);
+      var pisoTorre = piso;
+      if (edificioId === 0) {
+        if (torre === 1 && UniMap.datos.obtenerPisoTA) pisoTorre = UniMap.datos.obtenerPisoTA();
+        if (torre === 2 && UniMap.datos.obtenerPisoTI) pisoTorre = UniMap.datos.obtenerPisoTI();
+      }
+      if (!UniMap.datos.tienePiso(torre, pisoTorre)) continue;
+      var definicion = UniMap.datos.modeloDePiso(torre, pisoTorre);
       if (!definicion) continue;
-      cargas.push({ torre: torre, definicion: definicion });
+      cargas.push({ torre: torre, definicion: definicion, piso: pisoTorre });
     }
 
     if (!cargas.length) {
@@ -392,7 +396,7 @@
 
         if (restantes > 0) return;
 
-                ocultarCarga();
+        ocultarCarga();
         if (huboError) mostrarAviso(UniMap.i18n.t('v3.errorModelo'));
         alturaMarcaje = Math.max(12, Math.min(alturaMaxima + 4, 120));
         encuadrar();
@@ -401,8 +405,8 @@
     }
   }
 
-    /* Encuadra la cámara sobre la planta real (bounding box),
-     no sobre un rectángulo teórico desfasado. */
+  /* Encuadra la cámara sobre la planta real (bounding box),
+   no sobre un rectángulo teórico desfasado. */
   function encuadrar() {
     if (!camara || !controles) return;
 
@@ -529,7 +533,7 @@
   /* Posicion de un espacio sobre la planta 2D renderizada en 3D.
      estado.espacios ya trae las coordenadas finales (en modo "ambas
      torres" la torre 2 viene desplazada), asi que no se suma nada. */
-    function calcularPosicion(espacio) {
+  function calcularPosicion(espacio) {
     if (!grupoPlanta) return null;
     return new THREE.Vector3(
       espacio.x + espacio.ancho / 2,
@@ -576,9 +580,15 @@
       var espacio = visibles[v];
 
       /* Solo marcar espacios de la planta actual (edificio + piso) */
-      if (espacio.edificio !== edificioActual && edificioActual !== 0) continue;
-      if (espacio.piso !== pisoActual) continue;
-
+      if (edificioActual === 0) {
+        var pisoEsperado = (espacio.edificio === 1)
+          ? (UniMap.datos.obtenerPisoTA ? UniMap.datos.obtenerPisoTA() : pisoActual)
+          : (UniMap.datos.obtenerPisoTI ? UniMap.datos.obtenerPisoTI() : pisoActual);
+        if (espacio.piso !== pisoEsperado) continue;
+      } else {
+        if (espacio.edificio !== edificioActual) continue;
+        if (espacio.piso !== pisoActual) continue;
+      }
       var posicion = calcularPosicion(espacio);
       if (!posicion) continue;
 
@@ -1087,7 +1097,7 @@
   /* =========================================================
      ACTIVAR / DESACTIVAR VISTA 3D
      ========================================================= */
-    function activar() {
+  function activar() {
     activo = true;
     contenedor.classList.remove('hidden');
 
